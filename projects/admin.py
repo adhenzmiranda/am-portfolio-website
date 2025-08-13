@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectEmbed
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed
 from django.urls import path
 from django.shortcuts import render, redirect
 from django import forms
@@ -28,6 +28,42 @@ class ProjectPhotoInline(admin.TabularInline):
         formset = super().get_formset(request, obj, **kwargs)
         formset.form.base_fields['order'].initial = 0
         return formset
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('order')
+
+class ProjectVideoForm(forms.ModelForm):
+    class Meta:
+        model = ProjectVideo
+        fields = '__all__'
+        widgets = {
+            'caption': forms.TextInput(attrs={
+                'placeholder': 'Optional video description...'
+            }),
+            'order': forms.NumberInput(attrs={
+                'placeholder': '0'
+            }),
+        }
+        help_texts = {
+            'video': '''
+                <strong>Max file size: 100MB</strong><br>
+                <strong>Recommended:</strong> MP4 format, 720p resolution, 1-2 Mbps bitrate<br>
+                <strong>Supported formats:</strong> MP4, MOV, AVI, WMV, MKV, WebM<br>
+                <em>If your file is too large, compress it first using tools like HandBrake or online compressors.</em><br>
+                <a href="/static/docs/VIDEO_UPLOAD_GUIDE.md" target="_blank">📖 Full Video Upload Guide</a>
+            ''',
+        }
+
+class ProjectVideoInline(admin.TabularInline):
+    model = ProjectVideo
+    form = ProjectVideoForm
+    extra = 1
+    fields = ('video', 'caption', 'order')
+    readonly_fields = ('created_at',)
+    min_num = 0
+    validate_min = False
+    can_delete = True
+    show_change_link = True
 
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('order')
@@ -72,6 +108,22 @@ class ProjectPhotoAdmin(admin.ModelAdmin):
         return "No image"
     display_image.short_description = 'Image'
 
+@admin.register(ProjectVideo)
+class ProjectVideoAdmin(admin.ModelAdmin):
+    form = ProjectVideoForm
+    list_display = ('project', 'display_video', 'caption', 'order', 'created_at')
+    list_filter = ('project',)
+    search_fields = ('caption', 'project__name')
+    
+    def display_video(self, obj):
+        if obj.video:
+            return format_html(
+                '<video width="150" height="100" controls preload="metadata"><source src="{}" type="video/mp4">Your browser does not support video.</video>', 
+                obj.video.url
+            )
+        return "No video"
+    display_video.short_description = 'Video Preview'
+
 @admin.register(ProjectEmbed)
 class ProjectEmbedAdmin(admin.ModelAdmin):
     pass
@@ -83,7 +135,7 @@ class ProjectsAdmin(admin.ModelAdmin):
     list_editable = ('featured',)
     list_filter = ('category', 'year')
     search_fields = ('name', 'description', 'tags')
-    inlines = [ProjectPhotoInline, ProjectEmbedInline]
+    inlines = [ProjectPhotoInline, ProjectVideoInline, ProjectEmbedInline]
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'description', 'category', 'year', 'tags', 'technologies', 'featured')

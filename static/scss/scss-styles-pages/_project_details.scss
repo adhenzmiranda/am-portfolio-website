@@ -249,6 +249,77 @@
             }
         }
 
+        .project-videos {
+            margin-top: 2rem;
+            width: 100%;
+
+            .video-gallery-grid {
+                display: grid;
+                gap: 1.5rem;
+                width: 100%;
+                margin: 2rem auto;
+                justify-content: center;
+
+                // Mobile: 1 column
+                grid-template-columns: 1fr;
+
+                // Tablet: 2 columns by default
+                @media (min-width: 700px) {
+                    grid-template-columns: repeat(2, minmax(300px, 1fr));
+                }
+
+                // If exactly 1 item, always center and max width
+                &:has(> :only-child) {
+                    grid-template-columns: minmax(300px, 600px);
+                    justify-content: center;
+                }
+
+                // If 3 or more items, 3 columns (desktop and up)
+                @media (min-width: 992px) {
+                    &:has(> :nth-child(3)) {
+                        grid-template-columns: repeat(3, minmax(300px, 1fr));
+                        justify-content: center;
+                    }
+                }
+
+                .video-item {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                    width: 100%;
+                    height: auto;
+                    gap: 10px;
+                    margin: 0 auto;
+
+                    .video-wrapper {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        position: relative;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+                        video {
+                            width: 100%;
+                            height: auto;
+                            border-radius: 8px;
+                            background: #000;
+                        }
+                    }
+
+                    .video-caption {
+                        @extend p;
+                        text-align: center;
+                        margin-top: 0.5rem;
+                        color: $dark-mode-white;
+                    }
+                }
+            }
+        }
+
         .project-embeds {
             margin-top: 2rem;
             width: 100%; // Ensure full width
@@ -279,6 +350,191 @@
                     &:has(> :nth-child(3)) {
                         grid-template-columns: repeat(3, minmax(300px, 1fr));
                         justify-content: center;
+                    }
+                }
+
+                .embed-item {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    flex-direction: column;
+                    width: 100% !important;
+                    height: auto !important;
+                    gap: 10px;
+                    margin: 0 auto;
+
+                    .embed-wrapper {
+                        width: 100%;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                    }
+
+                    .embed-caption {
+                        @extend p;
+                        text-align: center;
+                        margin-top: 0.5rem;
+                    }
+
+                    // Social media embed container
+                    &.social-embed-container {
+                        align-items: center;
+                        justify-content: center;
+                        
+                        @include mobile {
+                            padding: 0 0.5rem;
+                        }
+                    }
+
+                    // Default iframe styling - IMPORTANT: specific targeting for project embeds
+                    iframe {
+                        width: 100% !important;
+                        border: none;
+                        border-radius: 8px;
+                        height: auto !important;
+                        
+                        // Video platforms that should maintain 16:9 ratio
+                        &[src*="youtube.com"],
+                        &[src*="youtu.be"],
+                        &[src*="vimeo.com"],
+                        &[src*="dailymotion.com"],
+                        &[src*="twitch.tv"] {
+                            aspect-ratio: 16/9 !important;
+                            height: 100% !important;
+                        }
+                        
+                        // Social media platforms - maintain natural aspect ratio
+                        &[src*="facebook.com"] {
+                            aspect-ratio: unset !important;
+                            height: auto !important;
+                            max-width: 500px !important;
+                            
+                            // Use original dimensions if available - specific Facebook video embed
+                            &[width="267"][height="476"] {
+                                aspect-ratio: 267/476 !important;
+                                max-width: 267px !important;
+                                width: 100% !important;
+                                height: auto !important;
+                                
+                                @include mobile {
+                                    max-width: min(267px, calc(100% - 20px)) !important;
+                                }
+                            }
+                        }
+                        
+                        &[src*="instagram.com"] {
+                            aspect-ratio: unset !important;
+                            height: auto !important;
+                            max-width: 540px !important;
+                        }
+                        
+                        &[src*="twitter.com"],
+                        &[src*="x.com"],
+                        &[src*="linkedin.com"] {
+                            aspect-ratio: unset !important;
+                            height: auto !important;
+                            max-width: 550px !important;
+                        }
+                        
+                        &[src*="tiktok.com"] {
+                            aspect-ratio: unset !important;
+                            height: auto !important;
+                            max-width: 605px !important;
+                        }
+                        
+                        // Social iframe class for JavaScript-enhanced iframes
+                        &.social-iframe {
+                            width: 100% !important;
+                            height: auto !important;
+                            max-width: 100% !important;
+                            aspect-ratio: var(--original-aspect-ratio, auto) !important;
+                            
+                            @include mobile {
+                                max-width: calc(100% - 20px) !important;
+                            }
+                        }
+                    }
+
+                    // Instagram and other blockquote embeds
+                    blockquote {
+                        width: 100% !important;
+                        max-width: 540px !important;
+                        height: auto !important;
+                        margin: 0 auto !important;
+                        border: none !important;
+                        
+                        &.instagram-media {
+                            width: 100% !important;
+                            max-width: 540px !important;
+                            min-width: 320px !important;
+                            margin: 1px auto !important;
+                            
+                            @include mobile {
+                                min-width: 280px !important;
+                                max-width: 100% !important;
+                            }
+                        }
+                        
+                        &.responsive-embed {
+                            width: 100% !important;
+                            max-width: 100% !important;
+                            min-width: 280px !important;
+                            box-sizing: border-box !important;
+                            
+                            @include mobile {
+                                min-width: 260px !important;
+                                padding: 0 10px !important;
+                            }
+                        }
+                    }
+
+                    // Twitter/X embeds
+                    .twitter-tweet {
+                        width: 100% !important;
+                        max-width: 550px !important;
+                        margin: 0 auto !important;
+                        
+                        &.responsive-embed {
+                            max-width: 100% !important;
+                            
+                            @include mobile {
+                                max-width: calc(100% - 20px) !important;
+                            }
+                        }
+                    }
+
+                    // Generic blockquote styling for other social media
+                    blockquote[class*="twitter-"],
+                    blockquote[class*="facebook-"],
+                    blockquote[class*="tiktok-"],
+                    blockquote[class*="linkedin-"] {
+                        width: 100% !important;
+                        max-width: 550px !important;
+                        height: auto !important;
+                        margin: 0 auto !important;
+                    }
+
+                    // TikTok specific styling
+                    blockquote[class*="tiktok-"] {
+                        max-width: 605px !important;
+                        
+                        &.responsive-embed {
+                            @include mobile {
+                                max-width: 100% !important;
+                            }
+                        }
+                    }
+
+                    // Ensure script tags don't interfere with layout
+                    script {
+                        display: none;
+                    }
+
+                    // Handle various embed containers
+                    div[class*="embed-"], 
+                    div[class*="player-"] {
+                        width: 100%;
+                        max-width: 100%;
                     }
                 }
             }
@@ -589,40 +845,28 @@
         }
     }
 
-    .embed-item {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        width: 100% !important; // Override fixed width
+    // Removed - now handled within .project-embeds .embed-gallery-grid .embed-item
+
+    // Universal override for Facebook iframes - highest specificity
+    .project-detail-container iframe[src*="facebook.com"][width="267"][height="476"] {
+        aspect-ratio: 267/476 !important;
+        width: 100% !important;
         height: auto !important;
-        gap: 10px;
-        margin: 0 auto;
-
-        .embed-caption {
-            @extend p;
+        max-width: 267px !important;
+        border: none !important;
+        border-radius: 8px !important;
+        
+        @include mobile {
+            max-width: min(267px, calc(100% - 20px)) !important;
         }
-
-        iframe {
-            aspect-ratio: 16/9; // Force 16:9 ratio
-            width: 100% !important;
-            height: 100% !important;
-        }
-
-        // position: relative;
-        // aspect-ratio: 16/9;
-        // width: 100%;
-        // overflow: hidden;
-
-        // iframe,
-        // video {
-        //     position: absolute;
-        //     inset: 0;
-        //     width: 100%;
-        //     height: 100%;
-        //     border: none;
-        //     border-radius: 8px;
-        //     display: block;
-        // }
+    }
+    
+    // General Facebook iframe override
+    .project-detail-container iframe[src*="facebook.com"] {
+        aspect-ratio: unset !important;
+        height: auto !important;
+        width: 100% !important;
+        border: none !important;
+        border-radius: 8px !important;
     }
 }

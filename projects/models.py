@@ -115,6 +115,42 @@ class ProjectPhoto(models.Model):
     def __str__(self):
         return f"{self.project.name} - Photo {self.order}"
 
+class ProjectVideo(models.Model):
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='videos')
+    video = CloudinaryField('video', 
+        folder='project_videos',
+        resource_type='video',
+        transformation=[
+            {'quality': 'auto:low', 'fetch_format': 'auto'},
+            {'width': 1280, 'height': 720, 'crop': 'limit'},
+            {'bit_rate': '1m'},  # Limit bitrate to 1Mbps
+            {'video_codec': 'h264'},  # Use efficient codec
+        ]
+    )
+    caption = models.CharField(max_length=200, blank=True, 
+        help_text="Optional description for the video")
+    order = models.IntegerField(default=0,
+        help_text="Order in which videos appear (0 = first)")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"{self.project.name} - Video {self.order}"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        # Note: File size validation happens at the Cloudinary level
+        # This is just for additional context
+        if hasattr(self.video, 'file') and self.video.file:
+            # Check if file size is available (this may not always work with CloudinaryField)
+            if hasattr(self.video.file, 'size') and self.video.file.size > 100 * 1024 * 1024:  # 100MB
+                raise ValidationError({
+                    'video': 'Video file is too large. Maximum size is 100MB. Please compress your video before uploading.'
+                })
+        super().clean()
+
 class ProjectEmbed(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='embeds')
     embed_code = models.TextField(
