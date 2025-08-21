@@ -11,7 +11,12 @@
     "sass:watch": ".venv\\Scripts\\activate && sass --watch static/scss/main.scss static/css/main.css",
     "clean": "rmdir /s /q staticfiles",
     "build": ".venv\\Scripts\\activate && npm run sass && python manage.py collectstatic --noinput",
-    "dev": ".venv\\Scripts\\activate && python manage.py runserver"
+    "dev": ".venv\\Scripts\\activate && python manage.py runserver",
+    "sass1": "venv\\Scripts\\activate && sass static/scss/main.scss static/css/main.css", 
+    "sass:watch1": "venv\\Scripts\\activate && sass --watch static/scss/main.scss static/css/main.css",
+    "clean1": "rmdir /s /q staticfiles",
+    "build1": "venv\\Scripts\\activate && npm run sass1 && python manage.py collectstatic --noinput",
+    "dev1": "venv\\Scripts\\activate && python manage.py runserver"
   },
   "repository": {
     "type": "git",
