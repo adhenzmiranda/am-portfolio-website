@@ -85,6 +85,8 @@ OTP_TOTP_REMEMBER_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 days
 OTP_TOTP_REMEMBER_COOKIE_NAME = 'otp_trusted_device'
 
 ROOT_URLCONF = 'projects.urls'
+handler404 = 'projects.error_views.custom_404'
+handler500 = 'projects.error_views.custom_500'
 
 TEMPLATES = [
     {
