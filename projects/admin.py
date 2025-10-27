@@ -15,7 +15,7 @@ class ProjectPhotoFormSet(BaseInlineFormSet):
 class ProjectPhotoInline(admin.TabularInline):
     model = ProjectPhoto
     formset = ProjectPhotoFormSet
-    extra = 1
+    extra = 0  # No empty forms - use batch upload button instead
     fields = ('image', 'caption', 'order')
     readonly_fields = ('created_at',)
     min_num = 0
@@ -116,7 +116,7 @@ class ProjectVideoForm(forms.ModelForm):
 class ProjectVideoInline(admin.TabularInline):
     model = ProjectVideo
     form = ProjectVideoForm
-    extra = 1
+    extra = 0  # No empty forms - use batch upload button instead
     fields = ('video', 'compression_quality', 'caption', 'order')
     readonly_fields = ('created_at',)
     min_num = 0
@@ -227,29 +227,3 @@ class ProjectsAdmin(admin.ModelAdmin):
             'all': ('admin/css/video_embed.css',)
         }
         js = ('admin/js/video_embed.js',)
-    
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('batch-upload/<int:project_id>/', self.batch_upload_view, name='projects-projects-batch-upload'),
-        ]
-        return custom_urls + urls
-
-    def batch_upload_view(self, request, project_id):
-        project = Projects.objects.get(id=project_id)
-        
-        if request.method == 'POST':
-            files = request.FILES.getlist('photos')
-            for file in files:
-                ProjectPhoto.objects.create(
-                    project=project,
-                    image=file,
-                    order=ProjectPhoto.objects.filter(project=project).count()
-                )
-            messages.success(request, f'Successfully uploaded {len(files)} photos.')
-            return redirect('admin:projects_projects_change', project_id)
-            
-        return render(request, 'admin/projects/batch_upload.html', {
-            'project': project,
-            'title': 'Batch Upload Photos',
-        })

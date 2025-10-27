@@ -4,6 +4,54 @@
 {% block extrahead %}
 {{ block.super }}
 <style>
+/* Batch upload styles */
+.batch-upload-section {
+    background: #f8f9fa;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 8px;
+    border: 2px dashed #4CAF50;
+}
+
+.batch-upload-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.batch-upload-input {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background: white;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.batch-upload-input:hover {
+    border-color: #4CAF50;
+    background: #f1f8f4;
+}
+
+.batch-upload-info {
+    font-size: 13px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.batch-upload-progress {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: white;
+    border-radius: 4px;
+    border-left: 4px solid #2196F3;
+}
+
 .video-upload-progress {
     display: none;
     position: fixed;
@@ -94,6 +142,7 @@
 </div>
 
 <script>
+// BATCH UPLOAD SCRIPT - LAST UPDATED: 2025-10-27 23:45:00 UTC - VERSION 2.1
 (function() {
     const form = document.querySelector('form');
     const progressModal = document.getElementById('progressModal');
@@ -105,6 +154,304 @@
     let progressInterval;
     let startTime;
     let currentTaskId = null;
+    
+    // ========== INJECT BATCH UPLOAD BUTTONS ==========
+    
+    // Wait for Django's inline formset JavaScript to finish initializing
+    function injectBatchUploadButtons() {
+        console.log('🔍 🔍 🔍 BATCH UPLOAD SCRIPT LOADED - TIMESTAMP:', new Date().toISOString());
+        console.log('Looking for inline sections...');
+        
+        // Find photo inline section - CORRECT SELECTOR
+        const photoInline = document.querySelector('#photos-group');
+        console.log('Photos inline (#photos-group) found:', photoInline ? 'YES ✅' : 'NO ❌');
+        if (photoInline) {
+            console.log('Photo inline HTML:', photoInline.outerHTML.substring(0, 200));
+        }
+        
+        if (photoInline) {
+            // Check if button already exists
+            if (!document.getElementById('batchPhotoUpload')) {
+                const batchPhotoHTML = `
+                    <div style="background: #e8f5e9; padding: 15px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #4CAF50;">
+                        <input type="file" id="batchPhotoUpload" accept="image/*" multiple style="display: none;">
+                        <button type="button" onclick="document.getElementById('batchPhotoUpload').click()" 
+                                style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            📸 Select Multiple Photos
+                        </button>
+                        <span style="margin-left: 10px; color: #666; font-size: 13px;">Click to select multiple image files at once</span>
+                        <div id="photoUploadProgress" style="display: none; margin-top: 10px; color: #4CAF50; font-weight: bold;"></div>
+                    </div>
+                `;
+                photoInline.insertAdjacentHTML('afterbegin', batchPhotoHTML);
+                console.log('✅ Photo batch button injected!');
+            } else {
+                console.log('⚠️ Photo batch button already exists');
+            }
+        }
+        
+        // Find video inline section - CORRECT SELECTOR
+        const videoInline = document.querySelector('#videos-group');
+        console.log('Videos inline (#videos-group) found:', videoInline ? 'YES ✅' : 'NO ❌');
+        if (videoInline) {
+            console.log('Video inline HTML:', videoInline.outerHTML.substring(0, 200));
+        }
+        
+        if (videoInline) {
+            // Check if button already exists
+            if (!document.getElementById('batchVideoUpload')) {
+                const batchVideoHTML = `
+                    <div style="background: #e3f2fd; padding: 15px; margin-bottom: 15px; border-radius: 4px; border-left: 4px solid #2196F3;">
+                        <input type="file" id="batchVideoUpload" accept="video/*" multiple style="display: none;">
+                        <button type="button" onclick="document.getElementById('batchVideoUpload').click()" 
+                                style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                            🎬 Select Multiple Videos
+                        </button>
+                        <span style="margin-left: 10px; color: #666; font-size: 13px;">Click to select multiple video files at once</span>
+                        <div id="videoUploadProgress" style="display: none; margin-top: 10px; color: #2196F3; font-weight: bold;"></div>
+                    </div>
+                `;
+                videoInline.insertAdjacentHTML('afterbegin', batchVideoHTML);
+                console.log('✅ Video batch button injected!');
+            } else {
+                console.log('⚠️ Video batch button already exists');
+            }
+        }
+    }
+    
+    // Try multiple times with increasing delays to ensure Django's JS is loaded
+    window.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOMContentLoaded fired');
+        
+        // Try immediately
+        setTimeout(injectBatchUploadButtons, 0);
+        
+        // Try again after Django's inline JS should be loaded
+        setTimeout(injectBatchUploadButtons, 500);
+        
+        // Final attempt
+        setTimeout(injectBatchUploadButtons, 1000);
+    });
+    
+    // Also try when page is fully loaded
+    window.addEventListener('load', function() {
+        console.log('🚀 Load event fired');
+        setTimeout(injectBatchUploadButtons, 100);
+    });
+    
+    // ========== BATCH UPLOAD HANDLERS ==========
+    
+    // Batch Photo Upload
+    document.addEventListener('change', function(e) {
+        if (e.target.id === 'batchPhotoUpload') {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            console.log(`📸 Processing ${files.length} photos...`);
+            
+            const progressDiv = document.getElementById('photoUploadProgress');
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = `Processing ${files.length} photo(s)...`;
+            
+            // Find the photos inline formset - CORRECT SELECTOR
+            const photoInline = document.querySelector('#photos-group');
+            if (!photoInline) {
+                alert('Could not find photos section');
+                console.error('❌ #photos-group not found!');
+                return;
+            }
+            
+            const addButton = photoInline.querySelector('.add-row a');
+            const totalFormsInput = document.querySelector('#id_photos-TOTAL_FORMS');
+            const maxFormsInput = document.querySelector('#id_photos-MAX_NUM_FORMS');
+            
+            console.log('Add button found:', addButton ? 'YES' : 'NO');
+            console.log('Current TOTAL_FORMS:', totalFormsInput?.value);
+            console.log('MAX_NUM_FORMS:', maxFormsInput?.value);
+            
+            // Check if we have room
+            const currentTotal = parseInt(totalFormsInput?.value || 0);
+            const maxForms = parseInt(maxFormsInput?.value || 1000);
+            
+            if (currentTotal + files.length > maxForms) {
+                alert(`Cannot add ${files.length} photos. Maximum is ${maxForms} total forms, currently at ${currentTotal}.`);
+                progressDiv.style.display = 'none';
+                return;
+            }
+            
+            let processedCount = 0;
+            
+            files.forEach((file, index) => {
+                setTimeout(() => {
+                    // Click add button to create new form
+                    if (addButton) {
+                        addButton.click();
+                        console.log(`Clicked add button for file ${index + 1}`);
+                    }
+                    
+                    // Wait for Django's inline JS to finish creating the row
+                    setTimeout(() => {
+                        // Find all photo forms - CORRECT SELECTOR
+                        const photoForms = photoInline.querySelectorAll('.dynamic-photos');
+                        const lastForm = photoForms[photoForms.length - 1];
+                        
+                        console.log(`Adding file ${index + 1}/${files.length}: ${file.name}`);
+                        console.log(`Total forms now: ${photoForms.length}`);
+                        
+                        if (lastForm) {
+                            // Find the file input in the new form
+                            const fileInput = lastForm.querySelector('input[type="file"]');
+                            if (fileInput) {
+                                // Create a DataTransfer object to set files
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                fileInput.files = dataTransfer.files;
+                                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                console.log(`✓ File assigned to input: ${fileInput.name}`);
+                            }
+                            
+                            // Set caption from filename
+                            const captionInput = lastForm.querySelector('input[name*="caption"]');
+                            if (captionInput && !captionInput.value) {
+                                captionInput.value = file.name.replace(/\.[^/.]+$/, "");
+                            }
+                            
+                            // Set order
+                            const orderInput = lastForm.querySelector('input[name*="order"]');
+                            if (orderInput) {
+                                // Start order from current max + 1
+                                const existingOrders = Array.from(photoInline.querySelectorAll('input[name*="order"]'))
+                                    .map(input => parseInt(input.value) || 0)
+                                    .filter(val => val > 0);
+                                const maxOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
+                                orderInput.value = maxOrder + index + 1;
+                            }
+                        }
+                        
+                        processedCount++;
+                        
+                        // Update progress
+                        progressDiv.innerHTML = `Processing ${processedCount}/${files.length}...`;
+                        
+                        if (processedCount === files.length) {
+                            progressDiv.innerHTML = `✓ Added ${files.length} photos! Click Save to upload.`;
+                            console.log(`✅ Successfully added ${files.length} photos!`);
+                            setTimeout(() => {
+                                progressDiv.style.display = 'none';
+                                e.target.value = '';
+                            }, 3000);
+                        }
+                    }, 300); // Wait 300ms for Django inline JS to finish
+                }, index * 500); // Space out the add clicks by 500ms
+            });
+        }
+        
+        // Batch Video Upload
+        if (e.target.id === 'batchVideoUpload') {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+            
+            console.log(`🎬 Processing ${files.length} videos...`);
+            
+            const progressDiv = document.getElementById('videoUploadProgress');
+            progressDiv.style.display = 'block';
+            progressDiv.innerHTML = `Processing ${files.length} video(s)...`;
+            
+            // Find the videos inline formset - CORRECT SELECTOR
+            const videoInline = document.querySelector('#videos-group');
+            if (!videoInline) {
+                alert('Could not find videos section');
+                console.error('❌ #videos-group not found!');
+                return;
+            }
+            
+            const addButton = videoInline.querySelector('.add-row a');
+            const totalFormsInput = document.querySelector('#id_videos-TOTAL_FORMS');
+            const maxFormsInput = document.querySelector('#id_videos-MAX_NUM_FORMS');
+            
+            console.log('Add button found:', addButton ? 'YES' : 'NO');
+            console.log('Current TOTAL_FORMS:', totalFormsInput?.value);
+            console.log('MAX_NUM_FORMS:', maxFormsInput?.value);
+            
+            // Check if we have room
+            const currentTotal = parseInt(totalFormsInput?.value || 0);
+            const maxForms = parseInt(maxFormsInput?.value || 1000);
+            
+            if (currentTotal + files.length > maxForms) {
+                alert(`Cannot add ${files.length} videos. Maximum is ${maxForms} total forms, currently at ${currentTotal}.`);
+                progressDiv.style.display = 'none';
+                return;
+            }
+            
+            let processedCount = 0;
+            
+            files.forEach((file, index) => {
+                setTimeout(() => {
+                    // Click add button to create new form
+                    if (addButton) {
+                        addButton.click();
+                        console.log(`Clicked add button for file ${index + 1}`);
+                    }
+                    
+                    // Wait for Django's inline JS to finish creating the row
+                    setTimeout(() => {
+                        // Find all video forms - CORRECT SELECTOR
+                        const videoForms = videoInline.querySelectorAll('.dynamic-videos');
+                        const lastForm = videoForms[videoForms.length - 1];
+                        
+                        console.log(`Adding file ${index + 1}/${files.length}: ${file.name}`);
+                        console.log(`Total forms now: ${videoForms.length}`);
+                        
+                        if (lastForm) {
+                            // Find the file input in the new form
+                            const fileInput = lastForm.querySelector('input[type="file"]');
+                            if (fileInput) {
+                                const dataTransfer = new DataTransfer();
+                                dataTransfer.items.add(file);
+                                fileInput.files = dataTransfer.files;
+                                fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                console.log(`✓ File assigned to input: ${fileInput.name}`);
+                            }
+                            
+                            // Set caption from filename
+                            const captionInput = lastForm.querySelector('input[name*="caption"]');
+                            if (captionInput && !captionInput.value) {
+                                captionInput.value = file.name.replace(/\.[^/.]+$/, "");
+                            }
+                            
+                            // Set order
+                            const orderInput = lastForm.querySelector('input[name*="order"]');
+                            if (orderInput) {
+                                // Start order from current max + 1
+                                const existingOrders = Array.from(videoInline.querySelectorAll('input[name*="order"]'))
+                                    .map(input => parseInt(input.value) || 0)
+                                    .filter(val => val > 0);
+                                const maxOrder = existingOrders.length > 0 ? Math.max(...existingOrders) : 0;
+                                orderInput.value = maxOrder + index + 1;
+                            }
+                        }
+                        
+                        processedCount++;
+                        
+                        // Update progress
+                        progressDiv.innerHTML = `Processing ${processedCount}/${files.length}...`;
+                        
+                        if (processedCount === files.length) {
+                            const sizeMB = files.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024);
+                            progressDiv.innerHTML = `✓ Added ${files.length} videos (${sizeMB.toFixed(2)}MB)! Click Save to upload.`;
+                            console.log(`✅ Successfully added ${files.length} videos!`);
+                            setTimeout(() => {
+                                progressDiv.style.display = 'none';
+                                e.target.value = '';
+                            }, 3000);
+                        }
+                    }, 300); // Wait 300ms for Django inline JS to finish
+                }, index * 500); // Space out the add clicks by 500ms
+            });
+        }
+    });
+    
+    // ========== EXISTING COMPRESSION/PROGRESS CODE ==========
     
     // Cancel compression function
     window.cancelCompression = function() {
