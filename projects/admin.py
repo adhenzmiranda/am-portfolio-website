@@ -186,13 +186,16 @@ class ProjectVideoAdmin(admin.ModelAdmin):
     
     def compression_info(self, obj):
         if obj.was_compressed:
+            # Format the numbers first as strings, then use format_html
+            original = float(obj.original_size_mb) if obj.original_size_mb else 0.0
+            compressed = float(obj.compressed_size_mb) if obj.compressed_size_mb else 0.0
+            size_text = f"{original:.1f}MB → {compressed:.1f}MB"
             return format_html(
                 '<span style="color: green;">✓ Compressed</span><br>'
-                '<small>{:.1f}MB → {:.1f}MB</small>',
-                obj.original_size_mb or 0,
-                obj.compressed_size_mb or 0
+                '<small>{}</small>',
+                size_text
             )
-        return '<span style="color: gray;">No compression needed</span>'
+        return format_html('<span style="color: gray;">No compression needed</span>')
     compression_info.short_description = 'Compression'
 
 @admin.register(ProjectEmbed)
