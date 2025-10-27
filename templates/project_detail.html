@@ -68,6 +68,9 @@
                 <span class="project-year">{{ project.year }}</span>
                 <span class="project-category">{{ project.category }}</span>
             </div>
+            <div class="project-last-updated">
+                <p>Last updated: {{ project.updated_at|date:"m-d-Y H:i" }}</p>
+            </div>
         </div>
 
 
@@ -175,12 +178,14 @@
             </div>
         </div>
 
+
         <div class="project-navigation">
             <a href="{% url 'projects_page' %}" class="back-to-projects-btn">
                 <img src="{% static 'assets/images/projects/back-arrow.png' %}" alt="Back">
                 Back to Projects
             </a>
         </div>
+
     </div>
 
     {% include 'footer.html' %}
