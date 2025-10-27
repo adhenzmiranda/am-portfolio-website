@@ -41,10 +41,8 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
-    'yourdomain.com',
-    'www.yourdomain.com',
-    'yourapp.herokuapp.com',
-    'https://am04-c1eccbd13c2a.herokuapp.com/',
+    'am04-c1eccbd13c2a.herokuapp.com',
+    '.herokuapp.com',
 ]  # Replace with your actual production domains
 
 
