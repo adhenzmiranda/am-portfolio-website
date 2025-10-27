@@ -101,11 +101,23 @@ class Projects(models.Model):
 
 class ProjectPhoto(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='photos')
+    from django.core.exceptions import ValidationError
+    import os
+    def validate_image_file(value):
+        valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
+        ext = os.path.splitext(value.name)[1].lower()
+        if ext not in valid_extensions:
+            raise ValidationError('Only image files are allowed.')
+        if value.size > 50 * 1024 * 1024:
+            raise ValidationError('Image file too large (max 50MB).')
+
     image = CloudinaryField('image', folder='project_photos',
         transformation=[
             {'width': 1920, 'height': 1080, 'crop': 'limit'},
             {'quality': 'auto', 'fetch_format': 'auto'}
-        ])
+        ],
+        validators=[validate_image_file]
+    )
     caption = models.CharField(max_length=200, blank=True)
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -159,6 +171,7 @@ class ProjectEmbed(models.Model):
     embed_code = models.TextField(
         help_text="Paste the full embed code (e.g., <iframe ...></iframe>) for a video or interactive media. Example: <iframe width='560' height='315' src='https://www.youtube.com/embed/VIDEO_ID' frameborder='0' allowfullscreen></iframe>"
     )
+    is_safe = models.BooleanField(default=False, editable=False)
     caption = models.CharField(max_length=200, blank=True)  # <-- Add this line
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -168,3 +181,16 @@ class ProjectEmbed(models.Model):
 
     def __str__(self):
         return f"Embed for {self.project.name} ({self.id})"
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        allowed_sources = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io']
+        code = self.embed_code.lower()
+        if '<iframe' not in code:
+            self.is_safe = False
+            raise ValidationError('Only iframe embeds are allowed.')
+        has_allowed = any(source in code for source in allowed_sources)
+        if not has_allowed:
+            self.is_safe = False
+            raise ValidationError(f'Only embeds from {", ".join(allowed_sources)} are allowed.')
+        self.is_safe = True

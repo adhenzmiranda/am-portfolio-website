@@ -22,8 +22,13 @@ from projects import views
 from projects import compression_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
+import os
+random_admin_path = os.getenv('ADMIN_URL', 'admin-dev')
+import datetime
+print(f"\n{datetime.datetime.now().strftime('%B %d, %Y - %H:%M:%S')}")
+print(f"Admin page available at: http://127.0.0.1:8000/{random_admin_path}/\n")
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(random_admin_path + '/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     
     # Compression progress endpoints

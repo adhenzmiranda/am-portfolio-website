@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from cloudinary.uploader import upload
+from django_ratelimit.decorators import ratelimit
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
@@ -41,6 +42,7 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
+@ratelimit(key='ip', rate='5/h', method='POST', block=True)
 def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
@@ -49,15 +51,16 @@ def contact(request):
             email = form.cleaned_data['email']
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
-            
             # Send email
             email_message = f'From: {name}\nEmail: {email}\n\nMessage:\n{message}'
+            from django.conf import settings
+            recipient_email = getattr(settings, 'EMAIL_HOST_USER', None)
             try:
                 send_mail(
                     subject,
                     email_message,
                     email,  # From email
-                    ['your-email@example.com'],  # Replace with your email
+                    [recipient_email],
                     fail_silently=False,
                 )
                 messages.success(request, 'Thank you for your message! I will get back to you soon.')
@@ -66,7 +69,6 @@ def contact(request):
                 messages.error(request, 'An error occurred while sending your message. Please try again later.')
     else:
         form = ContactForm()
-    
     return render(request, 'contact.html', {'form': form})
 
 def projects_page(request):
