@@ -1,0 +1,224 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.video-upload-progress {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-content {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 400px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 30px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    width: 0%;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.progress-message {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.progress-detail {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4CAF50;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+{{ block.super }}
+
+<!-- Progress Modal -->
+<div class="video-upload-progress" id="progressModal">
+    <div class="progress-content">
+        <div class="progress-message" id="progressMessage">
+            Preparing to upload video...
+        </div>
+        <div class="spinner"></div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        <div class="progress-detail" id="progressDetail">
+            This may take a few moments...
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const form = document.querySelector('form');
+    const videoField = document.querySelector('input[name="video"]');
+    const progressModal = document.getElementById('progressModal');
+    const progressMessage = document.getElementById('progressMessage');
+    const progressDetail = document.getElementById('progressDetail');
+    const progressBar = document.getElementById('progressBar');
+    
+    let progressInterval;
+    let startTime;
+    
+    // Check file size before upload
+    if (videoField) {
+        videoField.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                const sizeElement = document.createElement('div');
+                sizeElement.style.cssText = 'margin-top: 5px; padding: 10px; background: #e8f5e9; border-left: 4px solid #4CAF50; font-size: 14px;';
+                
+                if (file.size > 100 * 1024 * 1024) { // Over 100MB
+                    sizeElement.innerHTML = `
+                        <strong>📹 File size: ${sizeMB} MB</strong><br>
+                        <span style="color: #ff9800;">⚠️ This file will be automatically compressed before upload.</span><br>
+                        <small>Estimated compression time: ${estimateCompressionTime(file.size)}</small>
+                    `;
+                    sizeElement.style.background = '#fff3e0';
+                    sizeElement.style.borderLeftColor = '#ff9800';
+                } else {
+                    sizeElement.innerHTML = `
+                        <strong>✓ File size: ${sizeMB} MB</strong><br>
+                        <span style="color: #4CAF50;">No compression needed!</span>
+                    `;
+                }
+                
+                // Remove any existing size display
+                const existing = videoField.parentElement.querySelector('.file-size-info');
+                if (existing) existing.remove();
+                
+                sizeElement.className = 'file-size-info';
+                videoField.parentElement.appendChild(sizeElement);
+            }
+        });
+    }
+    
+    function estimateCompressionTime(fileSize) {
+        const sizeMB = fileSize / (1024 * 1024);
+        const seconds = Math.ceil(sizeMB / 3); // Rough estimate: 3MB per second
+        if (seconds < 60) {
+            return `~${seconds} seconds`;
+        } else {
+            const minutes = Math.ceil(seconds / 60);
+            return `~${minutes} minute${minutes > 1 ? 's' : ''}`;
+        }
+    }
+    
+    function updateProgress(percent, message, detail) {
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = percent + '%';
+        if (message) progressMessage.textContent = message;
+        if (detail) progressDetail.textContent = detail;
+    }
+    
+    function simulateProgress() {
+        let progress = 0;
+        const steps = [
+            { percent: 10, message: 'Validating video file...', detail: 'Checking file format and size' },
+            { percent: 20, message: 'Starting compression...', detail: 'Loading video file' },
+            { percent: 35, message: 'Compressing video...', detail: 'Reducing resolution and bitrate' },
+            { percent: 50, message: 'Processing video...', detail: 'Optimizing for web playback' },
+            { percent: 65, message: 'Almost done...', detail: 'Finalizing compression' },
+            { percent: 80, message: 'Preparing upload...', detail: 'Creating compressed file' },
+            { percent: 90, message: 'Uploading to Cloudinary...', detail: 'Transferring file' },
+        ];
+        
+        let stepIndex = 0;
+        
+        progressInterval = setInterval(() => {
+            if (stepIndex < steps.length) {
+                const step = steps[stepIndex];
+                updateProgress(step.percent, step.message, step.detail);
+                stepIndex++;
+            }
+        }, 5000); // Update every 5 seconds
+    }
+    
+    // Show progress on form submit
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const file = videoField ? videoField.files[0] : null;
+            
+            if (file && file.size > 100 * 1024 * 1024) {
+                // Show progress modal for large files
+                progressModal.style.display = 'flex';
+                startTime = Date.now();
+                simulateProgress();
+                
+                // Update with elapsed time
+                const timeInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                    
+                    const currentDetail = progressDetail.textContent;
+                    if (!currentDetail.includes('Elapsed:')) {
+                        progressDetail.textContent = currentDetail + ` (Elapsed: ${timeStr})`;
+                    } else {
+                        progressDetail.textContent = currentDetail.replace(/Elapsed: [\d]+m? [\d]+s/, `Elapsed: ${timeStr}`);
+                    }
+                }, 1000);
+                
+                // Store interval IDs for cleanup
+                window._progressIntervals = [progressInterval, timeInterval];
+            }
+        });
+    }
+    
+    // Clean up on page unload
+    window.addEventListener('beforeunload', function() {
+        if (window._progressIntervals) {
+            window._progressIntervals.forEach(interval => clearInterval(interval));
+        }
+    });
+})();
+</script>
+{% endblock %}

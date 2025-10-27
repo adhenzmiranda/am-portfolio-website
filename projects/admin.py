@@ -46,13 +46,72 @@ class ProjectVideoForm(forms.ModelForm):
         }
         help_texts = {
             'video': '''
-                <strong>Max file size: 100MB</strong><br>
-                <strong>Recommended:</strong> MP4 format, 720p resolution, 1-2 Mbps bitrate<br>
+                <strong>📹 Auto-Compression Enabled!</strong><br>
+                <strong>Max file size:</strong> 100MB (system will auto-compress larger files)<br>
                 <strong>Supported formats:</strong> MP4, MOV, AVI, WMV, MKV, WebM<br>
-                <em>If your file is too large, compress it first using tools like HandBrake or online compressors.</em><br>
+                <strong>Auto-compression:</strong> Videos over 100MB will be automatically compressed to 720p before upload.<br>
+                <em>Upload any size video - the system will handle compression automatically!</em><br>
                 <a href="/static/docs/VIDEO_UPLOAD_GUIDE.md" target="_blank">📖 Full Video Upload Guide</a>
             ''',
         }
+    
+    def __init__(self, *args, **kwargs):
+        """Override init to process video BEFORE field validation."""
+        super().__init__(*args, **kwargs)
+        
+        # Get the uploaded file from request data if available
+        if 'video' in self.files:
+            from .video_utils import process_video_upload, needs_compression
+            import logging
+            
+            logger = logging.getLogger(__name__)
+            video_file = self.files['video']
+            
+            if video_file:
+                file_size = getattr(video_file, 'size', 0)
+                logger.info(f"[INIT] Video upload detected: {video_file.name}, size: {file_size / (1024*1024):.2f}MB")
+                
+                # Check if compression is needed
+                if needs_compression(file_size):
+                    try:
+                        logger.info("[INIT] Starting automatic compression BEFORE validation...")
+                        compressed_file, was_compressed, orig_mb, final_mb = process_video_upload(video_file)
+                        
+                        if was_compressed:
+                            logger.info(f"[INIT] Compression successful: {orig_mb:.2f}MB → {final_mb:.2f}MB")
+                            
+                            # Replace the file in the form data
+                            self.files['video'] = compressed_file
+                            
+                            # Store compression info for later
+                            self._compression_info = {
+                                'was_compressed': True,
+                                'original_size_mb': orig_mb,
+                                'compressed_size_mb': final_mb
+                            }
+                    except Exception as e:
+                        logger.error(f"[INIT] Compression failed: {e}", exc_info=True)
+                        # Don't raise here - let validation handle it
+                        self._compression_error = str(e)
+    
+    def clean_video(self):
+        """Apply compression info to instance if compression happened in init."""
+        video = self.cleaned_data.get('video')
+        
+        # Check if we had a compression error
+        if hasattr(self, '_compression_error'):
+            raise forms.ValidationError(
+                f"Video compression failed: {self._compression_error}. "
+                "Please compress your video manually to under 100MB and try again."
+            )
+        
+        # Apply compression metadata if it exists
+        if hasattr(self, '_compression_info'):
+            self.instance.was_compressed = self._compression_info['was_compressed']
+            self.instance.original_size_mb = self._compression_info['original_size_mb']
+            self.instance.compressed_size_mb = self._compression_info['compressed_size_mb']
+        
+        return video
 
 class ProjectVideoInline(admin.TabularInline):
     model = ProjectVideo
@@ -111,9 +170,10 @@ class ProjectPhotoAdmin(admin.ModelAdmin):
 @admin.register(ProjectVideo)
 class ProjectVideoAdmin(admin.ModelAdmin):
     form = ProjectVideoForm
-    list_display = ('project', 'display_video', 'caption', 'order', 'created_at')
-    list_filter = ('project',)
+    list_display = ('project', 'display_video', 'caption', 'order', 'compression_info', 'created_at')
+    list_filter = ('project', 'was_compressed')
     search_fields = ('caption', 'project__name')
+    readonly_fields = ('was_compressed', 'original_size_mb', 'compressed_size_mb', 'created_at')
     
     def display_video(self, obj):
         if obj.video:
@@ -123,6 +183,17 @@ class ProjectVideoAdmin(admin.ModelAdmin):
             )
         return "No video"
     display_video.short_description = 'Video Preview'
+    
+    def compression_info(self, obj):
+        if obj.was_compressed:
+            return format_html(
+                '<span style="color: green;">✓ Compressed</span><br>'
+                '<small>{:.1f}MB → {:.1f}MB</small>',
+                obj.original_size_mb or 0,
+                obj.compressed_size_mb or 0
+            )
+        return '<span style="color: gray;">No compression needed</span>'
+    compression_info.short_description = 'Compression'
 
 @admin.register(ProjectEmbed)
 class ProjectEmbedAdmin(admin.ModelAdmin):

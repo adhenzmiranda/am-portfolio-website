@@ -1,6 +1,7 @@
 from django.db import models
 from cloudinary.models import CloudinaryField
 from multiselectfield import MultiSelectField
+from .fields import CompressedVideoField
 
 TECH_STACK_CHOICES = [
     ('Languages', [
@@ -117,7 +118,7 @@ class ProjectPhoto(models.Model):
 
 class ProjectVideo(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='videos')
-    video = CloudinaryField('video', 
+    video = CompressedVideoField('video', 
         folder='project_videos',
         resource_type='video',
         transformation=[
@@ -132,6 +133,11 @@ class ProjectVideo(models.Model):
     order = models.IntegerField(default=0,
         help_text="Order in which videos appear (0 = first)")
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Track compression info
+    was_compressed = models.BooleanField(default=False, editable=False)
+    original_size_mb = models.FloatField(null=True, blank=True, editable=False)
+    compressed_size_mb = models.FloatField(null=True, blank=True, editable=False)
 
     class Meta:
         ordering = ['order', 'created_at']
@@ -141,13 +147,11 @@ class ProjectVideo(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        # Note: File size validation happens at the Cloudinary level
-        # This is just for additional context
+        # Basic validation only - compression happens in save()
         if hasattr(self.video, 'file') and self.video.file:
-            # Check if file size is available (this may not always work with CloudinaryField)
-            if hasattr(self.video.file, 'size') and self.video.file.size > 100 * 1024 * 1024:  # 100MB
+            if hasattr(self.video.file, 'size') and self.video.file.size > 500 * 1024 * 1024:  # 500MB hard limit
                 raise ValidationError({
-                    'video': 'Video file is too large. Maximum size is 100MB. Please compress your video before uploading.'
+                    'video': 'Video file is too large (over 500MB). Please use a smaller file.'
                 })
         super().clean()
 
