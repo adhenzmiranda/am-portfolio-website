@@ -19,11 +19,18 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from projects import views
+from projects import compression_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    
+    # Compression progress endpoints
+    path('admin/compression-progress/<str:task_id>/', compression_views.compression_progress, name='compression_progress'),
+    path('admin/cancel-compression/<str:task_id>/', compression_views.cancel_compression, name='cancel_compression'),
+    path('admin/get-latest-task/', compression_views.get_latest_task, name='get_latest_task'),
+    
     path('', views.home, name='home'),
     path('about/', views.about, name='about'),
     path('contact/', views.contact, name='contact'),

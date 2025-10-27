@@ -117,7 +117,7 @@ class ProjectVideoInline(admin.TabularInline):
     model = ProjectVideo
     form = ProjectVideoForm
     extra = 1
-    fields = ('video', 'caption', 'order')
+    fields = ('video', 'compression_quality', 'caption', 'order')
     readonly_fields = ('created_at',)
     min_num = 0
     validate_min = False
@@ -171,9 +171,12 @@ class ProjectPhotoAdmin(admin.ModelAdmin):
 class ProjectVideoAdmin(admin.ModelAdmin):
     form = ProjectVideoForm
     list_display = ('project', 'display_video', 'caption', 'order', 'compression_info', 'created_at')
-    list_filter = ('project', 'was_compressed')
+    list_filter = ('project', 'was_compressed', 'compression_quality')
     search_fields = ('caption', 'project__name')
     readonly_fields = ('was_compressed', 'original_size_mb', 'compressed_size_mb', 'created_at')
+    
+    # Show compression_quality field in the form
+    fields = ('project', 'video', 'compression_quality', 'caption', 'order', 'created_at', 'was_compressed', 'original_size_mb', 'compressed_size_mb')
     
     def display_video(self, obj):
         if obj.video:

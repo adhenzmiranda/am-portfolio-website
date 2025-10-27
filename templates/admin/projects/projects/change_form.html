@@ -1,0 +1,300 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+.video-upload-progress {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 99999;
+    justify-content: center;
+    align-items: center;
+}
+
+.progress-content {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 400px;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 30px;
+    background: #f0f0f0;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A);
+    width: 0%;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+}
+
+.progress-message {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.progress-detail {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+}
+
+.cancel-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.cancel-button:hover {
+    background: #d32f2f;
+}
+</style>
+{% endblock %}
+
+{% block after_field_sets %}
+{{ block.super }}
+
+<!-- Progress Modal -->
+<div id="progressModal" class="video-upload-progress">
+    <div class="progress-content">
+        <div class="progress-message" id="progressMessage">Compressing video...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar">0%</div>
+        </div>
+        <div class="progress-detail" id="progressDetail">Please wait...</div>
+        <button id="cancelButton" class="cancel-button" onclick="cancelCompression()" style="display: none;">
+            Cancel Compression
+        </button>
+    </div>
+</div>
+
+<script>
+(function() {
+    const form = document.querySelector('form');
+    const progressModal = document.getElementById('progressModal');
+    const progressMessage = document.getElementById('progressMessage');
+    const progressDetail = document.getElementById('progressDetail');
+    const progressBar = document.getElementById('progressBar');
+    const cancelButton = document.getElementById('cancelButton');
+    
+    let progressInterval;
+    let startTime;
+    let currentTaskId = null;
+    
+    // Cancel compression function
+    window.cancelCompression = function() {
+        if (currentTaskId && confirm('Are you sure you want to cancel the compression?')) {
+            fetch(`/admin/cancel-compression/${currentTaskId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Cancellation requested:', data);
+                updateProgress(0, 'Cancelling...', 'Cleaning up files...');
+                cancelButton.style.display = 'none';
+                
+                if (progressInterval) {
+                    clearInterval(progressInterval);
+                }
+                
+                setTimeout(() => {
+                    progressModal.style.display = 'none';
+                    window.location.reload();
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error cancelling:', error);
+                alert('Failed to cancel compression. Please refresh the page.');
+            });
+        }
+    };
+    
+    function updateProgress(percent, message, detail) {
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = percent + '%';
+        if (message) progressMessage.textContent = message;
+        if (detail) progressDetail.textContent = detail;
+    }
+    
+    function pollProgress(taskId) {
+        currentTaskId = taskId;
+        cancelButton.style.display = 'inline-block';
+        
+        progressInterval = setInterval(() => {
+            fetch(`/admin/compression-progress/${taskId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Progress update:', data);
+                    
+                    updateProgress(data.percentage, data.stage, data.details);
+                    
+                    if (startTime) {
+                        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                        const minutes = Math.floor(elapsed / 60);
+                        const seconds = elapsed % 60;
+                        const timeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+                        progressDetail.textContent = data.details + ` (Elapsed: ${timeStr})`;
+                    }
+                    
+                    if (data.status === 'complete' || data.status === 'error' || data.stage === 'Cancelled') {
+                        clearInterval(progressInterval);
+                        cancelButton.style.display = 'none';
+                        
+                        if (data.status === 'complete') {
+                            updateProgress(100, 'Compression complete!', data.details);
+                            setTimeout(() => {
+                                progressModal.style.display = 'none';
+                                // Reload to show the uploaded video
+                                window.location.reload();
+                            }, 3000);
+                        } else if (data.stage === 'Cancelled') {
+                            updateProgress(0, 'Cancelled', 'Compression was cancelled');
+                            setTimeout(() => {
+                                progressModal.style.display = 'none';
+                            }, 2000);
+                        } else {
+                            updateProgress(0, 'Error occurred', data.details);
+                            setTimeout(() => {
+                                progressModal.style.display = 'none';
+                            }, 3000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error polling progress:', error);
+                });
+        }, 500);
+    }
+    
+    // Monitor file inputs in inline forms
+    function checkVideoFields() {
+        const videoFields = document.querySelectorAll('input[type="file"][name*="video"]');
+        console.log('Found video fields:', videoFields.length);
+        
+        videoFields.forEach(field => {
+            if (field.dataset.listenerAdded) return;
+            field.dataset.listenerAdded = 'true';
+            
+            field.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('Video selected:', file.name, file.size);
+                    const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                    const sizeElement = document.createElement('div');
+                    sizeElement.style.cssText = 'margin-top: 5px; padding: 10px; background: #fff3e0; border-left: 4px solid #ff9800; font-size: 12px;';
+                    
+                    if (file.size > 100 * 1024 * 1024) {
+                        sizeElement.innerHTML = `
+                            <strong>📹 ${sizeMB} MB</strong> - Will be compressed before upload
+                        `;
+                    } else {
+                        sizeElement.innerHTML = `<strong>✓ ${sizeMB} MB</strong>`;
+                        sizeElement.style.background = '#e8f5e9';
+                        sizeElement.style.borderLeftColor = '#4CAF50';
+                    }
+                    
+                    const existing = field.parentElement.querySelector('.file-size-info');
+                    if (existing) existing.remove();
+                    
+                    sizeElement.className = 'file-size-info';
+                    field.parentElement.appendChild(sizeElement);
+                }
+            });
+        });
+    }
+    
+    // Check on load and when inlines are added
+    checkVideoFields();
+    
+    // Watch for dynamically added inline forms
+    const observer = new MutationObserver(() => {
+        checkVideoFields();
+    });
+    
+    const inlineContainer = document.querySelector('.inline-group');
+    if (inlineContainer) {
+        observer.observe(inlineContainer, { childList: true, subtree: true });
+    }
+    
+    // Show progress on form submit
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const videoFields = document.querySelectorAll('input[type="file"][name*="video"]');
+            let hasLargeVideo = false;
+            
+            videoFields.forEach(field => {
+                const file = field.files[0];
+                if (file && file.size > 100 * 1024 * 1024) {
+                    hasLargeVideo = true;
+                }
+            });
+            
+            console.log('Form submitted, has large video:', hasLargeVideo);
+            
+            if (hasLargeVideo) {
+                console.log('SHOWING PROGRESS MODAL');
+                progressModal.style.display = 'flex';
+                startTime = Date.now();
+                updateProgress(0, 'Starting compression...', 'Preparing video file...');
+                
+                // Poll for the task ID
+                const checkForTask = () => {
+                    fetch('/admin/get-latest-task/')
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log('Task check response:', data);
+                            if (data.task_id) {
+                                console.log('Found task ID:', data.task_id);
+                                pollProgress(data.task_id);
+                            } else {
+                                console.log('No task yet, checking again...');
+                                setTimeout(checkForTask, 500);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error getting task ID:', error);
+                            setTimeout(checkForTask, 500);
+                        });
+                };
+                
+                setTimeout(checkForTask, 1000);
+            }
+        });
+    }
+    
+    window.addEventListener('beforeunload', function() {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+    });
+})();
+</script>
+{% endblock %}

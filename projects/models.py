@@ -121,12 +121,8 @@ class ProjectVideo(models.Model):
     video = CompressedVideoField('video', 
         folder='project_videos',
         resource_type='video',
-        transformation=[
-            {'quality': 'auto:low', 'fetch_format': 'auto'},
-            {'width': 1280, 'height': 720, 'crop': 'limit'},
-            {'bit_rate': '1m'},  # Limit bitrate to 1Mbps
-            {'video_codec': 'h264'},  # Use efficient codec
-        ]
+        # Don't apply transformations during upload - we already compressed the video
+        # transformation=[]  # Removed - we handle compression ourselves
     )
     caption = models.CharField(max_length=200, blank=True, 
         help_text="Optional description for the video")
@@ -138,6 +134,9 @@ class ProjectVideo(models.Model):
     was_compressed = models.BooleanField(default=False, editable=False)
     original_size_mb = models.FloatField(null=True, blank=True, editable=False)
     compressed_size_mb = models.FloatField(null=True, blank=True, editable=False)
+    compression_quality = models.CharField(max_length=10, default='high',
+        choices=[('high', 'High Quality (1080p)'), ('medium', 'Balanced (720p)'), ('low', 'Fast Upload (480p)')],
+        help_text="Quality preset for automatic compression (only used if file > 100MB)")
 
     class Meta:
         ordering = ['order', 'created_at']
