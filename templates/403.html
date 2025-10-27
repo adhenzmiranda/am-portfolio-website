@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>404 Not Found</title>
+    <title>403 Forbidden</title>
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
         <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
         <style>
@@ -44,9 +44,9 @@
 <body class="home-page">
     {% include 'navbar.html' %}
         <div class="error-container">
-            <div class="h1">404 - Not Found</div>
-            <p class="h2">Sorry, the page you are looking for does not exist.</p>
-            <img src="https://http.cat/404.jpg" alt="404 Cat">
+            <div class="h1">403 - Forbidden</div>
+            <p class="h2">You do not have permission to access this page.</p>
+            <img src="https://http.cat/403.jpg" alt="403 Cat">
         </div>
     {% include 'footer.html' %}
 </body>

@@ -4,16 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <title>500 Internal Server Error</title>
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
+        <style>
+            .error-container {
+                text-align: center;
+                margin-top: 40px;
+            }
+            .error-container .h1 {
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 700;
+                color: #EDEFF8;
+                font-size: 48px;
+                margin-bottom: 16px;
+            }
+            .error-container .h2 {
+                font-family: 'Raleway', sans-serif;
+                font-weight: 600;
+                color: #EDEFF8;
+                font-size: 36px;
+                margin-bottom: 24px;
+            }
+            .error-container img {
+                max-width: 100%;
+                height: auto;
+                margin-top: 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+            }
+            body.home-page {
+                background: url('{% static "assets/images/hero/Voronoi-Texture-256.png" %}') repeat, linear-gradient(180deg, #060636 50%, #0D0D0D 100%);
+                background-blend-mode: overlay;
+                background-attachment: scroll, fixed;
+                background-position: center var(--parallax-y, 0px), center center;
+                background-size: 256px, 100% 100%;
+            }
+        </style>
 </head>
 <body class="home-page">
     {% include 'navbar.html' %}
-    <div class="container" style="text-align:center; margin-top:40px;">
-        <h1>500 - Internal Server Error</h1>
-        <p>Oops! Something went wrong on our end.</p>
-        <img src="https://http.cat/500.jpg" alt="500 Cat" style="max-width:100%; height:auto;">
-    </div>
+        <div class="error-container">
+            <div class="h1">500 - Internal Server Error</div>
+            <p class="h2">Oops! Something went wrong on our end.</p>
+            <img src="https://http.cat/500.jpg" alt="500 Cat">
+        </div>
     {% include 'footer.html' %}
 </body>
 </html>
