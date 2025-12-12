@@ -1,4 +1,6 @@
+import os
 from django.db import models
+from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
 from multiselectfield import MultiSelectField
 from .fields import CompressedVideoField
@@ -101,9 +103,12 @@ class Projects(models.Model):
 
 class ProjectPhoto(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='photos')
-    from django.core.exceptions import ValidationError
-    import os
+    
     def validate_image_file(value):
+        # Skip validation for existing Cloudinary resources
+        if not hasattr(value, 'name'):
+            return
+        
         valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
         ext = os.path.splitext(value.name)[1].lower()
         if ext not in valid_extensions:
@@ -184,7 +189,7 @@ class ProjectEmbed(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        allowed_sources = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io']
+        allowed_sources = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io', 'linkedin.com']
         code = self.embed_code.lower()
         if '<iframe' not in code:
             self.is_safe = False
