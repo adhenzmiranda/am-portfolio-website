@@ -8,14 +8,26 @@ A modern, responsive portfolio website built with Django and SCSS, showcasing th
 
 ## ✨ Features
 
-- Responsive, mobile-first design
-- Modern UI with custom SCSS and smooth GSAP animations
-- Django backend with REST API support
-- Project showcase with featured projects carousel
-- Detailed project pages with galleries and embeds
-- Contact form with backend integration
-- Downloadable CV
-- Accessible and SEO-friendly
+- **Responsive Design**: Mobile-first approach with custom breakpoints and adaptive layouts
+- **Modern UI**: Custom SCSS architecture with smooth GSAP animations
+- **Django Backend**: Robust backend with REST API support and admin customization
+- **Project Showcase**: Featured projects carousel on homepage with dynamic ordering
+- **Advanced Media Management**:
+  - Photo galleries with thumbnail previews
+  - Video uploads with compression tracking
+  - Social media embeds (Instagram, Reddit, LinkedIn, Facebook)
+  - Lightbox/carousel viewer for fullscreen media browsing
+- **Dynamic Category System**: Database-driven categories with admin interface for easy management
+- **Custom Error Pages**: Branded 403, 404, and 500 error pages with http.cats integration
+- **Contact Form**: Backend-integrated contact system
+- **Downloadable CV**: Easy access to professional resume
+- **Enhanced Admin Panel**:
+  - Visual thumbnail previews for photos and videos
+  - Bulk upload capabilities
+  - Inline editing for project media
+  - Compression quality tracking for videos
+- **iOS Compatibility**: Blend mode detection for Safari support
+- **Accessible & SEO-Friendly**: Semantic HTML and optimized meta tags
 
 ---
 
@@ -23,14 +35,17 @@ A modern, responsive portfolio website built with Django and SCSS, showcasing th
 
 **Frontend:**
 
-- HTML5, SCSS/CSS3
-- JavaScript (with GSAP for animations)
+- HTML5, SCSS/CSS3 (modular architecture with components, layouts, and pages)
+- JavaScript (ES6+ with GSAP animations)
+- Custom lightbox/carousel component for media viewing
 
 **Backend:**
 
 - Django 5.x
 - Django REST Framework
 - SQLite (development) / PostgreSQL (production-ready)
+- Cloudinary integration for media storage
+- Custom admin interface with enhanced features
 
 **Other Tools:**
 
@@ -45,9 +60,18 @@ A modern, responsive portfolio website built with Django and SCSS, showcasing th
 
 ```
 am-portfolio-website/
-├── static/           # Static assets (images, CSS, JS, SCSS)
+├── static/           # Static assets
+│   ├── assets/       # Images, icons, tech stack logos
+│   ├── css/          # Compiled CSS
+│   ├── scss/         # SCSS source files (components, layouts, pages)
+│   └── js/           # JavaScript files and components
 ├── templates/        # Django HTML templates
 ├── projects/         # Django app: models, views, admin, serializers
+│   ├── models.py     # Project, Category, ProjectPhoto, ProjectVideo, ProjectEmbed
+│   ├── admin.py      # Custom admin with inline editors and previews
+│   ├── views.py      # View functions with project ordering
+│   └── migrations/   # Database migrations
+├── media/            # User-uploaded media (Cloudinary integration)
 ├── manage.py         # Django management script
 └── README.md         # Project documentation
 ```
@@ -95,13 +119,13 @@ am-portfolio-website/
 5. **Compile SCSS:**
 
    ```sh
-   npm run sass
+   npm run scss
    ```
 
    Or to watch for changes:
 
    ```sh
-   npm run sass:watch
+   npm run scss:watch
    ```
 
 6. **Apply migrations and run the server:**
@@ -124,11 +148,19 @@ am-portfolio-website/
 
 ## 🎨 Design & UX
 
-- Clean, modern, and accessible interface
-- Featured projects carousel on the homepage
-- Project detail pages with image galleries and embeds
-- Technology stack and expertise sections
-- Contact and CV download sections
+- **Clean & Modern Interface**: Minimalist design with focus on content
+- **Featured Projects Carousel**: Auto-rotating showcase on homepage
+- **Lightbox Media Viewer**: Fullscreen carousel for browsing project media (photos, videos, embeds)
+- **Project Detail Pages**:
+  - Comprehensive project information with markdown support
+  - Technology stack visualization with icons
+  - Video galleries with compression info
+  - Social media embed support
+  - Photo galleries with captions
+- **Dynamic Navigation**: Mobile-responsive navbar with animated toggle
+- **Technology Stack Section**: Visual representation of skills and tools
+- **Custom Error Pages**: Branded error handling with personality
+- **Contact & CV Sections**: Easy ways to get in touch or download resume
 
 ---
 
