@@ -11,11 +11,13 @@ function initializeNavbar() {
 
     toggleNavButton.parentElement.addEventListener('click', () => {
         if (!isMenuOpen) {
-            toggleNavButton.src = '/static/assets/images/navbar/close.png';
+            // toggleNavButton.src = '/static/assets/images/navbar/close.png';
+            toggleNavButton.parentElement.classList.add('rotated');
             navbarLinks.classList.add('active');
             isMenuOpen = true;
         } else {
-            toggleNavButton.src = '/static/assets/images/navbar/hamburger.png';
+            // toggleNavButton.src = '/static/assets/images/navbar/hamburger.png';
+            toggleNavButton.parentElement.classList.remove('rotated');
             navbarLinks.classList.remove('active');
             isMenuOpen = false;
         }

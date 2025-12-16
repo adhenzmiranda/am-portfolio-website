@@ -72,7 +72,7 @@ def contact(request):
     return render(request, 'contact.html', {'form': form})
 
 def projects_page(request):
-    projects = Projects.objects.all()
+    projects = Projects.objects.all().order_by('-created_at')
     # Group projects by year
     projects_by_year = {}
     for project in projects:

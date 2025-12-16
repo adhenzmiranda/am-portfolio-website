@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category
 from django.urls import path
 from django.shortcuts import render, redirect
 from django import forms
@@ -16,13 +16,19 @@ class ProjectPhotoInline(admin.TabularInline):
     model = ProjectPhoto
     formset = ProjectPhotoFormSet
     extra = 0  # No empty forms - use batch upload button instead
-    fields = ('image', 'caption', 'order')
-    readonly_fields = ('created_at',)
+    fields = ('thumbnail_preview', 'image', 'caption', 'order')
+    readonly_fields = ('created_at', 'thumbnail_preview')
     min_num = 0
     validate_min = False
     can_delete = True
     show_change_link = True
     template = 'admin/edit_inline/tabular.html'
+
+    def thumbnail_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-width: 100px; max-height: 100px; border-radius: 4px;" />', obj.image.url)
+        return "No image"
+    thumbnail_preview.short_description = 'Preview'
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
@@ -117,12 +123,21 @@ class ProjectVideoInline(admin.TabularInline):
     model = ProjectVideo
     form = ProjectVideoForm
     extra = 0  # No empty forms - use batch upload button instead
-    fields = ('video', 'compression_quality', 'caption', 'order')
-    readonly_fields = ('created_at',)
+    fields = ('video_preview', 'video', 'compression_quality', 'caption', 'order')
+    readonly_fields = ('created_at', 'video_preview')
     min_num = 0
     validate_min = False
     can_delete = True
     show_change_link = True
+
+    def video_preview(self, obj):
+        if obj.video:
+            return format_html(
+                '<video src="{}" style="max-width: 150px; max-height: 100px; border-radius: 4px;" controls></video>',
+                obj.video.url
+            )
+        return "No video"
+    video_preview.short_description = 'Preview'
 
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('order')
@@ -140,16 +155,6 @@ class ProjectEmbedInline(admin.TabularInline):
     extra = 1
 
 class ProjectsForm(forms.ModelForm):
-    video_embed = forms.CharField(
-        widget=forms.Textarea(attrs={
-            'rows': 4,
-            'class': 'vLargeTextField',
-            'placeholder': 'Paste your YouTube/Vimeo embed code here. Example:\n<iframe width="560" height="315" src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allowfullscreen></iframe>'
-        }),
-        required=False,
-        help_text='Paste the full iframe code from YouTube or Vimeo. Make sure to include the full iframe tag with all attributes.'
-    )
-
     class Meta:
         model = Projects
         fields = '__all__'
@@ -211,14 +216,14 @@ class ProjectsAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'year', 'created_at', 'featured')
     list_editable = ('featured',)
     list_filter = ('category', 'year')
-    search_fields = ('name', 'description', 'tags')
+    search_fields = ('name', 'description')
     inlines = [ProjectPhotoInline, ProjectVideoInline, ProjectEmbedInline]
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'category', 'year', 'tags', 'technologies', 'featured')
+            'fields': ('name', 'description', 'category', 'year', 'technologies', 'featured')
         }),
-        ('Media', {
-            'fields': ('thumbnail_image', 'video_embed')
+        ('Thumbnail', {
+            'fields': ('thumbnail_image',)
         }),
     )
     
@@ -227,3 +232,8 @@ class ProjectsAdmin(admin.ModelAdmin):
             'all': ('admin/css/video_embed.css',)
         }
         js = ('admin/js/video_embed.js',)
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)

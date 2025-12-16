@@ -59,28 +59,28 @@ TECH_STACK_CHOICES = [
     ]),
 ]
 
+class Category(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    
+    class Meta:
+        verbose_name_plural = 'Categories'
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
 class Projects(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField()
     year = models.IntegerField(default=2024)
     featured = models.BooleanField(default=False, help_text="Show this project in the Featured Projects section.")
-    category = models.CharField(
-        max_length=50, 
-        choices=[
-            ('Web Development', 'Web Development'),
-            ('Mobile Development', 'Mobile Development'),
-            ('Data Science', 'Data Science'),
-            ('Machine Learning', 'Machine Learning'),
-            ('Game Development', 'Game Development'),
-            ('Graphic Design', 'Graphic Design'),
-            ('Website Design', 'Website Design'),
-            ('Application Development', 'Application Development'),
-            ('Application Concept', 'Application Concept'),
-            ('Other', 'Other')
-        ],
-        default='Other'
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Select a category or add a new one in the Category section."
     )
-    tags = models.CharField(max_length=100, blank=True)
     # Removed main_image for clarity. Only using one image field now.
     thumbnail_image = CloudinaryField('image', folder='thumbnails', blank=True, null=True,
         transformation=[

@@ -251,6 +251,27 @@
                     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                     max-width: 1200px;
                 }
+
+                .gallery-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+
+                    img {
+                        width: 100%;
+                        height: auto;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .gallery-caption {
+                        @extend p;
+                        text-align: center;
+                        color: $dark-mode-white;
+                        font-size: 0.9rem;
+                        margin-top: 0.5rem;
+                    }
+                }
             }
 
             .embed-gallery-grid {

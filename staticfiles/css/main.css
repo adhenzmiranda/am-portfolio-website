@@ -68,24 +68,24 @@ h3 {
   }
 }
 
-p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
   font-family: "IBM Plex Sans", sans-serif;
   font-weight: 400;
 }
 @media screen and (max-width: 440px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
     color: #EDEFF8;
     font-size: 16px;
   }
 }
 @media screen and (min-width: 441px) and (max-width: 1023px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
     color: #EDEFF8;
     font-size: 18px;
   }
 }
 @media screen and (min-width: 1024px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
     color: #EDEFF8;
     font-size: 20px;
   }
@@ -707,8 +707,12 @@ body.ios-blend-fallback .card {
     border: none;
     padding: 0;
     cursor: pointer;
-    width: 55px;
-    height: 55px;
+    width: 50px;
+    height: 50px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .navbar .mobile-nav-btns .toggle-nav-btn.rotated {
+    transform: rotate(90deg);
   }
   .navbar .mobile-nav-btns .toggle-nav-btn img {
     width: 100%;
@@ -1711,17 +1715,17 @@ body.ios-blend-fallback .my-expertise-container .my-expertise-cards-container .c
   color: #2F50E4;
   font-size: 1.2em;
 }
-.project-detail-container .project-detail-content .project-description p ul, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul, .project-detail-container .project-detail-content .project-description .project-video ul, .project-detail-container .project-detail-content .project-description .project-detail-header ul, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul, .project-detail-container .project-detail-content .project-description ul ul {
+.project-detail-container .project-detail-content .project-description p ul, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul, .project-detail-container .project-detail-content .project-description .project-gallery .gallery-grid .gallery-item .gallery-caption ul, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .project-description .gallery-caption ul, .project-detail-container .project-detail-content .project-description .project-video ul, .project-detail-container .project-detail-content .project-description .project-detail-header ul, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul, .project-detail-container .project-detail-content .project-description ul ul {
   list-style: none;
   padding-left: 1.5rem;
   margin: 1rem 0;
 }
-.project-detail-container .project-detail-content .project-description p ul li, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul li, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul li, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul li, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul li, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul li, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul li, .project-detail-container .project-detail-content .project-description .project-video ul li, .project-detail-container .project-detail-content .project-description .project-detail-header ul li, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul li, .project-detail-container .project-detail-content .project-description ul ul li {
+.project-detail-container .project-detail-content .project-description p ul li, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul li, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul li, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul li, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul li, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul li, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul li, .project-detail-container .project-detail-content .project-description .project-gallery .gallery-grid .gallery-item .gallery-caption ul li, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .project-description .gallery-caption ul li, .project-detail-container .project-detail-content .project-description .project-video ul li, .project-detail-container .project-detail-content .project-description .project-detail-header ul li, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul li, .project-detail-container .project-detail-content .project-description ul ul li {
   position: relative;
   margin-bottom: 0.5rem;
   color: #EDEFF8;
 }
-.project-detail-container .project-detail-content .project-description p ul li::before, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul li::before, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul li::before, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul li::before, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul li::before, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul li::before, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul li::before, .project-detail-container .project-detail-content .project-description .project-video ul li::before, .project-detail-container .project-detail-content .project-description .project-detail-header ul li::before, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul li::before, .project-detail-container .project-detail-content .project-description ul ul li::before {
+.project-detail-container .project-detail-content .project-description p ul li::before, .project-detail-container .project-detail-content .project-description .tech-stack-container .tech-item ul li::before, .project-detail-container .tech-stack-container .project-detail-content .project-description .tech-item ul li::before, .project-detail-container .project-detail-content .project-description .project-embeds .embed-gallery-grid .embed-item .embed-caption ul li::before, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .project-description .embed-caption ul li::before, .project-detail-container .project-detail-content .project-description .project-videos .video-gallery-grid .video-item .video-caption ul li::before, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .project-description .video-caption ul li::before, .project-detail-container .project-detail-content .project-description .project-gallery .gallery-grid .gallery-item .gallery-caption ul li::before, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .project-description .gallery-caption ul li::before, .project-detail-container .project-detail-content .project-description .project-video ul li::before, .project-detail-container .project-detail-content .project-description .project-detail-header ul li::before, .project-detail-container .project-detail-header .project-meta .project-detail-content .project-description span ul li::before, .project-detail-container .project-detail-content .project-description ul ul li::before {
   content: "•";
   position: absolute;
   left: -1.5rem;
@@ -1793,6 +1797,23 @@ body.ios-blend-fallback .my-expertise-container .my-expertise-cards-container .c
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     max-width: 1200px;
   }
+}
+.project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption {
+  text-align: center;
+  color: #EDEFF8;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 }
 .project-detail-container .project-detail-content .project-gallery .embed-gallery-grid {
   display: grid;
