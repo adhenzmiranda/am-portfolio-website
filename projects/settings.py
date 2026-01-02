@@ -118,6 +118,13 @@ DATABASES = {
     )
 }
 
+# SQLite timeout configuration to prevent database locks
+if 'sqlite' in DATABASES['default']['ENGINE']:
+    DATABASES['default']['OPTIONS'] = {
+        'timeout': 20,  # Wait up to 20 seconds for database lock
+        'check_same_thread': False,  # Allow multi-threaded access
+    }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -245,6 +252,10 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Your Gmail address
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Your Gmail app password
 
+# File upload settings to handle large media uploads
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB (from default 2.5MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
+DATA_UPLOAD_MAX_NUMBER_FILES = 100  # Allow up to 100 files per request
 
 # Use Cloudinary for media files
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

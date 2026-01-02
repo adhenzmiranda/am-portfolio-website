@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category, TECH_STACK_CHOICES
 from django.urls import path
 from django.shortcuts import render, redirect
 from django import forms
 from django.contrib import messages
 from django.forms.models import BaseInlineFormSet
+from django.db import transaction
 
 class ProjectPhotoFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
@@ -227,6 +228,16 @@ class ProjectsAdmin(admin.ModelAdmin):
         }),
     )
     
+    @transaction.atomic
+    def save_model(self, request, obj, form, change):
+        """Wrap save in atomic transaction to prevent partial saves on database locks."""
+        super().save_model(request, obj, form, change)
+    
+    @transaction.atomic
+    def save_formset(self, request, form, formset, change):
+        """Wrap formset save in atomic transaction to prevent partial saves."""
+        super().save_formset(request, form, formset, change)
+    
     class Media:
         css = {
             'all': ('admin/css/video_embed.css',)
@@ -237,3 +248,11 @@ class ProjectsAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+# Technology Stack Manager
+class TechnologyStackAdmin(admin.ModelAdmin):
+    """
+    Manage the TECH_STACK_CHOICES used in projects.
+    To add/edit technologies, modify projects/models.py -> TECH_STACK_CHOICES
+    """
+    pass

@@ -94,13 +94,6 @@ class Projects(models.Model):
     def __str__(self):
         return self.name + ' - ' + str(self.description)[:20] + '...'
 
-    def get_technology_display(self, tech_value):
-        # Flatten grouped choices for lookup
-        flat_choices = []
-        for group in TECH_STACK_CHOICES:
-            flat_choices.extend(group[1])
-        return dict(flat_choices).get(tech_value, tech_value)
-
 class ProjectPhoto(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='photos')
     
