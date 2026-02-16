@@ -109,7 +109,27 @@ class Lightbox {
             
             // Make item clickable
             item.element.style.cursor = 'pointer';
-            item.element.addEventListener('click', () => this.open(index));
+            item.element.addEventListener('click', (e) => {
+                // If this is a video item, pause the video immediately before opening lightbox
+                const video = item.element.querySelector('video');
+                if (video) {
+                    video.pause();
+                    video.currentTime = 0; // Reset to beginning
+                }
+                this.open(index);
+            });
+            
+            // Prevent video controls from interfering with lightbox click
+            const video = item.element.querySelector('video');
+            if (video) {
+                video.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    video.pause();
+                    // Click on video should open lightbox, not play the video
+                    this.open(index);
+                });
+            }
         });
     }
 
@@ -147,15 +167,39 @@ class Lightbox {
     }
 
     open(index) {
+        // Pause all videos in the background grid IMMEDIATELY and AGGRESSIVELY
+        this.pauseAllBackgroundVideos();
+        
         this.currentIndex = index;
         this.updateImage();
         this.lightboxEl.classList.add('active');
         document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        
+        // Double-check: pause background videos again after lightbox opens
+        setTimeout(() => {
+            this.pauseAllBackgroundVideos();
+        }, 100);
     }
 
     close() {
+        // Pause any video in the lightbox
+        const lightboxVideo = this.mediaContainer.querySelector('video');
+        if (lightboxVideo) {
+            lightboxVideo.pause();
+        }
+        
         this.lightboxEl.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
+    }
+    
+    pauseAllBackgroundVideos() {
+        // Find all video elements in the page (not in lightbox)
+        const allVideos = document.querySelectorAll('.video-item video, .project-videos video, .video-gallery-grid video');
+        allVideos.forEach(video => {
+            video.pause();
+            // Optionally reset to beginning
+            // video.currentTime = 0;
+        });
     }
 
     next() {
@@ -170,6 +214,12 @@ class Lightbox {
 
     updateImage() {
         const media = this.images[this.currentIndex];
+        
+        // Pause any currently playing video in lightbox before switching
+        const currentVideo = this.mediaContainer.querySelector('video');
+        if (currentVideo) {
+            currentVideo.pause();
+        }
         
         // Clear previous content
         this.mediaContainer.innerHTML = '';
@@ -186,7 +236,7 @@ class Lightbox {
             const video = document.createElement('video');
             video.className = 'lightbox-video';
             video.controls = true;
-            video.autoplay = true;
+            video.autoplay = false; // Changed to false to prevent dual playback
             if (media.poster) video.poster = media.poster;
             
             const source = document.createElement('source');

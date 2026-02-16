@@ -103,27 +103,6 @@
                 <p>{{ project.description|markdownify|linebreaksbr }}</p>
             </div>
 
-            {% if project.videos.all %}
-            <div class="project-videos">
-                <h2 class="h2">Project Videos</h2>
-                <div class="video-gallery-grid">
-                    {% for video in project.videos.all %}
-                    <div class="video-item">
-                        <div class="video-wrapper">
-                            <video controls preload="metadata">
-                                <source src="{{ video.video.url }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                        {% if video.caption %}
-                        <div class="video-caption">{{ video.caption }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
             {% if project.embeds.all %}
             <div class="project-embeds">
                 <h2 class="h2">Project Embeds</h2>
@@ -139,6 +118,27 @@
                         </div>
                         {% if embed.caption %}
                         <div class="embed-caption">{{ embed.caption }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if project.videos.all %}
+            <div class="project-videos">
+                <h2 class="h2">Project Videos</h2>
+                <div class="video-gallery-grid">
+                    {% for video in project.videos.all %}
+                    <div class="video-item">
+                        <div class="video-wrapper">
+                            <video controls preload="metadata">
+                                <source src="{{ video.video.url }}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                        {% if video.caption %}
+                        <div class="video-caption">{{ video.caption }}</div>
                         {% endif %}
                     </div>
                     {% endfor %}
