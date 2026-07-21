@@ -332,6 +332,18 @@
             }
         }
 
+        .project-cards {
+            // .project-detail-content is a flex column with align-items:
+            // center, so without an explicit width this shrink-wraps to its
+            // content instead of filling the row (same reason every other
+            // section here - .project-gallery, .project-embeds, etc. - sets
+            // width: 100% too). Left unset, the single-column grid sizes
+            // itself unpredictably on narrow viewports instead of stacking
+            // cleanly full-width.
+            width: 100%;
+            margin: 2rem 0;
+        }
+
         .project-gallery {
             margin: 3rem 0;
             display: flex;
