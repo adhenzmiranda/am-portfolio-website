@@ -88,6 +88,12 @@ class Projects(models.Model):
             {'quality': 'auto', 'fetch_format': 'auto'}
         ])
     technologies = MultiSelectField(choices=TECH_STACK_CHOICES, blank=True, max_length=255)
+    display_mode = models.CharField(
+        max_length=20,
+        choices=[('portfolio', 'Portfolio'), ('blogpost', 'Blog Post')],
+        default='portfolio',
+        help_text="Portfolio: media shown in separate sections. Blog Post: description is the main content with inline images via markdown."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

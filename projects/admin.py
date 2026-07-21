@@ -1,10 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category, TECH_STACK_CHOICES
-from django.urls import path
-from django.shortcuts import render, redirect
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category
 from django import forms
-from django.contrib import messages
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
 
@@ -17,8 +14,8 @@ class ProjectPhotoInline(admin.TabularInline):
     model = ProjectPhoto
     formset = ProjectPhotoFormSet
     extra = 0  # No empty forms - use batch upload button instead
-    fields = ('thumbnail_preview', 'image', 'caption', 'order')
-    readonly_fields = ('created_at', 'thumbnail_preview')
+    fields = ('thumbnail_preview', 'image', 'caption', 'order', 'markdown_snippet')
+    readonly_fields = ('created_at', 'thumbnail_preview', 'markdown_snippet')
     min_num = 0
     validate_min = False
     can_delete = True
@@ -30,6 +27,21 @@ class ProjectPhotoInline(admin.TabularInline):
             return format_html('<img src="{}" style="max-width: 100px; max-height: 100px; border-radius: 4px;" />', obj.image.url)
         return "No image"
     thumbnail_preview.short_description = 'Preview'
+
+    def markdown_snippet(self, obj):
+        if obj.image:
+            alt = obj.caption or 'image'
+            snippet = f'![{alt}]({obj.image.url})'
+            return format_html(
+                '<code style="display:block;background:#1e1e1e;color:#d4d4d4;padding:6px 10px;'
+                'border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;overflow:auto;" '
+                'onclick="navigator.clipboard.writeText(this.textContent);'
+                'this.style.background=\'#155724\';setTimeout(()=>this.style.background=\'#1e1e1e\',1200);" '
+                'title="Click to copy">{}</code>',
+                snippet
+            )
+        return "—"
+    markdown_snippet.short_description = 'Copy for Markdown'
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
@@ -220,6 +232,9 @@ class ProjectsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'description')
     inlines = [ProjectPhotoInline, ProjectVideoInline, ProjectEmbedInline]
     fieldsets = (
+        ('Content Mode', {
+            'fields': ('display_mode',),
+        }),
         ('Basic Information', {
             'fields': ('name', 'description', 'category', 'year', 'technologies', 'featured')
         }),
@@ -227,22 +242,22 @@ class ProjectsAdmin(admin.ModelAdmin):
             'fields': ('thumbnail_image',)
         }),
     )
-    
+
     @transaction.atomic
     def save_model(self, request, obj, form, change):
         """Wrap save in atomic transaction to prevent partial saves on database locks."""
         super().save_model(request, obj, form, change)
-    
+
     @transaction.atomic
     def save_formset(self, request, form, formset, change):
         """Wrap formset save in atomic transaction to prevent partial saves."""
         super().save_formset(request, form, formset, change)
-    
+
     class Media:
         css = {
-            'all': ('admin/css/video_embed.css',)
+            'all': ('admin/css/video_embed.css', 'admin/css/mode_toggle.css')
         }
-        js = ('admin/js/video_embed.js',)
+        js = ('admin/js/video_embed.js', 'admin/js/mode_toggle.js')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

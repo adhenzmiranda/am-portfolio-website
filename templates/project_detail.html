@@ -100,8 +100,10 @@
 
             <div class="project-description">
                 <h2 class="h2">About the Project</h2>
-                <p>{{ project.description|markdownify|linebreaksbr }}</p>
+                <div class="markdown-content">{{ project.description|markdownify }}</div>
             </div>
+
+            {% if project.display_mode == 'portfolio' %}
 
             {% if project.embeds.all %}
             <div class="project-embeds">
@@ -161,6 +163,8 @@
                 </div>
             </div>
             {% endif %}
+
+            {% endif %}{# end portfolio mode #}
 
             <div class="project-details">
 

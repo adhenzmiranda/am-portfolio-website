@@ -261,6 +261,28 @@ DATA_UPLOAD_MAX_NUMBER_FILES = 100  # Allow up to 100 files per request
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 
+# Markdownify - allow images and standard formatting tags
+MARKDOWNIFY = {
+    "default": {
+        "MARKDOWN_EXTENSIONS": ["nl2br", "tables"],
+        "WHITELIST_TAGS": [
+            'a', 'abbr', 'b', 'blockquote', 'br', 'code', 'em',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'hr',
+            'i', 'img', 'li', 'ol', 'p', 'pre', 'strong', 'table', 'thead',
+            'tbody', 'tr', 'th', 'td', 'ul',
+        ],
+        "WHITELIST_ATTRS": {
+            'a': ['href', 'title', 'rel'],
+            'img': ['src', 'alt', 'title'],
+            'table': ['class'],
+            'th': ['align', 'colspan', 'rowspan'],
+            'td': ['align', 'colspan', 'rowspan'],
+        },
+        "WHITELIST_PROTOCOLS": ['http', 'https'],
+        "STRIP": False,
+    }
+}
+
 # Logging configuration for security events
 LOGGING = {
     'version': 1,

@@ -173,6 +173,124 @@
                     }
                 }
             }
+
+        .markdown-content {
+            width: 100%;
+
+            p {
+                margin: 0 0 1rem;
+                line-height: 1.8;
+                color: $dark-mode-white;
+            }
+
+            p:last-child {
+                margin-bottom: 0;
+            }
+
+            table {
+                width: 100%;
+                margin: 1.5rem 0;
+                border-collapse: collapse;
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                color: $dark-mode-white;
+                font-family: "IBM Plex Sans", sans-serif;
+                font-size: 0.98rem;
+                line-height: 1.7;
+            }
+
+            th,
+            td {
+                border: 1px solid rgba($dark-mode-white, 0.14);
+                padding: 0.75rem 0.9rem;
+                text-align: left;
+                vertical-align: top;
+                color: $dark-mode-white;
+                font: inherit;
+            }
+
+            th {
+                background: rgba($dark-mode-secondary-blue, 0.15);
+                font-weight: 600;
+                color: $dark-mode-white;
+            }
+
+            tbody tr:nth-child(even) td {
+                background: rgba($dark-mode-white, 0.03);
+            }
+
+            table p,
+            table ul,
+            table ol {
+                margin: 0;
+            }
+
+            table a {
+                color: color.adjust($dark-mode-secondary-blue, $lightness: 12%);
+                text-decoration: underline;
+            }
+
+            table code {
+                background: rgba($dark-mode-white, 0.08);
+                padding: 0.15rem 0.35rem;
+                border-radius: 4px;
+                font-size: 0.92em;
+            }
+
+            h2 {
+                font-family: "Raleway", sans-serif;
+                font-weight: 600;
+                color: $dark-mode-white;
+                font-size: 28px;
+                margin: 2rem 0 0.75rem;
+                line-height: 1.25;
+
+                @media screen and (max-width: 440px) { font-size: 22px; }
+                @media screen and (min-width: 441px) and (max-width: 1023px) { font-size: 25px; }
+            }
+
+            h3 {
+                font-family: "Raleway", sans-serif;
+                font-weight: 600;
+                color: $dark-mode-white;
+                font-size: 20px;
+                margin: 1.5rem 0 0.5rem;
+                line-height: 1.3;
+
+                @media screen and (max-width: 440px) { font-size: 17px; }
+                @media screen and (min-width: 441px) and (max-width: 1023px) { font-size: 19px; }
+            }
+
+            h4 {
+                font-family: "Raleway", sans-serif;
+                font-weight: 600;
+                color: rgba($dark-mode-white, 0.7);
+                font-size: 13px;
+                margin: 1.25rem 0 0.4rem;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            hr {
+                border: none;
+                border-top: 1px solid rgba($dark-mode-white, 0.1);
+                margin: 2rem 0;
+            }
+
+            blockquote {
+                border-left: 3px solid $dark-mode-secondary-blue;
+                margin: 1.5rem 0;
+                padding: 0.75rem 1rem;
+                background: rgba($dark-mode-secondary-blue, 0.07);
+                border-radius: 0 6px 6px 0;
+                color: rgba($dark-mode-white, 0.6);
+                font-style: italic;
+                font-size: 0.9em;
+
+                p { margin: 0; }
+            }
+        }
         }
 
         .project-video {

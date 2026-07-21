@@ -1,0 +1,57 @@
+.am-mode-toggle {
+    margin: 12px 0 20px;
+    padding: 14px 16px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.am-mode-label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #333;
+    white-space: nowrap;
+}
+
+.am-mode-btn-group {
+    display: flex;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #bbb;
+}
+
+.am-mode-btn {
+    padding: 7px 18px;
+    border: none;
+    background: #fff;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    transition: background 0.15s, color 0.15s;
+    border-right: 1px solid #bbb;
+}
+
+.am-mode-btn:last-child {
+    border-right: none;
+}
+
+.am-mode-btn:hover:not(.active) {
+    background: #e9ecef;
+}
+
+.am-mode-btn.active {
+    background: #417690;
+    color: #fff;
+}
+
+.am-mode-hint {
+    font-size: 12px;
+    color: #666;
+    margin: 0;
+    font-style: italic;
+}
