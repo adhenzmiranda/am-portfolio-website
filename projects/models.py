@@ -70,7 +70,7 @@ class Category(models.Model):
         return self.name
 
 class Projects(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField()
     year = models.IntegerField(default=2024)
     featured = models.BooleanField(default=False, help_text="Show this project in the Featured Projects section.")
@@ -169,6 +169,43 @@ class ProjectVideo(models.Model):
                     'video': 'Video file is too large (over 500MB). Please use a smaller file.'
                 })
         super().clean()
+
+class ProjectCard(models.Model):
+    project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='cards')
+    title = models.CharField(max_length=100)
+    teaser = models.CharField(max_length=200, help_text="One-line summary shown on the collapsed card.")
+    body = models.TextField(help_text="Full section content. Supports the same markdown as the article body.")
+    takeaways_raw = models.TextField(
+        blank=True,
+        verbose_name='Takeaways',
+        help_text="Key takeaway bullet points, one per line. Leave blank to omit."
+    )
+    image = CloudinaryField('image', folder='card_images', blank=True, null=True,
+        transformation=[
+            {'width': 600, 'height': 338, 'crop': 'fill'},
+            {'quality': 'auto', 'fetch_format': 'auto'}
+        ])
+    visual_placeholder = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Placeholder text shown in a dashed box where a diagram/animation will go later."
+    )
+    order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"{self.project.name} - Card: {self.title}"
+
+    @property
+    def takeaways(self):
+        return [line.strip() for line in self.takeaways_raw.splitlines() if line.strip()]
+
+    @property
+    def image_url(self):
+        return self.image.url if self.image else None
 
 class ProjectEmbed(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='embeds')

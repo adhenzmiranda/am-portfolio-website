@@ -1,0 +1,71 @@
+{% load static %}
+{% load markdownify %}
+{% comment %}
+  Reusable expand/collapse card grid for article sections.
+  Include with: {% include 'components/content_cards.html' with cards=cni_cards %}
+
+  Works with either plain dicts or model instances (Django template dot-lookup
+  handles both), as long as each item exposes:
+    id                 unique value, used to build element ids
+    title               short heading
+    teaser              one-line summary shown when collapsed
+    body                markdown text for the full section content
+    takeaways           list of strings (optional)
+    image_url           absolute image/thumbnail URL, or falsy (optional)
+    visual_placeholder  placeholder text for a diagram/animation slot (optional)
+
+  No-JS fallback: the markup below ships with every card body already visible.
+  contentCards.js adds "js-enabled" on load, which is what actually collapses
+  them and wires up the toggle - see static/scss/components/_content-cards.scss.
+{% endcomment %}
+<div class="content-cards">
+    {% for card in cards %}
+    <article class="content-card" id="content-card-{{ card.id }}">
+        <button type="button"
+                class="content-card__header"
+                aria-expanded="false"
+                aria-controls="content-card-body-{{ card.id }}">
+            <span class="content-card__number">{{ forloop.counter|stringformat:"02d" }}</span>
+            <span class="content-card__heading">
+                <span class="content-card__title">{{ card.title }}</span>
+                <span class="content-card__teaser">{{ card.teaser }}</span>
+            </span>
+            <span class="content-card__indicator" aria-hidden="true"></span>
+        </button>
+
+        <div class="content-card__body" id="content-card-body-{{ card.id }}">
+            <div class="content-card__body-inner">
+                {% if card.image_url %}
+                <div class="content-card__media">
+                    <img src="{{ card.image_url }}" alt="{{ card.title }}" loading="lazy">
+                </div>
+                {% else %}
+                {# Typographic stand-in so the card still looks complete without a thumbnail #}
+                <div class="content-card__media content-card__media--fallback">
+                    <span class="content-card__media-number">{{ forloop.counter|stringformat:"02d" }}</span>
+                    <span class="content-card__media-title">{{ card.title }}</span>
+                </div>
+                {% endif %}
+
+                <div class="content-card__prose">{{ card.body|markdownify }}</div>
+
+                {% if card.takeaways %}
+                <ul class="content-card__takeaways">
+                    {% for point in card.takeaways %}
+                    <li>{{ point }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+
+                {% if card.visual_placeholder %}
+                <div class="content-card__visual-placeholder">
+                    <span>{{ card.visual_placeholder }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<script src="{% static 'js/components/contentCards.js' %}"></script>

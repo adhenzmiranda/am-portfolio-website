@@ -2,9 +2,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const modeSelect = document.querySelector('#id_display_mode');
     if (!modeSelect) return;
 
-    const photoGroup = document.querySelector('#projectphoto_set-group');
-    const videoGroup = document.querySelector('#projectvideo_set-group');
-    const embedGroup = document.querySelector('#projectembed_set-group');
+    const photoGroup = document.querySelector('#photos-group');
+    const videoGroup = document.querySelector('#videos-group');
+    const embedGroup = document.querySelector('#embeds-group');
+    const cardGroup = document.querySelector('#cards-group');
+    const techRow = document.querySelector('.field-technologies');
 
     // Build the toggle UI and insert it before the select's parent row
     const row = modeSelect.closest('.form-row, .field-display_mode, tr, li') || modeSelect.parentElement;
@@ -50,6 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (videoGroup) videoGroup.style.display = mode === 'blogpost' ? 'none' : '';
         if (embedGroup) embedGroup.style.display = mode === 'blogpost' ? 'none' : '';
+        if (cardGroup) cardGroup.style.display = mode === 'blogpost' ? '' : 'none';
+        if (techRow) techRow.style.display = mode === 'blogpost' ? 'none' : '';
     }
 
     buttons.forEach(btn => {

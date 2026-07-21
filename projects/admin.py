@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, Category
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectCard, Category
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
@@ -167,6 +167,22 @@ class ProjectEmbedInline(admin.TabularInline):
     model = ProjectEmbed
     extra = 1
 
+class ProjectCardInline(admin.StackedInline):
+    model = ProjectCard
+    extra = 0  # Use the "Add another Project card" link instead of blank rows
+    fields = ('image_preview', 'title', 'teaser', 'body', 'takeaways_raw', 'image', 'visual_placeholder', 'order')
+    readonly_fields = ('image_preview',)
+    show_change_link = True
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-width: 150px; max-height: 100px; border-radius: 4px;" />', obj.image.url)
+        return "No image"
+    image_preview.short_description = 'Preview'
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).order_by('order')
+
 class ProjectsForm(forms.ModelForm):
     class Meta:
         model = Projects
@@ -230,7 +246,15 @@ class ProjectsAdmin(admin.ModelAdmin):
     list_editable = ('featured',)
     list_filter = ('category', 'year')
     search_fields = ('name', 'description')
-    inlines = [ProjectPhotoInline, ProjectVideoInline, ProjectEmbedInline]
+    # All fields/inlines are always rendered (see fieldsets/inlines below);
+    # mode_toggle.js shows/hides the irrelevant ones client-side, instantly,
+    # based on the Content Mode buttons — no save+reload needed. This mirrors
+    # how it already handled the video/embed inlines before ProjectCardInline
+    # existed; filtering server-side instead (via get_inline_instances) was
+    # tried and reverted because blogpost mode still needs ProjectPhotoInline
+    # (relabelled "Media Library" by mode_toggle.js) for uploading images to
+    # get their markdown snippet, so it can't just be removed for that mode.
+    inlines = [ProjectPhotoInline, ProjectVideoInline, ProjectEmbedInline, ProjectCardInline]
     fieldsets = (
         ('Content Mode', {
             'fields': ('display_mode',),

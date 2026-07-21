@@ -1,0 +1,265 @@
+@use '../base/colors' as *;
+@use '../base/breakpoints' as *;
+@use "sass:color";
+
+// ---- Content Cards: theme variables ----
+// Retheme in one place. These map onto the existing dark-mode palette so the
+// component stays consistent with the rest of the site; swap them out to
+// introduce a light mode or a different accent later.
+$cc-surface: rgba($dark-mode-white, 0.04);
+$cc-surface-hover: rgba($dark-mode-white, 0.07);
+$cc-border: rgba($dark-mode-white, 0.1);
+$cc-text: $dark-mode-white;
+$cc-text-muted: rgba($dark-mode-white, 0.65);
+$cc-accent: $dark-mode-secondary-blue;
+$cc-radius: 10px;
+$cc-gap: 1.5rem;
+$cc-transition-speed: 0.3s;
+
+.content-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: $cc-gap;
+    width: 100%;
+    margin: 2rem 0;
+
+    @include tablet {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include desktop {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.content-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $cc-border;
+    border-radius: $cc-radius;
+    background: $cc-surface;
+    overflow: hidden;
+
+    // Expanding a card takes over the full row for readability, on both
+    // tablet and desktop grid layouts.
+    &.is-open {
+        @include tablet {
+            grid-column: 1 / -1;
+        }
+
+        @include desktop {
+            grid-column: 1 / -1;
+        }
+    }
+
+    &__header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+        font: inherit;
+        color: $cc-text;
+        transition: background $cc-transition-speed ease, transform $cc-transition-speed ease;
+
+        &:hover {
+            background: $cc-surface-hover;
+            transform: translateY(-2px);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $cc-accent;
+            outline-offset: -2px;
+        }
+    }
+
+    &__number {
+        flex-shrink: 0;
+        font-family: "Raleway", sans-serif;
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: $cc-accent;
+    }
+
+    &__heading {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        flex-grow: 1;
+        min-width: 0;
+    }
+
+    &__title {
+        font-family: "Raleway", sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: $cc-text;
+    }
+
+    &__teaser {
+        font-family: "IBM Plex Sans", sans-serif;
+        font-size: 0.9rem;
+        color: $cc-text-muted;
+    }
+
+    // Plus/minus indicator: two bars forming a plus; the vertical bar
+    // rotates onto the horizontal one on open, leaving a minus.
+    &__indicator {
+        position: relative;
+        flex-shrink: 0;
+        width: 18px;
+        height: 18px;
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            background: $cc-accent;
+            transition: transform $cc-transition-speed ease;
+        }
+
+        &::before {
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        &::after {
+            left: 50%;
+            top: 0;
+            width: 2px;
+            height: 100%;
+            transform: translateX(-50%);
+        }
+    }
+
+    &.is-open &__indicator::after {
+        transform: translateX(-50%) rotate(90deg);
+    }
+
+    &__body {
+        // No-JS default: fully expanded and readable.
+        max-height: none;
+        overflow: visible;
+    }
+
+    // Once contentCards.js has run, bodies collapse and animate via an
+    // inline max-height set from scrollHeight (see the JS for why).
+    .content-cards.js-enabled & {
+        &__body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height $cc-transition-speed ease;
+        }
+    }
+
+    &__body-inner {
+        padding: 0 1.5rem 1.5rem;
+    }
+
+    &__media {
+        margin-bottom: 1rem;
+        border-radius: calc(#{$cc-radius} - 4px);
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        &--fallback {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            aspect-ratio: 16 / 9;
+            background: rgba($cc-accent, 0.08);
+            border: 1px solid rgba($cc-accent, 0.25);
+            text-align: center;
+            padding: 1rem;
+
+            .content-card__media-number {
+                font-family: "Raleway", sans-serif;
+                font-weight: 700;
+                font-size: 1.5rem;
+                color: $cc-accent;
+            }
+
+            .content-card__media-title {
+                font-family: "Raleway", sans-serif;
+                font-weight: 600;
+                color: $cc-text;
+            }
+        }
+    }
+
+    &__prose {
+        color: $cc-text;
+        font-family: "IBM Plex Sans", sans-serif;
+        line-height: 1.7;
+
+        p {
+            margin: 0 0 1rem;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    &__takeaways {
+        list-style: none;
+        margin: 1rem 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        li {
+            position: relative;
+            padding-left: 1.25rem;
+            color: $cc-text;
+            font-family: "IBM Plex Sans", sans-serif;
+            font-size: 0.95rem;
+
+            &::before {
+                content: "\2713";
+                position: absolute;
+                left: 0;
+                color: $cc-accent;
+            }
+        }
+    }
+
+    &__visual-placeholder {
+        margin-top: 1rem;
+        padding: 2rem 1rem;
+        border: 1px dashed $cc-border;
+        border-radius: calc(#{$cc-radius} - 4px);
+        text-align: center;
+
+        span {
+            color: $cc-text-muted;
+            font-family: "IBM Plex Sans", sans-serif;
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .content-card__header,
+    .content-card__indicator::before,
+    .content-card__indicator::after,
+    .content-cards.js-enabled .content-card__body {
+        transition: none !important;
+    }
+}

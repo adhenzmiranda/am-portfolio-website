@@ -99,9 +99,17 @@
             </div>
 
             <div class="project-description">
+                {% if project.display_mode != 'blogpost' %}
                 <h2 class="h2">About the Project</h2>
+                {% endif %}
                 <div class="markdown-content">{{ project.description|markdownify }}</div>
             </div>
+
+            {% if project.display_mode == 'blogpost' and project.cards.all %}
+            <div class="project-cards">
+                {% include 'components/content_cards.html' with cards=project.cards.all %}
+            </div>
+            {% endif %}
 
             {% if project.display_mode == 'portfolio' %}
 
