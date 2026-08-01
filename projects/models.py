@@ -182,7 +182,7 @@ class ProjectCard(models.Model):
     )
     image = CloudinaryField('image', folder='card_images', blank=True, null=True,
         transformation=[
-            {'width': 600, 'height': 338, 'crop': 'fill'},
+            {'width': 1200, 'height': 675, 'crop': 'fill'},
             {'quality': 'auto', 'fetch_format': 'auto'}
         ])
     visual_placeholder = models.CharField(
