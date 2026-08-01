@@ -408,6 +408,7 @@ body.ios-blend-fallback .card {
 .content-cards {
   display: grid;
   grid-template-columns: 1fr;
+  align-items: start;
   gap: 1.5rem;
   width: 100%;
   margin: 2rem 0;
@@ -441,6 +442,24 @@ body.ios-blend-fallback .card {
     grid-column: 1/-1;
   }
 }
+@media screen and (min-width: 441px) and (max-width: 1023px) {
+  .content-card.is-hovering:not(.is-open), .content-card:focus-within:not(.is-open) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .content-card.is-hovering:not(.is-open):nth-child(2n), .content-card:focus-within:not(.is-open):nth-child(2n) {
+    grid-column: span 1;
+  }
+}
+@media screen and (min-width: 1024px) {
+  .content-card.is-hovering:not(.is-open), .content-card:focus-within:not(.is-open) {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+  .content-card.is-hovering:not(.is-open):nth-child(3n), .content-card:focus-within:not(.is-open):nth-child(3n) {
+    grid-column: span 1;
+  }
+}
 .content-card__header {
   display: flex;
   align-items: center;
@@ -462,6 +481,50 @@ body.ios-blend-fallback .card {
 .content-card__header:focus-visible {
   outline: 2px solid #2F50E4;
   outline-offset: -2px;
+}
+.content-card__preview {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.content-card.is-hovering:not(.is-open) .content-card__preview, .content-card:focus-within:not(.is-open) .content-card__preview {
+  grid-template-rows: 1fr;
+}
+.content-card.is-open .content-card__preview {
+  grid-template-rows: 0fr;
+  transition: none;
+}
+.content-card__preview-inner {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+.content-card__preview-inner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.content-card__preview-fallback {
+  width: 100%;
+  height: 100%;
+  background: rgba(47, 80, 228, 0.12);
+}
+.content-card__preview-title {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  font-family: "Raleway", sans-serif;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #EDEFF8;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+  background: linear-gradient(rgba(13, 13, 13, 0.2), rgba(13, 13, 13, 0.68));
 }
 .content-card__number {
   flex-shrink: 0;
@@ -527,10 +590,10 @@ body.ios-blend-fallback .card {
   transition: max-height 0.3s ease;
 }
 .content-card__body-inner {
-  padding: 0 1.5rem 1.5rem;
+  padding: 0.5rem 1.5rem 1.5rem;
 }
 .content-card__media {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
   border-radius: calc(10px - 4px);
   overflow: hidden;
 }
@@ -574,22 +637,27 @@ body.ios-blend-fallback .card {
   margin-bottom: 0;
 }
 .content-card__prose table {
-  width: 100%;
+  min-width: 100%;
   margin: 1rem 0;
   border-collapse: collapse;
   display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   font-size: 0.92rem;
+  white-space: nowrap;
 }
 .content-card__prose th,
 .content-card__prose td {
+  max-width: 40%;
   border: 1px solid rgba(237, 239, 248, 0.14);
   padding: 0.6rem 0.75rem;
   text-align: left;
   vertical-align: top;
   font: inherit;
   color: #EDEFF8;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .content-card__prose th {
   background: rgba(47, 80, 228, 0.15);
@@ -640,6 +708,7 @@ body.ios-blend-fallback .card {
 
 @media (prefers-reduced-motion: reduce) {
   .content-card__header,
+  .content-card__preview,
   .content-card__indicator::before,
   .content-card__indicator::after,
   .content-cards.js-enabled .content-card__body {

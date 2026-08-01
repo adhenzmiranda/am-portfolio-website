@@ -33,6 +33,17 @@
             <span class="content-card__indicator" aria-hidden="true"></span>
         </button>
 
+        <div class="content-card__preview" aria-hidden="true">
+            <div class="content-card__preview-inner">
+                {% if card.image_url %}
+                <img src="{{ card.image_url }}" alt="" loading="lazy">
+                {% else %}
+                <div class="content-card__preview-fallback"></div>
+                {% endif %}
+                <span class="content-card__preview-title">{{ card.title }}</span>
+            </div>
+        </div>
+
         <div class="content-card__body" id="content-card-body-{{ card.id }}">
             <div class="content-card__body-inner">
                 {% if card.image_url %}

@@ -22,6 +22,18 @@
 
             header.setAttribute('aria-expanded', 'false');
             header.addEventListener('click', () => toggleCard(card, cards));
+
+            // Tracked in JS rather than left to CSS :hover: hovering grows
+            // the card in the surrounding grid (see .is-hovering in
+            // _content-cards.scss), which shifts sibling cards around. If
+            // that reflow moves the card out from under a stationary
+            // cursor, live :hover re-evaluates to false, the card snaps
+            // back, the cursor ends up over it again, and hover re-triggers
+            // - a flicker loop. mouseenter/mouseleave only fire on actual
+            // pointer movement, so they don't retrigger just because the
+            // element moved underneath a still cursor.
+            card.addEventListener('mouseenter', () => card.classList.add('is-hovering'));
+            card.addEventListener('mouseleave', () => card.classList.remove('is-hovering'));
         });
     }
 

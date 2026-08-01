@@ -19,6 +19,7 @@ $cc-transition-speed: 0.3s;
 .content-cards {
     display: grid;
     grid-template-columns: 1fr;
+    align-items: start;
     gap: $cc-gap;
     width: 100%;
     margin: 2rem 0;
@@ -52,6 +53,43 @@ $cc-transition-speed: 0.3s;
         }
     }
 
+    // Hovering (and not already open) grows the card's own footprint in the
+    // surrounding grid - 2 columns wide, 2 rows tall - which is what makes
+    // room for __preview below to reveal without cramming. :not(.is-open)
+    // makes sure this snaps back to a plain 1x1 cell the moment the card is
+    // actually clicked open, even if the cursor is still sitting on it.
+    // .is-hovering (JS-toggled on mouseenter/mouseleave) instead of :hover -
+    // see contentCards.js for why: live :hover flickers when the reflow it
+    // triggers shifts the card out from under a stationary cursor.
+    &.is-hovering:not(.is-open),
+    &:focus-within:not(.is-open) {
+        @include tablet {
+            grid-column: span 2;
+            grid-row: span 2;
+
+            // A card in the last column here has no room to grow sideways -
+            // there's no 3rd column to spill into - so asking it to span 2
+            // columns forces the grid to search for 2 free columns
+            // elsewhere, relocating it to a whole new row. Whatever card
+            // then ends up under the cursor gets its own hover triggered,
+            // which can relocate again - a fast, cascading jitter loop.
+            // Grow straight down instead; same column, taller, nothing to
+            // search for or collide with.
+            &:nth-child(2n) {
+                grid-column: span 1;
+            }
+        }
+
+        @include desktop {
+            grid-column: span 2;
+            grid-row: span 2;
+
+            &:nth-child(3n) {
+                grid-column: span 1;
+            }
+        }
+    }
+
     &__header {
         display: flex;
         align-items: center;
@@ -75,6 +113,69 @@ $cc-transition-speed: 0.3s;
             outline: 2px solid $cc-accent;
             outline-offset: -2px;
         }
+    }
+
+    // Collapsed to zero height by default. Reveals on hover/focus into the
+    // extra room the grid-row: span 2 above just made - grid-template-rows
+    // 0fr -> 1fr animates smoothly to the image's natural height without
+    // needing JS to measure it. :not(.is-open) collapses it back the moment
+    // the card is clicked open, since __body below already has its own
+    // image and this would just be a duplicate.
+    &__preview {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    &.is-hovering:not(.is-open) &__preview,
+    &:focus-within:not(.is-open) &__preview {
+        grid-template-rows: 1fr;
+    }
+
+    // Snap shut instantly on open, instead of riding out its own 0.45s
+    // collapse transition - the mouse is usually still over the card right
+    // after a click (:hover was true a moment ago), so without this the
+    // preview's thumbnail+title mask was still visibly shrinking on top of
+    // __body's own image/text as they opened underneath it.
+    &.is-open &__preview {
+        grid-template-rows: 0fr;
+        transition: none;
+    }
+
+    &__preview-inner {
+        position: relative;
+        min-height: 0;
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    }
+
+    &__preview-fallback {
+        width: 100%;
+        height: 100%;
+        background: rgba($cc-accent, 0.12);
+    }
+
+    &__preview-title {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        text-align: center;
+        font-family: "Raleway", sans-serif;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: $cc-text;
+        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+        background: linear-gradient(rgba($dark-mode-dark-blue, 0.2), rgba($dark-mode-dark-blue, 0.68));
     }
 
     &__number {
@@ -160,11 +261,11 @@ $cc-transition-speed: 0.3s;
     }
 
     &__body-inner {
-        padding: 0 1.5rem 1.5rem;
+        padding: 0.5rem 1.5rem 1.5rem;
     }
 
     &__media {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
         border-radius: calc(#{$cc-radius} - 4px);
         overflow: hidden;
 
@@ -216,24 +317,32 @@ $cc-transition-speed: 0.3s;
 
         // Tables can run wider than the card; scroll the table itself
         // rather than letting .content-card's overflow: hidden clip it.
+        // Columns are capped and wrap their own text so most tables never
+        // need to scroll at all - overflow-x is just a fallback for the
+        // rare table with too many columns to fit even at the cap.
         table {
-            width: 100%;
+            min-width: 100%;
             margin: 1rem 0;
             border-collapse: collapse;
             display: block;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
             font-size: 0.92rem;
+            white-space: nowrap;
         }
 
         th,
         td {
+            max-width: 40%;
             border: 1px solid rgba($cc-text, 0.14);
             padding: 0.6rem 0.75rem;
             text-align: left;
             vertical-align: top;
             font: inherit;
             color: $cc-text;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-break: break-word;
         }
 
         th {
@@ -294,6 +403,7 @@ $cc-transition-speed: 0.3s;
 
 @media (prefers-reduced-motion: reduce) {
     .content-card__header,
+    .content-card__preview,
     .content-card__indicator::before,
     .content-card__indicator::after,
     .content-cards.js-enabled .content-card__body {
