@@ -573,6 +573,36 @@ body.ios-blend-fallback .card {
 .content-card__prose p:last-child {
   margin-bottom: 0;
 }
+.content-card__prose table {
+  width: 100%;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  font-size: 0.92rem;
+}
+.content-card__prose th,
+.content-card__prose td {
+  border: 1px solid rgba(237, 239, 248, 0.14);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+  font: inherit;
+  color: #EDEFF8;
+}
+.content-card__prose th {
+  background: rgba(47, 80, 228, 0.15);
+  font-weight: 600;
+}
+.content-card__prose tbody tr:nth-child(even) td {
+  background: rgba(237, 239, 248, 0.03);
+}
+.content-card__prose table p,
+.content-card__prose table ul,
+.content-card__prose table ol {
+  margin: 0;
+}
 .content-card__takeaways {
   list-style: none;
   margin: 1rem 0 0;
@@ -1048,6 +1078,24 @@ body.ios-blend-fallback .card {
     font-size: 0.875rem;
     max-width: 90%;
   }
+}
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 1010;
+  background: transparent;
+  pointer-events: none;
+}
+
+.scroll-progress__bar {
+  height: 100%;
+  width: 0%;
+  background-color: #EDEFF8;
+  transition: width 0.1s linear;
 }
 
 .hero {

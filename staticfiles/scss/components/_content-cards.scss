@@ -213,6 +213,43 @@ $cc-transition-speed: 0.3s;
                 margin-bottom: 0;
             }
         }
+
+        // Tables can run wider than the card; scroll the table itself
+        // rather than letting .content-card's overflow: hidden clip it.
+        table {
+            width: 100%;
+            margin: 1rem 0;
+            border-collapse: collapse;
+            display: block;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            font-size: 0.92rem;
+        }
+
+        th,
+        td {
+            border: 1px solid rgba($cc-text, 0.14);
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            vertical-align: top;
+            font: inherit;
+            color: $cc-text;
+        }
+
+        th {
+            background: rgba($cc-accent, 0.15);
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) td {
+            background: rgba($cc-text, 0.03);
+        }
+
+        table p,
+        table ul,
+        table ol {
+            margin: 0;
+        }
     }
 
     &__takeaways {

@@ -1,0 +1,22 @@
+// Reading progress bar shown on article/project pages.
+// Fixed to the top of the viewport so it stays visible even though .navbar
+// itself scrolls with the page (see components/navbar).
+@use '../base/colors' as *;
+
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    z-index: 1010;
+    background: transparent;
+    pointer-events: none;
+}
+
+.scroll-progress__bar {
+    height: 100%;
+    width: 0%;
+    background-color: $dark-mode-white;
+    transition: width 0.1s linear;
+}

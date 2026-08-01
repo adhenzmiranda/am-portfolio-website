@@ -26,7 +26,10 @@
     
     <!-- Lightbox Component -->
     <script src="{% static 'js/components/lightbox.js' %}"></script>
-    
+
+    <!-- Scroll Progress Bar -->
+    <script src="{% static 'js/components/scrollProgress.js' %}" defer></script>
+
     <!-- Social Media Embed Scripts -->
     <script async src="//www.instagram.com/embed.js"></script>
     <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
@@ -63,6 +66,10 @@
 
 <body class="home-page">
     {% include 'navbar.html' %}
+
+    <div class="scroll-progress" aria-hidden="true">
+        <div class="scroll-progress__bar"></div>
+    </div>
 
     <div class="project-detail-container">
         <div class="project-detail-header">
