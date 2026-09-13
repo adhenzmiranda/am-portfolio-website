@@ -1,0 +1,191 @@
+.am-import-banner {
+    background: #fff8e1;
+    border: 2px dashed #f9a825;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
+}
+
+.am-import-banner__title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #5f4400;
+    margin: 0 0 6px 0;
+}
+
+.am-import-banner__warning {
+    background: #fff3cd;
+    border-left: 4px solid #f9a825;
+    color: #5f4400;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+}
+
+.am-import-banner__rules {
+    font-size: 12.5px;
+    color: #6b5900;
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+}
+
+.am-import-banner__rules code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 1px 5px;
+    border-radius: 3px;
+}
+
+.am-import-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.am-import-banner__actions a.am-import-download {
+    font-size: 13px;
+    font-weight: 600;
+    color: #8a5a00;
+    text-decoration: none;
+    border: 1px solid #f9a825;
+    background: #fff;
+    padding: 7px 12px;
+    border-radius: 4px;
+}
+
+.am-import-banner__actions a.am-import-download:hover {
+    background: #fff3cd;
+}
+
+.am-import-file {
+    font-size: 13px;
+}
+
+.am-import-replace-row {
+    font-size: 12.5px;
+    color: #5f4400;
+    margin: 8px 0 4px 0;
+}
+
+.am-import-replace-row label {
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.am-import-replace-row small {
+    color: #8a7a4d;
+    font-weight: normal;
+}
+
+.am-import-replace-hint {
+    font-weight: normal;
+    color: #c62828;
+}
+
+.am-import-textarea {
+    width: 100%;
+    min-height: 90px;
+    font-family: monospace;
+    font-size: 12px;
+    box-sizing: border-box;
+    margin-top: 8px;
+}
+
+.am-import-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.am-import-btn--preview {
+    background: #f9a825;
+    color: #3a2c00;
+}
+
+.am-import-btn--preview:hover {
+    background: #f57f17;
+}
+
+.am-import-btn--confirm {
+    background: #4CAF50;
+    color: white;
+}
+
+.am-import-btn--confirm:hover {
+    background: #388e3c;
+}
+
+.am-import-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.am-import-preview {
+    margin-top: 12px;
+    display: none;
+}
+
+.am-import-preview__errors {
+    background: #fdecea;
+    border-left: 4px solid #e53935;
+    color: #611a15;
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    margin-bottom: 10px;
+}
+
+.am-import-preview__errors ul {
+    margin: 6px 0 0 18px;
+    padding: 0;
+}
+
+.am-import-preview__cards {
+    background: white;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+.am-import-preview__card {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 12.5px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.am-import-preview__card:last-child {
+    border-bottom: none;
+}
+
+.am-import-preview__card-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.am-import-preview__card-meta {
+    color: #888;
+    white-space: nowrap;
+}
+
+.am-import-status {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.am-import-status--success {
+    color: #2e7d32;
+}
+
+.am-import-status--error {
+    color: #c62828;
+}

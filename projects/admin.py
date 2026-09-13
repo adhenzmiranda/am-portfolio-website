@@ -4,6 +4,13 @@ from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectC
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
+from django.db.models import Max
+from django.http import JsonResponse, HttpResponse
+from django.urls import path
+from django.utils.decorators import method_decorator
+from django.utils.text import slugify
+from django.views.decorators.http import require_POST
+from .markdown_import import parse_markdown_cards, serialize_cards_to_markdown
 
 class ProjectPhotoFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
@@ -277,11 +284,132 @@ class ProjectsAdmin(admin.ModelAdmin):
         """Wrap formset save in atomic transaction to prevent partial saves."""
         super().save_formset(request, form, formset, change)
 
+    def get_urls(self):
+        custom_urls = [
+            path(
+                '<int:object_id>/import-cards/preview/',
+                self.admin_site.admin_view(self.import_cards_preview_view),
+                name='projects_projects_import_cards_preview',
+            ),
+            path(
+                '<int:object_id>/import-cards/commit/',
+                self.admin_site.admin_view(self.import_cards_commit_view),
+                name='projects_projects_import_cards_commit',
+            ),
+            path(
+                '<int:object_id>/export-cards/',
+                self.admin_site.admin_view(self.export_cards_view),
+                name='projects_projects_export_cards',
+            ),
+        ]
+        return custom_urls + super().get_urls()
+
+    def export_cards_view(self, request, object_id):
+        """Serialize a project's cards back into the marker format, downloadable as .md."""
+        project = self.get_object(request, object_id)
+        if project is None:
+            return JsonResponse({'error': 'Project not found.'}, status=404)
+        if not self.has_view_permission(request, project):
+            return JsonResponse({'error': 'Permission denied.'}, status=403)
+
+        markdown_text = serialize_cards_to_markdown(project.cards.all())
+        filename = f'{slugify(project.name) or "article"}-sections.md'
+
+        response = HttpResponse(markdown_text, content_type='text/markdown; charset=utf-8')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    @method_decorator(require_POST)
+    def import_cards_preview_view(self, request, object_id):
+        """Parse uploaded/pasted markdown and return a preview without touching the DB."""
+        project = self.get_object(request, object_id)
+        if project is None:
+            return JsonResponse({'error': 'Project not found.'}, status=404)
+        if not self.has_change_permission(request, project):
+            return JsonResponse({'error': 'Permission denied.'}, status=403)
+
+        text = self._read_import_text(request)
+        cards, errors = parse_markdown_cards(text)
+
+        return JsonResponse({
+            'cards': [
+                {
+                    'index': c.index,
+                    'title': c.title,
+                    'teaser': c.teaser,
+                    'word_count': c.word_count,
+                    'takeaway_count': c.takeaway_count,
+                }
+                for c in cards
+            ],
+            'errors': [
+                {'index': e.index, 'title': e.title, 'message': e.message}
+                for e in errors
+            ],
+            'existing_card_count': project.cards.count(),
+        })
+
+    @transaction.atomic
+    @method_decorator(require_POST)
+    def import_cards_commit_view(self, request, object_id):
+        """Re-parse the submitted markdown and, if it's still error-free, create the cards."""
+        project = self.get_object(request, object_id)
+        if project is None:
+            return JsonResponse({'error': 'Project not found.'}, status=404)
+        if not self.has_change_permission(request, project):
+            return JsonResponse({'error': 'Permission denied.'}, status=403)
+
+        text = self._read_import_text(request)
+        cards, errors = parse_markdown_cards(text)
+
+        if errors:
+            return JsonResponse({
+                'error': 'Import still has unresolved errors — nothing was created.',
+                'errors': [
+                    {'index': e.index, 'title': e.title, 'message': e.message}
+                    for e in errors
+                ],
+            }, status=400)
+
+        if not cards:
+            return JsonResponse({'error': 'No valid cards to import.'}, status=400)
+
+        replace = request.POST.get('replace') in ('1', 'true', 'True')
+        replaced_count = 0
+
+        if replace:
+            replaced_count = project.cards.count()
+            project.cards.all().delete()
+            start_order = 0
+        else:
+            start_order = project.cards.aggregate(Max('order'))['order__max']
+            start_order = 0 if start_order is None else start_order + 1
+
+        ProjectCard.objects.bulk_create([
+            ProjectCard(
+                project=project,
+                title=c.title,
+                teaser=c.teaser,
+                body=c.body,
+                takeaways_raw=c.takeaways_raw,
+                order=start_order + offset,
+            )
+            for offset, c in enumerate(cards)
+        ])
+
+        return JsonResponse({'success': True, 'created': len(cards), 'replaced': replaced_count})
+
+    @staticmethod
+    def _read_import_text(request):
+        if request.FILES.get('md_file'):
+            return request.FILES['md_file'].read().decode('utf-8', errors='replace')
+        return request.POST.get('md_text', '')
+
     class Media:
         css = {
-            'all': ('admin/css/video_embed.css', 'admin/css/mode_toggle.css')
+            'all': ('admin/css/video_embed.css', 'admin/css/mode_toggle.css', 'admin/css/card_import.css')
         }
-        js = ('admin/js/video_embed.js', 'admin/js/mode_toggle.js')
+        js = ('admin/js/video_embed.js', 'admin/js/mode_toggle.js', 'admin/js/card_import.js')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

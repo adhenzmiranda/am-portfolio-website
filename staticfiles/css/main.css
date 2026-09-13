@@ -494,6 +494,9 @@ body.ios-blend-fallback .card {
   grid-template-rows: 0fr;
   transition: none;
 }
+.content-card.is-open .content-card__preview-title {
+  display: none;
+}
 .content-card__preview-inner {
   position: relative;
   min-height: 0;

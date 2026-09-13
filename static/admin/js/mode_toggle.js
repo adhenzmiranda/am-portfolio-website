@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const HINTS = {
         portfolio: 'Media (photos, videos, embeds) displays in separate sections below the description.',
-        blogpost: 'Only the description is rendered. Upload photos below to get their markdown snippets, then paste them inline.'
+        blogpost: 'Only the description is rendered. Upload photos below to get their markdown snippets, then paste them inline. Scroll down to "Project cards" to import sections from a markdown file instead of adding them one by one.'
     };
 
     const PHOTO_LABELS = {

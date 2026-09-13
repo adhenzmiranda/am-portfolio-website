@@ -3,6 +3,16 @@
 
 {% block extrahead %}
 {{ block.super }}
+{% if original %}
+<script>
+    window.AM_IMPORT_URLS = {
+        preview: "{% url 'admin:projects_projects_import_cards_preview' object_id=original.pk %}",
+        commit: "{% url 'admin:projects_projects_import_cards_commit' object_id=original.pk %}",
+        export: "{% url 'admin:projects_projects_export_cards' object_id=original.pk %}"
+    };
+    window.AM_IMPORT_TEMPLATE_URL = "{% static 'docs/ARTICLE_MARKDOWN_TEMPLATE.md' %}";
+</script>
+{% endif %}
 <style>
 /* Batch upload styles */
 .batch-upload-section {

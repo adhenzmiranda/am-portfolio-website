@@ -142,6 +142,12 @@ $cc-transition-speed: 0.3s;
         transition: none;
     }
 
+    // Belt and suspenders: force the title/scrim off directly when open,
+    // rather than relying solely on the row-collapse above to hide it.
+    &.is-open &__preview-title {
+        display: none;
+    }
+
     &__preview-inner {
         position: relative;
         min-height: 0;
