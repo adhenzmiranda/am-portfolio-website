@@ -15,12 +15,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django_otp.admin import OTPAdminSite
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from projects import views
 from projects import compression_views
 from rest_framework.urlpatterns import format_suffix_patterns
+
+admin.site.__class__ = OTPAdminSite
 
 import os
 random_admin_path = os.getenv('ADMIN_URL', 'admin-dev')
