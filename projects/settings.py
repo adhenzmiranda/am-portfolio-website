@@ -56,8 +56,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'corsheaders',
-    'ckeditor',
-    'ckeditor_uploader',
     'cloudinary',
     'cloudinary_storage',
     'projects',
@@ -215,23 +213,6 @@ else:
 if DEBUG:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# CKEditor settings
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            ['Bold', 'Italic', 'Underline'],
-            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-            ['Link', 'Unlink'],
-            ['RemoveFormat', 'Source']
-        ],
-        'width': '100%',
-        'height': '300px',
-        'allowedContent': True,
-    }
-}
 
 # Imgur Settings
 IMGUR_CLIENT_ID = os.getenv('IMGUR_CLIENT_ID')
