@@ -10,6 +10,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from django_ratelimit.decorators import ratelimit
 
+def client_ip(group, request):
+    """
+    Real visitor IP behind Heroku's router and Cloudflare. CF-Connecting-IP
+    is only trustworthy for traffic that actually passed through Cloudflare,
+    which the herokuapp.com -> custom domain redirect enforces.
+    """
+    return (
+        request.META.get('HTTP_CF_CONNECTING_IP')
+        or request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+        or request.META.get('REMOTE_ADDR')
+    )
+
 def home(request):
     # Get featured projects for the hero section
     featured_projects = Projects.objects.filter(featured=True)
@@ -18,7 +30,7 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
-@ratelimit(key='ip', rate='5/h', method='POST', block=True)
+@ratelimit(key=client_ip, rate='5/h', method='POST', block=True)
 def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
