@@ -182,6 +182,17 @@ CORS_ALLOWED_ORIGINS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Lock down the API by default: read-only for anonymous users, and no
+# browsable-API HTML renderer in production.
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
 
 # Only use WhiteNoise in production
 if not DEBUG:
