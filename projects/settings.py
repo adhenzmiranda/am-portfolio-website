@@ -316,6 +316,6 @@ if SENTRY_DSN:
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
         traces_sample_rate=0.5,  # Adjust for performance monitoring
-        send_default_pii=True,
+        send_default_pii=False,
         environment=os.environ.get('DJANGO_ENV', 'production'),
     )
