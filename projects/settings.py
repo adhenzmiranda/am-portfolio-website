@@ -197,8 +197,6 @@ REST_FRAMEWORK = {
 
 # Only use WhiteNoise in production
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
     # Security headers
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
@@ -210,21 +208,6 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_CONTENT_TYPE_NOSNIFF = True
-else:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-
-# Add this to handle media files in development
-if DEBUG:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# Imgur Settings
-IMGUR_CLIENT_ID = os.getenv('IMGUR_CLIENT_ID')
-IMGUR_CLIENT_SECRET = os.getenv('IMGUR_CLIENT_SECRET')
-
-# Use Imgur for media files in production
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'projects.imgur_storage.ImgurStorage'
 
 # Cloudinary Settings
 cloudinary.config(
@@ -254,9 +237,18 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB (from default 2.5MB)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
 DATA_UPLOAD_MAX_NUMBER_FILES = 100  # Allow up to 100 files per request
 
-# Use Cloudinary for media files
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'
+STORAGES = {
+    # Cloudinary for media files
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': (
+            'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),
+    },
+}
 
 # Markdownify - allow images and standard formatting tags
 MARKDOWNIFY = {
