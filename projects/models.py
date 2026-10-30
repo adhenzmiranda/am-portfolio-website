@@ -1,4 +1,6 @@
 import os
+from html.parser import HTMLParser
+from urllib.parse import urlparse
 from django.db import models
 from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
@@ -207,12 +209,55 @@ class ProjectCard(models.Model):
     def image_url(self):
         return self.image.url if self.image else None
 
+ALLOWED_EMBED_DOMAINS = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io', 'linkedin.com']
+
+
+class _SingleIframeParser(HTMLParser):
+    """
+    Walks the pasted embed code and records whether it is exactly one
+    <iframe> element and nothing else (no other tags, no non-whitespace
+    text) -- so `<iframe></iframe><script>...</script>` is rejected
+    instead of silently passing because the string contains "<iframe".
+    """
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.iframe_count = 0
+        self.has_other_tags = False
+        self.has_stray_text = False
+        self.src = None
+
+    def _handle_tag(self, tag, attrs):
+        if tag == 'iframe':
+            self.iframe_count += 1
+            if self.src is None:
+                self.src = dict(attrs).get('src')
+        else:
+            self.has_other_tags = True
+
+    def handle_starttag(self, tag, attrs):
+        self._handle_tag(tag, attrs)
+
+    def handle_startendtag(self, tag, attrs):
+        self._handle_tag(tag, attrs)
+
+    def handle_endtag(self, tag):
+        if tag != 'iframe':
+            self.has_other_tags = True
+
+    def handle_data(self, data):
+        if data.strip():
+            self.has_stray_text = True
+
+
 class ProjectEmbed(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='embeds')
     embed_code = models.TextField(
         help_text="Paste the full embed code (e.g., <iframe ...></iframe>) for a video or interactive media. Example: <iframe width='560' height='315' src='https://www.youtube.com/embed/VIDEO_ID' frameborder='0' allowfullscreen></iframe>"
     )
     is_safe = models.BooleanField(default=False, editable=False)
+    safe_src = models.URLField(blank=True, editable=False,
+        help_text="The validated iframe src, extracted from embed_code. Rendered in place of the raw pasted HTML.")
     caption = models.CharField(max_length=200, blank=True)  # <-- Add this line
     order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -225,13 +270,30 @@ class ProjectEmbed(models.Model):
 
     def clean(self):
         from django.core.exceptions import ValidationError
-        allowed_sources = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io', 'linkedin.com']
-        code = self.embed_code.lower()
-        if '<iframe' not in code:
-            self.is_safe = False
-            raise ValidationError('Only iframe embeds are allowed.')
-        has_allowed = any(source in code for source in allowed_sources)
-        if not has_allowed:
-            self.is_safe = False
-            raise ValidationError(f'Only embeds from {", ".join(allowed_sources)} are allowed.')
+        self.is_safe = False
+        self.safe_src = ''
+
+        parser = _SingleIframeParser()
+        parser.feed(self.embed_code or '')
+        parser.close()
+
+        if parser.iframe_count != 1 or parser.has_other_tags or parser.has_stray_text:
+            raise ValidationError('Embed code must contain exactly one <iframe> element and nothing else.')
+
+        if not parser.src:
+            raise ValidationError('The iframe must have a src attribute.')
+
+        parsed_src = urlparse(parser.src)
+        if parsed_src.scheme != 'https':
+            raise ValidationError('The iframe src must use https.')
+
+        hostname = (parsed_src.hostname or '').lower()
+        is_allowed = any(
+            hostname == domain or hostname.endswith('.' + domain)
+            for domain in ALLOWED_EMBED_DOMAINS
+        )
+        if not is_allowed:
+            raise ValidationError(f'Only embeds from {", ".join(ALLOWED_EMBED_DOMAINS)} are allowed.')
+
+        self.safe_src = parser.src
         self.is_safe = True
