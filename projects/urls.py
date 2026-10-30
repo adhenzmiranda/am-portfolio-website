@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
@@ -23,10 +24,14 @@ from projects import compression_views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 import os
-random_admin_path = os.getenv('ADMIN_URL', 'admin-dev')
-import datetime
-print(f"\n{datetime.datetime.now().strftime('%B %d, %Y - %H:%M:%S')}")
-print(f"Admin page available at: http://127.0.0.1:8000/{random_admin_path}/\n")
+
+random_admin_path = os.getenv('ADMIN_URL')
+if not random_admin_path:
+    if settings.DEBUG:
+        random_admin_path = 'admin-dev'
+    else:
+        raise ImproperlyConfigured('ADMIN_URL must be set when DEBUG is False.')
+
 urlpatterns = [
     path(random_admin_path + '/', admin.site.urls),
 
