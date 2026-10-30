@@ -43,6 +43,8 @@ ALLOWED_HOSTS = [
     'localhost',
     'am04-c1eccbd13c2a.herokuapp.com',
     '.herokuapp.com',
+    'adhenzmiranda.com',
+    'www.adhenzmiranda.com',
 ]  # Replace with your actual production domains
 
 
@@ -74,8 +76,8 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django_otp.middleware.OTPMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django_otp.middleware.OTPMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
