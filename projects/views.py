@@ -1,7 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.contrib import messages
+from django.conf import settings
 from .models import Projects
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
@@ -39,18 +40,18 @@ def contact(request):
             email = form.cleaned_data['email']
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
-            # Send email
+            # Send email from our own address; the visitor's email goes in
+            # Reply-To so replying still reaches them, without letting
+            # visitors spoof the From header (which Gmail would reject anyway).
             email_message = f'From: {name}\nEmail: {email}\n\nMessage:\n{message}'
-            from django.conf import settings
-            recipient_email = getattr(settings, 'EMAIL_HOST_USER', None)
             try:
-                send_mail(
-                    subject,
-                    email_message,
-                    email,  # From email
-                    [recipient_email],
-                    fail_silently=False,
-                )
+                EmailMessage(
+                    subject=f'[Portfolio] {subject}',
+                    body=email_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.EMAIL_HOST_USER],
+                    reply_to=[email],
+                ).send(fail_silently=False)
                 messages.success(request, 'Thank you for your message! I will get back to you soon.')
                 return redirect('contact')
             except Exception as e:
