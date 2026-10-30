@@ -42,8 +42,19 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     'am04-c1eccbd13c2a.herokuapp.com',
-    '.herokuapp.com',
-]  # Replace with your actual production domains
+    'adhenzmiranda.com',
+    'www.adhenzmiranda.com',
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://adhenzmiranda.com',
+    'https://www.adhenzmiranda.com',
+]
+
+# Hosts that should permanently redirect to the canonical domain, so all
+# traffic goes through Cloudflare (see projects.middleware).
+CANONICAL_HOST = 'adhenzmiranda.com'
+REDIRECT_HOSTS = ['am04-c1eccbd13c2a.herokuapp.com']
 
 
 # Application definition
@@ -55,7 +66,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
     'cloudinary',
     'cloudinary_storage',
     'projects',
@@ -67,9 +77,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'projects.middleware.CanonicalDomainRedirectMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django_otp.middleware.OTPMiddleware',
@@ -167,13 +177,6 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "https://yourdomain.com",
-    "https://www.yourdomain.com",
-    "https://yourapp.herokuapp.com"
-]  # Replace with your actual production domains
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
