@@ -1,1 +1,0 @@
-// Handles dynamic project card elements.

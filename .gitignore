@@ -61,7 +61,7 @@ media/
 # OS
 .DS_Store
 Thumbs.db
-.staticfiles/
+staticfiles/
 
 # Private task files for Claude Code
 SECURITY_FIXES.md
