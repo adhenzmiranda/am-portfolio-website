@@ -54,8 +54,7 @@
             }, 2000);
         });
     </script>
-    <!-- Page Title -->
-    <title>{{ project.name }} | Adhenz Miranda | AM04 </title>
+    {% include "components/seo_head.html" with page_title=project.name|add:" | Adhenz Miranda | AM04" %}
 </head>
 
 <body class="home-page">

@@ -108,6 +108,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'projects.context_processors.site_url',
             ],
         },
     },
@@ -182,6 +183,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Public base URL used for canonical links, Open Graph tags, JSON-LD and the
+# sitemap, so they always point at the custom domain.
+SITE_URL = os.getenv('SITE_URL', 'https://adhenzmiranda.com').rstrip('/')
 
 # Lock down the API by default: read-only for anonymous users, and no
 # browsable-API HTML renderer in production.
