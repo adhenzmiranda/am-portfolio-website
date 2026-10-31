@@ -222,6 +222,10 @@ class _SingleIframeParser(HTMLParser):
     <iframe> element and nothing else (no other tags, no non-whitespace
     text) -- so `<iframe></iframe><script>...</script>` is rejected
     instead of silently passing because the string contains "<iframe".
+
+    Fallback content *inside* the iframe (itch.io puts an <a> link there)
+    is ignored: browsers never render it, and the template rebuilds the
+    iframe from the validated src only, so it is never output.
     """
 
     def __init__(self):
@@ -230,27 +234,31 @@ class _SingleIframeParser(HTMLParser):
         self.has_other_tags = False
         self.has_stray_text = False
         self.src = None
+        self.in_iframe = False
 
-    def _handle_tag(self, tag, attrs):
+    def _handle_tag(self, tag, attrs, opens_element):
         if tag == 'iframe':
             self.iframe_count += 1
             if self.src is None:
                 self.src = dict(attrs).get('src')
-        else:
+            self.in_iframe = opens_element
+        elif not self.in_iframe:
             self.has_other_tags = True
 
     def handle_starttag(self, tag, attrs):
-        self._handle_tag(tag, attrs)
+        self._handle_tag(tag, attrs, opens_element=True)
 
     def handle_startendtag(self, tag, attrs):
-        self._handle_tag(tag, attrs)
+        self._handle_tag(tag, attrs, opens_element=False)
 
     def handle_endtag(self, tag):
-        if tag != 'iframe':
+        if tag == 'iframe':
+            self.in_iframe = False
+        elif not self.in_iframe:
             self.has_other_tags = True
 
     def handle_data(self, data):
-        if data.strip():
+        if data.strip() and not self.in_iframe:
             self.has_stray_text = True
 
 
