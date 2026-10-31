@@ -17,11 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import path
+from django_otp.admin import OTPAdminSite
 from django.conf import settings
 from django.conf.urls.static import static
 from projects import views
 from projects import compression_views
 from rest_framework.urlpatterns import format_suffix_patterns
+
+admin.site.__class__ = OTPAdminSite
 
 import os
 

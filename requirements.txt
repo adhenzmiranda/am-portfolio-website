@@ -48,6 +48,7 @@ pillow==11.3.0
 pipreqs==0.4.13
 proglog==0.1.12
 psutil==7.1.2
+psycopg[binary]==3.3.6
 pycparser==2.23
 pydantic==2.12.3
 pydantic_core==2.41.4
