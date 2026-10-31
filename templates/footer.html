@@ -7,15 +7,7 @@
     </div>
 
     <div class="socials-icons">
-        <a href="https://linkedin.com/in/am04" class="icon-img" target="_blank" rel="noopener noreferrer">
-            <img src="{% static 'assets/images/footer/linkedin.png' %}" width="36" height="36" alt="LinkedIn" loading="lazy">
-        </a>
-        <a href="https://github.com/adhenzmiranda" class="icon-img" target="_blank" rel="noopener noreferrer">
-            <img src="{% static 'assets/images/footer/github.png' %}" width="36" height="36" alt="GitHub" loading="lazy">
-        </a>
-        <a href="mailto:adhenz.miranda@gmail.com" class="icon-img">
-            <img src="{% static 'assets/images/footer/email.png' %}" width="36" height="36" alt="Email" loading="lazy">
-        </a>
+        {% include "components/social_links.html" with lazy=True %}
     </div>
 
     <div class="page-links">
