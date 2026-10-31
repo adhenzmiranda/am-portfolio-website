@@ -56,71 +56,36 @@
             </p>
         </div>
 
+        {% if experiences or education %}
         <section class="experience-container" aria-labelledby="experience-title">
             <h2 class="experience-title h2" id="experience-title">
                 Experience
             </h2>
             <div class="experience-list">
-            <article class="experience-card">
-                <h3 class="h3 experience-role">Content Creator, Photographer &amp; Videographer</h3>
-                <p class="experience-meta"><span class="experience-org">Monarch Hill Real Estate &amp; Inspecto Handover</span> · Business Bay, Dubai · <span class="experience-dates">Aug 2026 - Nov 2026</span></p>
-                <ul>
-                    <li>Filmed 60+ shoots across listings, developer properties and snagging inspections as filming lead, and edited 30+ short-form videos for Instagram and TikTok, with Monarch Hill videos selected for paid ad campaigns</li>
-                    <li>Filmed content across Monarch Hill and Inspecto Handover reaching 350k+ combined views</li>
-                    <li>Redesigned carousel and story graphics, produced the carousels, thumbnails and a branding presentation, and photographed properties and inspections for both company websites</li>
-                    <li>Managed TikTok, launched the company LinkedIn page, and improved Google review presence by optimising listing details and timing review requests</li>
-                    <li>Set up the company's first direct approval channel with leadership for content requests, updates and sign-off</li>
-                </ul>
-            </article>
-            <article class="experience-card">
-                <h3 class="h3 experience-role">Content Creator &amp; Videographer</h3>
-                <p class="experience-meta"><span class="experience-org">Dax &amp; Bax Properties</span> · Business Bay, Dubai · <span class="experience-dates">Feb 2026 - Jun 2026</span></p>
-                <ul>
-                    <li>Conceptualized, shot and edited 80 to 100+ brand and social videos across short-form and reel formats for Instagram and TikTok, from brief to final delivery</li>
-                    <li>Reached 500k+ total views and 20k+ likes and shares on Instagram, outperforming previous benchmarks</li>
-                    <li>Directed and collaborated with 7 property consultants across Bengali, Nepali, Hindi, English and Arabic-speaking backgrounds, managing full production cycles from pre-shoot planning to final delivery</li>
-                    <li>Shot on location across developer showrooms, exhibition events and live properties on a Sony ZV-E10, and edited in Premiere Pro and CapCut with colour grading, caption animation, QR code integration and pacing optimised for short-form</li>
-                    <li>Built 3 operational systems from scratch, including a marketing calendar, content pipeline tracker and scriptwriting agent, streamlining team-wide production workflows</li>
-                </ul>
-            </article>
-            <article class="experience-card">
-                <h3 class="h3 experience-role">Digital Marketing &amp; Admin Support (Part-time)</h3>
-                <p class="experience-meta"><span class="experience-org">Optimal Consulting and Research Center &amp; Optimal Education Center</span> · Deira, Dubai · <span class="experience-dates">Sep 2024 - Mar 2026</span></p>
-                <ul>
-                    <li>Awarded Best Oral &amp; Visual Presentation at the 1st International Interdisciplinary Research Summit for simplifying complex concepts through visual storytelling</li>
-                    <li>Grew LinkedIn followers from 9 to 386 and Facebook from 300 to 1.3k, while managing Instagram and TikTok</li>
-                    <li>Created educational conference promotional content and testimonial videos, translating technical research into accessible visual formats</li>
-                </ul>
-            </article>
-            <article class="experience-card">
-                <h3 class="h3 experience-role">IT Intern</h3>
-                <p class="experience-meta"><span class="experience-org">HIS MENA</span> · Business Bay, Dubai · <span class="experience-dates">Aug 2023 - Sep 2023</span></p>
-                <ul>
-                    <li>Designed visual documentation including UI, technical diagrams and status reports</li>
-                    <li>Developed data visualisations for 9 key research projects, turning complex technical information into clear visuals</li>
-                    <li>Created standardised visual templates to keep every project deliverable consistent</li>
-                </ul>
-            </article>
-            <article class="experience-card">
-                <h3 class="h3 experience-role">Design and Web Development Intern</h3>
-                <p class="experience-meta"><span class="experience-org">Air Arabia Academy</span> · Sharjah Airport, Sharjah · <span class="experience-dates">May 2022 - Jun 2022</span></p>
-                <ul>
-                    <li>Led a visual design team of 7 interns on a corporate rebrand, redesigning 89 presentations and 10 documents</li>
-                    <li>Developed corporate brand guidelines and standardised templates for presentations, reports and documentation</li>
-                    <li>Improved document layout and visual clarity for an aviation academy serving 100+ employees</li>
-                </ul>
-            </article>
-            <article class="experience-card">
-                <h3 class="h3 experience-role">Education</h3>
-                <ul>
-                    <li><strong>MSc in Cybersecurity</strong> (part-time, in progress), Bath Spa University, expected Jan 2027</li>
-                    <li><strong>BSc (Hons) in Creative Computing</strong>, Bath Spa University, RAK, Sep 2023 - Sep 2025</li>
-                    <li><strong>Aspire Leaders Program 2025</strong>, Aspire Institute (co-founded by Harvard Business School professors), May 2025</li>
-                    <li><strong>Certificate in Creative Industries</strong>, Skill Development Council Canada, Optimal Education Center, Dubai, Dec 2024</li>
-                </ul>
-            </article>
+                {% for job in experiences %}
+                <article class="experience-card">
+                    <h3 class="h3 experience-role">{{ job.role }}</h3>
+                    <p class="experience-meta"><span class="experience-org">{{ job.organisation }}</span> · {{ job.location }} · <span class="experience-dates">{{ job.dates }}</span></p>
+                    <ul>
+                        {% for line in job.highlights %}
+                        <li>{{ line }}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+                {% endfor %}
+                {% if education %}
+                <article class="experience-card">
+                    <h3 class="h3 experience-role">Education</h3>
+                    <ul>
+                        {% for item in education %}
+                        <li><strong>{{ item.title }}</strong>{% if item.details %}, {{ item.details }}{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                </article>
+                {% endif %}
             </div>
         </section>
+        {% endif %}
 
         <div class="my-expertise-container">
             <h2 class="my-expertise-title h2">

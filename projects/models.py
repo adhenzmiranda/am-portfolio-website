@@ -222,6 +222,10 @@ class _SingleIframeParser(HTMLParser):
     <iframe> element and nothing else (no other tags, no non-whitespace
     text) -- so `<iframe></iframe><script>...</script>` is rejected
     instead of silently passing because the string contains "<iframe".
+
+    Fallback content *inside* the iframe (itch.io puts an <a> link there)
+    is ignored: browsers never render it, and the template rebuilds the
+    iframe from the validated src only, so it is never output.
     """
 
     def __init__(self):
@@ -230,27 +234,31 @@ class _SingleIframeParser(HTMLParser):
         self.has_other_tags = False
         self.has_stray_text = False
         self.src = None
+        self.in_iframe = False
 
-    def _handle_tag(self, tag, attrs):
+    def _handle_tag(self, tag, attrs, opens_element):
         if tag == 'iframe':
             self.iframe_count += 1
             if self.src is None:
                 self.src = dict(attrs).get('src')
-        else:
+            self.in_iframe = opens_element
+        elif not self.in_iframe:
             self.has_other_tags = True
 
     def handle_starttag(self, tag, attrs):
-        self._handle_tag(tag, attrs)
+        self._handle_tag(tag, attrs, opens_element=True)
 
     def handle_startendtag(self, tag, attrs):
-        self._handle_tag(tag, attrs)
+        self._handle_tag(tag, attrs, opens_element=False)
 
     def handle_endtag(self, tag):
-        if tag != 'iframe':
+        if tag == 'iframe':
+            self.in_iframe = False
+        elif not self.in_iframe:
             self.has_other_tags = True
 
     def handle_data(self, data):
-        if data.strip():
+        if data.strip() and not self.in_iframe:
             self.has_stray_text = True
 
 
@@ -301,3 +309,39 @@ class ProjectEmbed(models.Model):
 
         self.safe_src = parser.src
         self.is_safe = True
+
+class Experience(models.Model):
+    """A role in the About page's Experience section (edited in the admin)."""
+    role = models.CharField(max_length=200, help_text="e.g. Content Creator, Photographer & Videographer")
+    organisation = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, help_text="e.g. Business Bay, Dubai")
+    dates = models.CharField(max_length=100, help_text="Shown exactly as typed, e.g. 'Aug 2026 - Nov 2026' or 'Sep 2026 - Present'")
+    highlights_raw = models.TextField("Highlights", blank=True, help_text="One bullet point per line.")
+    order = models.IntegerField(default=0, help_text="Lower numbers show first.")
+    visible = models.BooleanField(default=True, help_text="Untick to hide this role without deleting it.")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name_plural = 'Experience'
+
+    def __str__(self):
+        return f"{self.role} - {self.organisation}"
+
+    @property
+    def highlights(self):
+        return [line.strip() for line in self.highlights_raw.splitlines() if line.strip()]
+
+
+class Education(models.Model):
+    """An entry in the Education card under Experience (edited in the admin)."""
+    title = models.CharField(max_length=200, help_text="Shown in bold, e.g. MSc in Cybersecurity (part-time, in progress)")
+    details = models.CharField(max_length=300, blank=True, help_text="Shown after the title, e.g. Bath Spa University, expected Jan 2027")
+    order = models.IntegerField(default=0, help_text="Lower numbers show first.")
+    visible = models.BooleanField(default=True, help_text="Untick to hide this entry without deleting it.")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name_plural = 'Education'
+
+    def __str__(self):
+        return self.title
