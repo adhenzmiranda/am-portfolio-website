@@ -1,5 +1,9 @@
+import html
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.html import strip_tags
+from django.utils.text import Truncator
+from markdownify.templatetags.markdownify import markdownify
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
@@ -78,10 +82,16 @@ def projects_page(request):
     }
     return render(request, 'projects.html', context)
 
+def plain_text_summary(markdown_text, length=155):
+    """Render markdown, strip the HTML and collapse whitespace for meta tags."""
+    text = html.unescape(strip_tags(markdownify(markdown_text or '')))
+    return Truncator(' '.join(text.split())).chars(length)
+
 def project_detail_page(request, id):
     project = get_object_or_404(Projects, id=id)
     context = {
-        'project': project
+        'project': project,
+        'meta_description': plain_text_summary(project.description),
     }
     return render(request, 'project_detail.html', context)
 
