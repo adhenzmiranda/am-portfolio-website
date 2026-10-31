@@ -131,6 +131,10 @@ DATABASES = {
         conn_max_age=600
     )
 }
+# Neon's free plan suspends the database when idle and closes open
+# connections. Check a reused connection is still alive before each request
+# (and reconnect if not) instead of failing the first request with a 500.
+DATABASES['default']['CONN_HEALTH_CHECKS'] = True
 
 # SQLite timeout configuration to prevent database locks
 if 'sqlite' in DATABASES['default']['ENGINE']:
