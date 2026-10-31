@@ -309,3 +309,39 @@ class ProjectEmbed(models.Model):
 
         self.safe_src = parser.src
         self.is_safe = True
+
+class Experience(models.Model):
+    """A role in the About page's Experience section (edited in the admin)."""
+    role = models.CharField(max_length=200, help_text="e.g. Content Creator, Photographer & Videographer")
+    organisation = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, help_text="e.g. Business Bay, Dubai")
+    dates = models.CharField(max_length=100, help_text="Shown exactly as typed, e.g. 'Aug 2026 - Nov 2026' or 'Sep 2026 - Present'")
+    highlights_raw = models.TextField("Highlights", blank=True, help_text="One bullet point per line.")
+    order = models.IntegerField(default=0, help_text="Lower numbers show first.")
+    visible = models.BooleanField(default=True, help_text="Untick to hide this role without deleting it.")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name_plural = 'Experience'
+
+    def __str__(self):
+        return f"{self.role} - {self.organisation}"
+
+    @property
+    def highlights(self):
+        return [line.strip() for line in self.highlights_raw.splitlines() if line.strip()]
+
+
+class Education(models.Model):
+    """An entry in the Education card under Experience (edited in the admin)."""
+    title = models.CharField(max_length=200, help_text="Shown in bold, e.g. MSc in Cybersecurity (part-time, in progress)")
+    details = models.CharField(max_length=300, blank=True, help_text="Shown after the title, e.g. Bath Spa University, expected Jan 2027")
+    order = models.IntegerField(default=0, help_text="Lower numbers show first.")
+    visible = models.BooleanField(default=True, help_text="Untick to hide this entry without deleting it.")
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name_plural = 'Education'
+
+    def __str__(self):
+        return self.title

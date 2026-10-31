@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectCard, Category
+from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectCard, Category, Experience, Education
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
@@ -415,6 +415,20 @@ class ProjectsAdmin(admin.ModelAdmin):
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+@admin.register(Experience)
+class ExperienceAdmin(admin.ModelAdmin):
+    """Roles shown in the About page's Experience section."""
+    list_display = ('role', 'organisation', 'dates', 'order', 'visible')
+    list_editable = ('order', 'visible')
+    search_fields = ('role', 'organisation')
+    fields = ('role', 'organisation', 'location', 'dates', 'highlights_raw', 'order', 'visible')
+
+@admin.register(Education)
+class EducationAdmin(admin.ModelAdmin):
+    """Entries in the Education card under Experience on the About page."""
+    list_display = ('title', 'details', 'order', 'visible')
+    list_editable = ('order', 'visible')
 
 # Technology Stack Manager
 class TechnologyStackAdmin(admin.ModelAdmin):

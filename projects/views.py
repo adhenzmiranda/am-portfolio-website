@@ -7,7 +7,7 @@ from markdownify.templatetags.markdownify import markdownify
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
-from .models import Projects
+from .models import Projects, Experience, Education
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
 from .seo import home_json_ld, project_json_ld
@@ -37,7 +37,10 @@ def home(request):
     })
 
 def about(request):
-    return render(request, 'about.html')
+    return render(request, 'about.html', {
+        'experiences': Experience.objects.filter(visible=True),
+        'education': Education.objects.filter(visible=True),
+    })
 
 @ratelimit(key=client_ip, rate='5/h', method='POST', block=True)
 def contact(request):
