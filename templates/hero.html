@@ -44,23 +44,23 @@
             <div class="card-container">
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack1.png' %}" width="60" height="66" alt="" loading="lazy">
+                        <img src="{% static 'assets/images/hero/techstack1.png' %}" width="60" height="66" alt="">
                         <h3 class="card-title h3">Creative Multimedia</h3>
-                        <img src="{% static 'assets/images/hero/creativemulti.png' %}" width="248" height="125" alt="Figma, Canva, Adobe Photoshop, Lightroom, Premiere Pro, After Effects, Audition and DaVinci Resolve" loading="lazy">
+                        <img src="{% static 'assets/images/hero/creativemulti.png' %}" width="248" height="125" alt="Figma, Canva, Adobe Photoshop, Lightroom, Premiere Pro, After Effects, Audition and DaVinci Resolve">
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack2.png' %}" width="56" height="33" alt="" loading="lazy">
+                        <img src="{% static 'assets/images/hero/techstack2.png' %}" width="56" height="33" alt="">
                         <h3 class="card-title h3">Web & Application Development</h3>
-                        <img src="{% static 'assets/images/hero/webandapp.png' %}" width="246" height="131" alt="HTML5, Sass, JavaScript, Python, GitHub, Unity and Kotlin" loading="lazy">
+                        <img src="{% static 'assets/images/hero/webandapp.png' %}" width="246" height="131" alt="HTML5, Sass, JavaScript, Python, GitHub, Unity and Kotlin">
                     </div>
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack3.png' %}" width="61" height="61" alt="" loading="lazy">
+                        <img src="{% static 'assets/images/hero/techstack3.png' %}" width="61" height="61" alt="">
                         <h3 class="card-title h3">Cybersecurity Specialization</h3>
-                        <img src="{% static 'assets/images/hero/cybersec.png' %}" width="252" height="120" alt="Cisco, ISC2, TryHackMe, Google and Autopsy" loading="lazy">
+                        <img src="{% static 'assets/images/hero/cybersec.png' %}" width="252" height="120" alt="Cisco, ISC2, TryHackMe, Google and Autopsy">
                     </div>
                 </div>
             </div>
@@ -81,7 +81,7 @@
                 <a href="{% url 'project_detail' project.id %}" class="project-link">
                     {% if project.thumbnail_image %}
                     <div class="project-thumbnail">
-                        <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}" loading="lazy">
+                        <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
                     </div>
                     {% else %}
                     <div class="project-thumbnail placeholder">
@@ -97,8 +97,8 @@
         </div>
 
         <div class="arrows-container">
-            <img src="{% static 'assets/images/hero/arrow-left.png' %}" alt="Previous project" class="arrow a-left" loading="lazy">
-            <img src="{% static 'assets/images/hero/arrow-right.png' %}" alt="Next project" class="arrow a-right" loading="lazy">
+            <img src="{% static 'assets/images/hero/arrow-left.png' %}" alt="Previous project" class="arrow a-left">
+            <img src="{% static 'assets/images/hero/arrow-right.png' %}" alt="Next project" class="arrow a-right">
         </div>
 
         <div class="mobile-carousel-indicators">

@@ -49,7 +49,7 @@
                     <a href="{% url 'project_detail' project.id %}" class="project-link">
                         {% if project.thumbnail_image %}
                         <div class="project-thumbnail">
-                            <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}"{% if not forloop.parentloop.first %} loading="lazy"{% endif %}>
+                            <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
                         </div>
                         {% else %}
                         <div class="project-thumbnail placeholder">

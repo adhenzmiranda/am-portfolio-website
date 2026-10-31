@@ -2,12 +2,12 @@
 <footer class="footer">
     <div class="footer-logo-container">
         <a href="{% url 'home' %}">
-            <img class="footer-logo" src="{% static 'assets/images/navbar/PortfolioLogo.png' %}" width="500" height="188" alt="Adhenz Miranda logo" loading="lazy">
+            <img class="footer-logo" src="{% static 'assets/images/navbar/PortfolioLogo.png' %}" width="500" height="188" alt="Adhenz Miranda logo">
         </a>
     </div>
 
     <div class="socials-icons">
-        {% include "components/social_links.html" with lazy=True %}
+        {% include "components/social_links.html" %}
     </div>
 
     <div class="page-links">
@@ -37,7 +37,7 @@
         <p>POWERED BY</p>
         <span class="separator">|</span>
         <a href="https://www.heroku.com" target="_blank" rel="noopener noreferrer" class="heroku-logo">
-            <img src="{% static 'assets/tech-stack-used/heroku.png' %}" width="198" height="70" alt="Heroku" loading="lazy">
+            <img src="{% static 'assets/tech-stack-used/heroku.png' %}" width="198" height="70" alt="Heroku">
         </a>
     </div>
 </footer>
