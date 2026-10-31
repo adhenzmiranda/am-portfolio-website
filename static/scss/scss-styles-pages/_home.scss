@@ -45,7 +45,8 @@
         }
     }
 
-    .h3 {
+    .h3,
+    .nav-link-lg { // large navbar links (styled like .h3, but not headings)
         font-family: $font-raleway;
         font-weight: $fw-medium;
         color: $dark-mode-white;

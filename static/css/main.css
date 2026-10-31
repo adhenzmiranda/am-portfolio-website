@@ -1342,23 +1342,27 @@ body.ios-blend-fallback .card {
     font-size: 36px;
   }
 }
-.home-page .h3 {
+.home-page .h3,
+.home-page .nav-link-lg {
   font-family: "Raleway", sans-serif;
   font-weight: 500;
   color: #EDEFF8;
 }
 @media screen and (max-width: 440px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 20px;
   }
 }
 @media screen and (min-width: 441px) and (max-width: 1023px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 24px;
   }
 }
 @media screen and (min-width: 1024px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 28px;
   }
 }
