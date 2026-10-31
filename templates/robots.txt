@@ -1,5 +1,19 @@
+# Search engines and AI search/answer bots are welcome.
+# AI training is not permitted.
+
 User-agent: *
+Content-Signal: search=yes,ai-input=yes,ai-train=no
+Allow: /
 Disallow: /ckeditor/
 Disallow: /api/
+
+# AI training crawlers: not allowed
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Meta-ExternalAgent
+User-agent: CCBot
+Disallow: /
 
 Sitemap: {{ SITE_URL }}/sitemap.xml
