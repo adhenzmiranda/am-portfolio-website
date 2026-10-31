@@ -52,9 +52,13 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Hosts that should permanently redirect to the canonical domain, so all
-# traffic goes through Cloudflare (see projects.middleware).
+# traffic goes through Cloudflare and search engines see one address
+# (see projects.middleware).
 CANONICAL_HOST = 'adhenzmiranda.com'
-REDIRECT_HOSTS = ['am04-c1eccbd13c2a.herokuapp.com']
+REDIRECT_HOSTS = [
+    'am04-c1eccbd13c2a.herokuapp.com',
+    'www.adhenzmiranda.com',  # one main address for search engines: no www
+]
 
 
 # Application definition
