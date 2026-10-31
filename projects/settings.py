@@ -42,10 +42,19 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'localhost',
     'am04-c1eccbd13c2a.herokuapp.com',
-    '.herokuapp.com',
     'adhenzmiranda.com',
     'www.adhenzmiranda.com',
-]  # Replace with your actual production domains
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://adhenzmiranda.com',
+    'https://www.adhenzmiranda.com',
+]
+
+# Hosts that should permanently redirect to the canonical domain, so all
+# traffic goes through Cloudflare (see projects.middleware).
+CANONICAL_HOST = 'adhenzmiranda.com'
+REDIRECT_HOSTS = ['am04-c1eccbd13c2a.herokuapp.com']
 
 
 # Application definition
@@ -57,9 +66,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
-    'ckeditor',
-    'ckeditor_uploader',
     'cloudinary',
     'cloudinary_storage',
     'projects',
@@ -71,9 +77,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'projects.middleware.CanonicalDomainRedirectMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -172,24 +178,27 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "https://yourdomain.com",
-    "https://www.yourdomain.com",
-    "https://yourapp.herokuapp.com"
-]  # Replace with your actual production domains
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Lock down the API by default: read-only for anonymous users, and no
+# browsable-API HTML renderer in production.
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+}
+
 
 # Only use WhiteNoise in production
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
     # Security headers
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -199,38 +208,6 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
     SECURE_CONTENT_TYPE_NOSNIFF = True
-else:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
-
-# Add this to handle media files in development
-if DEBUG:
-    MEDIA_URL = '/media/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-# CKEditor settings
-CKEDITOR_UPLOAD_PATH = "uploads/"
-CKEDITOR_CONFIGS = {
-    'default': {
-        'toolbar': 'Custom',
-        'toolbar_Custom': [
-            ['Bold', 'Italic', 'Underline'],
-            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-            ['Link', 'Unlink'],
-            ['RemoveFormat', 'Source']
-        ],
-        'width': '100%',
-        'height': '300px',
-        'allowedContent': True,
-    }
-}
-
-# Imgur Settings
-IMGUR_CLIENT_ID = os.getenv('IMGUR_CLIENT_ID')
-IMGUR_CLIENT_SECRET = os.getenv('IMGUR_CLIENT_SECRET')
-
-# Use Imgur for media files in production
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = 'projects.imgur_storage.ImgurStorage'
 
 # Cloudinary Settings
 cloudinary.config(
@@ -253,15 +230,25 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Your Gmail address
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Your Gmail app password
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # File upload settings to handle large media uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB (from default 2.5MB)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
 DATA_UPLOAD_MAX_NUMBER_FILES = 100  # Allow up to 100 files per request
 
-# Use Cloudinary for media files
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-MEDIA_URL = '/media/'
+STORAGES = {
+    # Cloudinary for media files
+    'default': {
+        'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+    },
+    'staticfiles': {
+        'BACKEND': (
+            'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+            else 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+        ),
+    },
+}
 
 # Markdownify - allow images and standard formatting tags
 MARKDOWNIFY = {
@@ -290,11 +277,6 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'WARNING',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'security.log'),
-        },
         'console': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
@@ -302,12 +284,12 @@ LOGGING = {
     },
     'loggers': {
         'django.security': {
-            'handlers': ['file', 'console'],
+            'handlers': ['console'],
             'level': 'WARNING',
             'propagate': True,
         },
         'django.request': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
@@ -321,6 +303,6 @@ if SENTRY_DSN:
         dsn=SENTRY_DSN,
         integrations=[DjangoIntegration()],
         traces_sample_rate=0.5,  # Adjust for performance monitoring
-        send_default_pii=True,
+        send_default_pii=False,
         environment=os.environ.get('DJANGO_ENV', 'production'),
     )

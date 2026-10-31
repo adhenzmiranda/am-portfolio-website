@@ -1,38 +1,27 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from django.contrib import messages
-from .models import Projects 
+from django.conf import settings
+from .models import Projects
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
-from cloudinary.uploader import upload
 from django_ratelimit.decorators import ratelimit
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-def upload_image(request):
-    if request.method == 'POST' and request.FILES.get('image'):
-        try:
-            image = request.FILES['image']
-            upload_result = upload(image, folder="uploads")
-            return JsonResponse({
-                'success': True,
-                'url': upload_result['secure_url'],
-                'public_id': upload_result['public_id']
-            })
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': str(e)
-            }, status=400)
-    return JsonResponse({
-        'success': False,
-        'error': 'No image provided'
-    }, status=400)
+def client_ip(group, request):
+    """
+    Real visitor IP behind Heroku's router and Cloudflare. CF-Connecting-IP
+    is only trustworthy for traffic that actually passed through Cloudflare,
+    which the herokuapp.com -> custom domain redirect enforces.
+    """
+    return (
+        request.META.get('HTTP_CF_CONNECTING_IP')
+        or request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
+        or request.META.get('REMOTE_ADDR')
+    )
 
 def home(request):
     # Get featured projects for the hero section
@@ -42,7 +31,7 @@ def home(request):
 def about(request):
     return render(request, 'about.html')
 
-@ratelimit(key='ip', rate='5/h', method='POST', block=True)
+@ratelimit(key=client_ip, rate='5/h', method='POST', block=True)
 def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
@@ -51,18 +40,18 @@ def contact(request):
             email = form.cleaned_data['email']
             subject = form.cleaned_data['subject']
             message = form.cleaned_data['message']
-            # Send email
+            # Send email from our own address; the visitor's email goes in
+            # Reply-To so replying still reaches them, without letting
+            # visitors spoof the From header (which Gmail would reject anyway).
             email_message = f'From: {name}\nEmail: {email}\n\nMessage:\n{message}'
-            from django.conf import settings
-            recipient_email = getattr(settings, 'EMAIL_HOST_USER', None)
             try:
-                send_mail(
-                    subject,
-                    email_message,
-                    email,  # From email
-                    [recipient_email],
-                    fail_silently=False,
-                )
+                EmailMessage(
+                    subject=f'[Portfolio] {subject}',
+                    body=email_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.EMAIL_HOST_USER],
+                    reply_to=[email],
+                ).send(fail_silently=False)
                 messages.success(request, 'Thank you for your message! I will get back to you soon.')
                 return redirect('contact')
             except Exception as e:
@@ -96,41 +85,21 @@ def project_detail_page(request, id):
     }
     return render(request, 'project_detail.html', context)
 
-@api_view(['GET', 'POST'])
-@parser_classes([MultiPartParser, FormParser])
+@api_view(['GET'])
 def projects_list(request, format=None):
-    if request.method == 'GET':
-        projects = Projects.objects.all()
-        serializer = ProjectsSerializer(projects, many=True, context={'request': request})
-        return JsonResponse({'projects': serializer.data})
-    
-    if request.method == 'POST':
-        serializer = ProjectsSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    projects = Projects.objects.all()
+    serializer = ProjectsSerializer(projects, many=True, context={'request': request})
+    return JsonResponse({'projects': serializer.data})
 
-@api_view(['GET', 'PUT', 'DELETE'])
-@parser_classes([MultiPartParser, FormParser])
+@api_view(['GET'])
 def projects_detail(request, id, format=None):
     try:
         project = Projects.objects.get(pk=id)
     except Projects.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
-        serializer = ProjectsSerializer(project, context={'request': request})
-        return Response(serializer.data)
-    elif request.method == 'PUT':
-        serializer = ProjectsSerializer(project, data=request.data, context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        project.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer = ProjectsSerializer(project, context={'request': request})
+    return Response(serializer.data)
 
 def project_list(request):
     """

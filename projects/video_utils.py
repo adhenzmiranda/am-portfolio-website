@@ -3,9 +3,10 @@ Video compression utilities for project videos.
 Automatically compresses videos before uploading to Cloudinary.
 """
 import os
+import subprocess
 import tempfile
 from pathlib import Path
-from moviepy import VideoFileClip
+import imageio_ffmpeg
 from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 import logging
@@ -47,17 +48,42 @@ TARGET_BITRATE = QUALITY_PRESETS['high']['bitrate']
 TARGET_FPS = QUALITY_PRESETS['high']['fps']
 
 
+def _probe_video(video_path):
+    """Read size, fps and duration from the video header (no frames decoded)."""
+    reader = imageio_ffmpeg.read_frames(str(video_path))
+    try:
+        return next(reader)
+    finally:
+        reader.close()
+
+
+def _encode_video(input_path, output_path, width, height, fps, bitrate, preset):
+    """Resize and re-encode to H.264/AAC MP4 with the bundled ffmpeg binary."""
+    cmd = [
+        imageio_ffmpeg.get_ffmpeg_exe(), '-y', '-loglevel', 'error',
+        '-i', str(input_path),
+        '-vf', f'scale={width}:{height}',
+        '-r', str(fps),
+        '-c:v', 'libx264', '-b:v', bitrate, '-preset', preset, '-pix_fmt', 'yuv420p',
+        '-c:a', 'aac',
+        '-threads', '4',
+        str(output_path),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"ffmpeg failed: {result.stderr.strip()[-500:]}")
+
+
 def get_video_info(video_path):
     """Get basic information about a video file."""
     try:
-        clip = VideoFileClip(str(video_path))
+        meta = _probe_video(video_path)
         info = {
-            'duration': clip.duration,
-            'fps': clip.fps,
-            'size': clip.size,  # (width, height)
+            'duration': meta['duration'],
+            'fps': meta['fps'],
+            'size': meta['size'],  # (width, height)
             'file_size': os.path.getsize(video_path)
         }
-        clip.close()
         return info
     except Exception as e:
         logger.error(f"Error getting video info: {e}")
@@ -123,17 +149,17 @@ def compress_video(input_file, output_path=None, target_size_mb=95, progress_tra
         if progress_tracker:
             progress_tracker.update(10, "Loading video", "Reading video file into memory...")
         
-        clip = VideoFileClip(input_path)
-        
+        meta = _probe_video(input_path)
+
         # Get original dimensions
-        original_width, original_height = clip.size
+        original_width, original_height = meta['size']
         original_size_mb = os.path.getsize(input_path) / (1024 * 1024)
-        
+
         # Get quality preset settings
         preset = QUALITY_PRESETS.get(quality, QUALITY_PRESETS['medium'])
         target_resolution = preset['resolution']
         target_bitrate = preset['bitrate']
-        target_fps = min(preset['fps'], clip.fps)  # Don't increase FPS
+        target_fps = min(preset['fps'], meta['fps'])  # Don't increase FPS
         
         logger.info(f"Original: {original_width}x{original_height}, {original_size_mb:.2f}MB")
         logger.info(f"Using preset: {preset['name']}")
@@ -159,40 +185,26 @@ def compress_video(input_file, output_path=None, target_size_mb=95, progress_tra
         
         # Check for cancellation
         if progress_tracker and progress_tracker.is_cancelled():
-            clip.close()
             raise Exception("Compression cancelled by user")
-        
+
         if progress_tracker:
             progress_tracker.update(30, "Resizing video", f"Scaling to {new_width}x{new_height}...")
-        
-        # Resize video (moviepy 2.x uses .resized() not .resize())
-        resized_clip = clip.resized((new_width, new_height))
-        
+
         # Check for cancellation before encoding
         if progress_tracker and progress_tracker.is_cancelled():
-            resized_clip.close()
-            clip.close()
             raise Exception("Compression cancelled by user")
-        
+
         if progress_tracker:
             progress_tracker.update(50, "Encoding video", f"Compressing with H.264 codec at {target_bitrate}...")
-        
-        # Write compressed video
-        resized_clip.write_videofile(
-            output_path,
-            codec='libx264',
-            audio_codec='aac',
+
+        # Resize and write compressed video
+        _encode_video(
+            input_path, output_path, new_width, new_height,
             fps=target_fps,
             bitrate=target_bitrate,
             preset='medium',  # Balance between speed and compression
-            threads=4,
-            logger=None  # Suppress moviepy's verbose output
         )
-        
-        # Clean up
-        resized_clip.close()
-        clip.close()
-        
+
         if progress_tracker:
             progress_tracker.update(90, "Finalizing", "Cleaning up temporary files...")
         
@@ -220,29 +232,20 @@ def compress_video_aggressive(input_path, output_path, target_size_mb=95):
     More aggressive compression for very large files.
     """
     try:
-        clip = VideoFileClip(input_path)
-        
+        width, height = _probe_video(input_path)['size']
+
         # More aggressive settings
         new_width = 1024
-        new_height = int(1024 / (clip.size[0] / clip.size[1]))
+        new_height = int(1024 / (width / height))
         new_height = new_height - (new_height % 2)
-        
-        resized_clip = clip.resized((new_width, new_height))
-        
-        resized_clip.write_videofile(
-            output_path,
-            codec='libx264',
-            audio_codec='aac',
+
+        _encode_video(
+            input_path, output_path, new_width, new_height,
             fps=24,  # Lower FPS
             bitrate='800k',  # Lower bitrate
             preset='fast',
-            threads=4,
-            logger=None
         )
-        
-        resized_clip.close()
-        clip.close()
-        
+
         final_size_mb = os.path.getsize(output_path) / (1024 * 1024)
         logger.info(f"Aggressive compression complete: {final_size_mb:.2f}MB")
         
