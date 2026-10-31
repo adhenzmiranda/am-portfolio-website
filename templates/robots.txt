@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /ckeditor/
+Disallow: /api/
+
+Sitemap: {{ SITE_URL }}/sitemap.xml
