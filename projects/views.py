@@ -7,6 +7,7 @@ from markdownify.templatetags.markdownify import markdownify
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
+import logging
 from .models import Projects, Experience, Education
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
@@ -15,6 +16,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from django_ratelimit.decorators import ratelimit
+
+logger = logging.getLogger(__name__)
 
 def client_ip(group, request):
     """
@@ -65,7 +68,10 @@ def contact(request):
                 ).send(fail_silently=False)
                 messages.success(request, 'Thank you for your message! I will get back to you soon.')
                 return redirect('contact')
-            except Exception as e:
+            except Exception:
+                # Shows up in `heroku logs` so failures (e.g. a revoked Gmail
+                # App Password) can be diagnosed; the visitor sees a generic message.
+                logger.exception('Contact form email failed to send')
                 messages.error(request, 'An error occurred while sending your message. Please try again later.')
     else:
         form = ContactForm()

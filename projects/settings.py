@@ -303,6 +303,12 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': False,
         },
+        # The site's own code (e.g. contact form email failures)
+        'projects': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
     },
 }
 
