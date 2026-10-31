@@ -53,6 +53,7 @@ urlpatterns = [
     path('projects/<int:id>/', views.project_detail_page, name='project_detail'),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
+    path('llms.txt', views.llms_txt, name='llms_txt'),
     # API endpoints
     path('api/projects/', views.projects_list),
     path('api/projects/<int:id>', views.projects_detail),

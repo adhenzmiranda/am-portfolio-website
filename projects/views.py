@@ -101,6 +101,14 @@ def project_detail_page(request, id):
     }
     return render(request, 'project_detail.html', context)
 
+def llms_txt(request):
+    """Plain-text summary of the site for AI tools (llmstxt.org), built from the featured projects."""
+    featured = [
+        (project, plain_text_summary(project.description, 150))
+        for project in Projects.objects.filter(featured=True).order_by('-year', 'id')
+    ]
+    return render(request, 'llms.txt', {'featured': featured}, content_type='text/plain; charset=utf-8')
+
 @api_view(['GET'])
 def projects_list(request, format=None):
     projects = Projects.objects.all()
