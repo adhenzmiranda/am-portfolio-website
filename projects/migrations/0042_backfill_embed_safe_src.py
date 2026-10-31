@@ -1,7 +1,7 @@
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 
-from django.db import migrations
+from django.db import migrations, models
 
 ALLOWED_EMBED_DOMAINS = ['youtube.com', 'vimeo.com', 'instagram.com', 'embed.figma.com', 'itch.io', 'linkedin.com']
 
@@ -83,5 +83,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Widen the column first: embed srcs can exceed URLField's default 200
+        # characters (Figma embeds are ~230), which Postgres rejects. This step
+        # was added after 0042 failed on the live database, where it was rolled
+        # back, so it runs in full there.
+        migrations.AlterField(
+            model_name='projectembed',
+            name='safe_src',
+            field=models.URLField(blank=True, editable=False, max_length=2048, help_text='The validated iframe src, extracted from embed_code. Rendered in place of the raw pasted HTML.'),
+        ),
         migrations.RunPython(backfill_safe_src, noop_reverse),
     ]

@@ -268,7 +268,7 @@ class ProjectEmbed(models.Model):
         help_text="Paste the full embed code (e.g., <iframe ...></iframe>) for a video or interactive media. Example: <iframe width='560' height='315' src='https://www.youtube.com/embed/VIDEO_ID' frameborder='0' allowfullscreen></iframe>"
     )
     is_safe = models.BooleanField(default=False, editable=False)
-    safe_src = models.URLField(blank=True, editable=False,
+    safe_src = models.URLField(max_length=2048, blank=True, editable=False,
         help_text="The validated iframe src, extracted from embed_code. Rendered in place of the raw pasted HTML.")
     caption = models.CharField(max_length=200, blank=True)  # <-- Add this line
     order = models.IntegerField(default=0)
