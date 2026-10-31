@@ -10,6 +10,7 @@ from django.conf import settings
 from .models import Projects
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
+from .seo import home_json_ld, project_json_ld
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,7 +31,10 @@ def client_ip(group, request):
 def home(request):
     # Get featured projects for the hero section
     featured_projects = Projects.objects.filter(featured=True)
-    return render(request, 'index.html', {"featured_projects": featured_projects})
+    return render(request, 'index.html', {
+        "featured_projects": featured_projects,
+        "json_ld": home_json_ld(),
+    })
 
 def about(request):
     return render(request, 'about.html')
@@ -89,9 +93,11 @@ def plain_text_summary(markdown_text, length=155):
 
 def project_detail_page(request, id):
     project = get_object_or_404(Projects, id=id)
+    meta_description = plain_text_summary(project.description)
     context = {
         'project': project,
-        'meta_description': plain_text_summary(project.description),
+        'meta_description': meta_description,
+        'json_ld': project_json_ld(project, meta_description),
     }
     return render(request, 'project_detail.html', context)
 

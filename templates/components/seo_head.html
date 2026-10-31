@@ -11,3 +11,4 @@
     <meta property="og:url" content="{{ SITE_URL }}{% firstof canonical_path request.path %}">
     <meta property="og:image" content="{% if og_image %}{{ og_image }}{% else %}{{ SITE_URL }}{{ default_og_image }}{% endif %}">
     <meta name="twitter:card" content="summary_large_image">
+    {% if json_ld %}<script type="application/ld+json">{{ json_ld }}</script>{% endif %}
