@@ -62,3 +62,30 @@ media/
 .DS_Store
 Thumbs.db
 .staticfiles/
+
+# Private task files for Claude Code
+SECURITY_FIXES.md
+SECURITY_FIXES_v2.md
+SEO_TASKS.md
+SEO_TASKS_v2.md
+SEO_AI_AUDIT.md
+SEO_AI_AUDIT_v2.md
+
+# Any future versions of the task files (v3, v4, etc.)
+SECURITY_FIXES*.md
+SEO_TASKS*.md
+SEO_AI_AUDIT*.md
+
+# Certificates and private keys
+*.key
+*.pem
+*.crt
+
+# Leftover recovered files
+*.lost
+
+# Local production data dumps (contain the admin password hash and sessions)
+heroku_live_dump*.json
+
+# Stray temp media from the video editor
+tmp*_compressedTEMP_*.mp4
