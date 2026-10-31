@@ -94,3 +94,6 @@ tmp*_compressedTEMP_*.mp4
 # static/assets/files/Adhenz-Miranda-CV.pdf (web version) is published
 static/assets/files/*.md
 static/assets/files/Adhenz Miranda - *.pdf
+
+# Local backups of the live site (scripts/backup_live_site.py)
+backups/
