@@ -7,7 +7,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.utils.safestring import mark_safe
 
-JOB_TITLE = 'Content Creator & Cybersecurity'
+JOB_TITLE = 'Creative Developer'
 PROFILE_IMAGE = 'assets/images/hero/desktop1-pfp.png'
 SAME_AS = [
     'https://www.linkedin.com/in/am04',
