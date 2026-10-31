@@ -218,6 +218,7 @@ a:not([class]) {
 img,
 picture {
   max-width: 100%;
+  height: auto; /* keep aspect ratio when <img> has width/height attributes */
   display: block;
 }
 

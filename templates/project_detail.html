@@ -87,7 +87,7 @@
                     {% for tech in project.technologies %}
                     <div class="tech-item">
                         <img src="{% static 'assets/tech-stack-used/'|add:tech|add:'.png' %}"
-                            alt="{{ tech|tech_display }}" class="tech-icon">
+                            alt="{{ tech|tech_display }}" class="tech-icon" loading="lazy">
                         <span class="tech-name">{{ tech|tech_display }}</span>
                     </div>
                     {% endfor %}
@@ -161,7 +161,7 @@
                 <div class="gallery-grid">
                     {% for photo in project.photos.all %}
                     <div class="gallery-item">
-                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:project.name }}">
+                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:project.name }}" loading="lazy">
                         {% if photo.caption %}
                         <div class="gallery-caption">{{ photo.caption }}</div>
                         {% endif %}
@@ -179,7 +179,7 @@
                 <div class="project-links">
                     <h3 class="h3">Project Links</h3>
                     <a href="{{ project.github_link }}" class="project-link" target="_blank" rel="noopener noreferrer">
-                        <img src="{% static 'assets/images/footer/github.png' %}" alt="GitHub">
+                        <img src="{% static 'assets/images/footer/github.png' %}" width="36" height="36" alt="GitHub" loading="lazy">
                         View on GitHub
                     </a>
                 </div>
@@ -188,7 +188,7 @@
                 {% if project.demo_link %}
                 <div class="project-links">
                     <a href="{{ project.demo_link }}" class="project-link" target="_blank" rel="noopener noreferrer">
-                        <img src="{% static 'assets/images/projects/live-demo.png' %}" alt="Live Demo">
+                        <img src="{% static 'assets/images/projects/live-demo.png' %}" alt="Live Demo" loading="lazy">
                         View Live Demo
                     </a>
                 </div>
@@ -199,7 +199,7 @@
 
         <div class="project-navigation">
             <a href="{% url 'projects_page' %}" class="back-to-projects-btn">
-                <img src="{% static 'assets/images/projects/back-arrow.png' %}" alt="Back">
+                <img src="{% static 'assets/images/projects/back-arrow.png' %}" width="16" height="16" alt="Back">
                 Back to Projects
             </a>
         </div>
