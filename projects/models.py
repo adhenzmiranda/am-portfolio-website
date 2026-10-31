@@ -2,6 +2,7 @@ import os
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 from django.db import models
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 from cloudinary.models import CloudinaryField
 from multiselectfield import MultiSelectField
@@ -101,6 +102,9 @@ class Projects(models.Model):
 
     def __str__(self):
         return self.name + ' - ' + str(self.description)[:20] + '...'
+
+    def get_absolute_url(self):
+        return reverse('project_detail', args=[self.id])
 
 class ProjectPhoto(models.Model):
     project = models.ForeignKey(Projects, on_delete=models.CASCADE, related_name='photos')

@@ -8,25 +8,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Stylesheet and Favicon -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
 
-    <!-- Dynamic Head Content Container -->
-    <div id="head-container"></div>
-
-    <!-- Page Title -->
-    <title>Home | Adhenz Miranda | AM04</title>
+    {% include "components/seo_head.html" with page_title="Adhenz Miranda | Creative Developer" page_description="Adhenz Miranda is a UAE-based creative developer and content creator studying an MSc in Cybersecurity at Bath Spa University, with a BSc in Creative Computing." %}
 </head>
 
 <body class="home-page">
     {% include 'navbar.html' %}
     {% include 'hero.html' %}
     {% include 'footer.html' %}
+
+    <!-- Featured projects carousel (hero.html) -->
+    <script src="{% static 'js/carousel.js' %}" defer></script>
 
 
 </body>

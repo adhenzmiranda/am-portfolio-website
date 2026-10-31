@@ -3,23 +3,23 @@
     <!-- Desktop Navigation -->
     <div class="navbar-logo-container">
         <a href="{% url 'home' %}">
-            <img class="navbar-logo" src="{% static 'assets/images/navbar/PortfolioLogo.png' %}" alt="Portfolio Logo">
+            <img class="navbar-logo" src="{% static 'assets/images/navbar/PortfolioLogo.png' %}" width="500" height="188" alt="Adhenz Miranda logo">
         </a>
     </div>
 
     <!-- Mobile Navigation Button -->
     <div class="mobile-nav-btns">
         <button class="toggle-nav-btn">
-            <img src="{% static 'assets/images/navbar/hamburger.png' %}" alt="Toggle navigation menu">
+            <img src="{% static 'assets/images/navbar/hamburger.png' %}" width="340" height="340" alt="Toggle navigation menu">
         </button>
     </div>
 
     <div class="nav-menu">
         <ul class="navbar-links">
-            <li><a href="{% url 'home' %}" class="nav-link h3">Home</a></li>
-            <li><a href="{% url 'about' %}" class="nav-link h3">About</a></li>
-            <li><a href="{% url 'projects_page' %}" class="nav-link h3">Projects</a></li>
-            <li><a href="{% url 'contact' %}" class="nav-link h3">Contact</a></li>
+            <li><a href="{% url 'home' %}" class="nav-link nav-link-lg">Home</a></li>
+            <li><a href="{% url 'about' %}" class="nav-link nav-link-lg">About</a></li>
+            <li><a href="{% url 'projects_page' %}" class="nav-link nav-link-lg">Projects</a></li>
+            <li><a href="{% url 'contact' %}" class="nav-link nav-link-lg">Contact</a></li>
         </ul>
     </div>
 </nav>
@@ -28,7 +28,7 @@
     <div class="scroll-progress__bar"></div>
 </div>
 
-<script src="{% static 'js/components/navbar.js' %}"></script>
-<script src="{% static 'js/parallax.js' %}"></script>
-<script src="{% static 'js/main.js' %}"></script>
+<script src="{% static 'js/components/navbar.js' %}" defer></script>
+<script src="{% static 'js/parallax.js' %}" defer></script>
+<script src="{% static 'js/main.js' %}" defer></script>
 <script src="{% static 'js/components/scrollProgress.js' %}" defer></script>

@@ -1,11 +1,16 @@
+import html
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.utils.html import strip_tags
+from django.utils.text import Truncator
+from markdownify.templatetags.markdownify import markdownify
 from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
 from .models import Projects
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
+from .seo import home_json_ld, project_json_ld
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,7 +31,10 @@ def client_ip(group, request):
 def home(request):
     # Get featured projects for the hero section
     featured_projects = Projects.objects.filter(featured=True)
-    return render(request, 'index.html', {"featured_projects": featured_projects})
+    return render(request, 'index.html', {
+        "featured_projects": featured_projects,
+        "json_ld": home_json_ld(),
+    })
 
 def about(request):
     return render(request, 'about.html')
@@ -78,12 +86,28 @@ def projects_page(request):
     }
     return render(request, 'projects.html', context)
 
+def plain_text_summary(markdown_text, length=155):
+    """Render markdown, strip the HTML and collapse whitespace for meta tags."""
+    text = html.unescape(strip_tags(markdownify(markdown_text or '')))
+    return Truncator(' '.join(text.split())).chars(length)
+
 def project_detail_page(request, id):
     project = get_object_or_404(Projects, id=id)
+    meta_description = plain_text_summary(project.description)
     context = {
-        'project': project
+        'project': project,
+        'meta_description': meta_description,
+        'json_ld': project_json_ld(project, meta_description),
     }
     return render(request, 'project_detail.html', context)
+
+def llms_txt(request):
+    """Plain-text summary of the site for AI tools (llmstxt.org), built from the featured projects."""
+    featured = [
+        (project, plain_text_summary(project.description, 150))
+        for project in Projects.objects.filter(featured=True).order_by('-year', 'id')
+    ]
+    return render(request, 'llms.txt', {'featured': featured}, content_type='text/plain; charset=utf-8')
 
 @api_view(['GET'])
 def projects_list(request, format=None):

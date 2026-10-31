@@ -9,19 +9,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Stylesheet and Favicon -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
 
-    <!-- Dynamic Head Content Container -->
-    <div id="head-container"></div>
-
-    <!-- Page Title -->
-    <title>Projects | Adhenz Miranda | AM04</title>
+    {% include "components/seo_head.html" with page_title="Projects by Adhenz Miranda" page_description="Projects by Adhenz Miranda: videography and content creation, graphic design, web and app development, games and cybersecurity work from 2022 to today." %}
 </head>
 
 <body class="home-page">
@@ -29,9 +27,9 @@
 
     <!-- Projects -->
     <div id="projects-container">
-        <div class="project-title h1">
+        <h1 class="project-title h1">
             Projects
-        </div>
+        </h1>
         <div class="project-subtitle">
             <p>
                 Welcome to my projects page, from here you will see all my projects I have done and created by yours
@@ -51,7 +49,7 @@
                     <a href="{% url 'project_detail' project.id %}" class="project-link">
                         {% if project.thumbnail_image %}
                         <div class="project-thumbnail">
-                            <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }} thumbnail">
+                            <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
                         </div>
                         {% else %}
                         <div class="project-thumbnail placeholder">

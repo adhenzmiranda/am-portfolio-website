@@ -1,0 +1,19 @@
+{% autoescape off %}# Adhenz Miranda
+
+> Adhenz Miranda is a UAE-based content creator, photographer and videographer, currently completing a part-time MSc in Cybersecurity at Bath Spa University.
+
+## About
+- [About Adhenz Miranda]({{ SITE_URL }}{% url 'about' %}): background, education, experience and skills
+
+## Work
+- [Projects]({{ SITE_URL }}{% url 'projects_page' %}): portfolio of videography, content creation, design, development and cybersecurity projects
+
+## Featured projects
+{% for project, summary in featured %}- [{{ project.name }}]({{ SITE_URL }}{{ project.get_absolute_url }}){% if summary %}: {{ summary }}{% endif %}
+{% endfor %}
+## Contact
+- [Contact]({{ SITE_URL }}{% url 'contact' %})
+- [LinkedIn](https://www.linkedin.com/in/am04)
+- [GitHub](https://github.com/adhenzmiranda)
+- [Instagram](https://www.instagram.com/i_am.just_adhenz/)
+{% endautoescape %}

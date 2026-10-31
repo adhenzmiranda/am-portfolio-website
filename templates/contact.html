@@ -8,19 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Stylesheet and Favicon -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
 
-    <!-- Dynamic Head Content Container -->
-    <div id="head-container"></div>
-
-    <!-- Page Title -->
-    <title>Contact | Adhenz Miranda | AM04</title>
+    {% include "components/seo_head.html" with page_title="Contact Adhenz Miranda" page_description="Contact Adhenz Miranda, a UAE-based creative developer and content creator, about content creation, photography, videography or cybersecurity work." %}
 </head>
 
 <body class="home-page">
@@ -29,14 +27,14 @@
     <!-- Contact -->
     <div id="contact-container">
         <div class="technology-stack">
-            <div class="tech-stack-title h1">
+            <h1 class="tech-stack-title h1">
                 Contact Me
-            </div>
+            </h1>
             <div class="card-container">
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/contact/briefcase.png' %}" alt="">
-                        <div class="card-title h3">Work With Me</div>
+                        <img src="{% static 'assets/images/contact/briefcase.png' %}" width="42" height="40" alt="">
+                        <h2 class="card-title h3">Work With Me</h2>
                         <p>Looking for a <span class="bld">Creative Developer</span> to join your team?
                             <br> <br>
                             I'm currently <span class="bld-und-itl">seeking internships</span> and <span
@@ -46,8 +44,8 @@
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/contact/collab.png' %}" alt="">
-                        <div class="card-title h3">Collaborate</div>
+                        <img src="{% static 'assets/images/contact/collab.png' %}" width="56" height="40" alt="">
+                        <h2 class="card-title h3">Collaborate</h2>
                         <p>Have an <span class="bld">exciting project idea?</span><br>Let's <span class="bld">join
                                 forces</span> and <span class="bld">create something amazing</span> together.
                             <br> <br>
@@ -57,8 +55,8 @@
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/contact/message.png' %}" alt="">
-                        <div class="card-title h3">Get In Touch</div>
+                        <img src="{% static 'assets/images/contact/message.png' %}" width="48" height="46" alt="">
+                        <h2 class="card-title h3">Get In Touch</h2>
                         <p><span class="bld-und">Connect with me</span> through my social channels or the <span
                                 class="bld-und">contact form below.</span>
                             <br> <br>
@@ -72,9 +70,9 @@
 
         <!-- Contact Form -->
         <div class="contact-form-container">
-            <div class="contact-title h2">
+            <h2 class="contact-title h2">
                 Contact Form
-            </div>
+            </h2>
 
             <form id="contact-form" method="post">
                 {% csrf_token %}
@@ -95,15 +93,15 @@
 
         <!-- CV Download -->
         <div class="cv-download">
-            <div class="cv-title h2">
+            <h2 class="cv-title h2">
                 CV Download
-            </div>
+            </h2>
             <p>Get a complete overview of my skills and experience. Download my CV to see how I can contribute to your
                 team or project.
                 <br> <br>
                 Currently seeking internships and job opportunities.
             </p>
-            <a href="{% static 'assets/files/CV - 3.pdf' %}" download>
+            <a href="{% static 'assets/files/Adhenz-Miranda-CV.pdf' %}" download>
                 <button>Download</button>
             </a>
         </div>

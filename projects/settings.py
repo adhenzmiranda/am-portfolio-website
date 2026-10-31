@@ -52,9 +52,13 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # Hosts that should permanently redirect to the canonical domain, so all
-# traffic goes through Cloudflare (see projects.middleware).
+# traffic goes through Cloudflare and search engines see one address
+# (see projects.middleware).
 CANONICAL_HOST = 'adhenzmiranda.com'
-REDIRECT_HOSTS = ['am04-c1eccbd13c2a.herokuapp.com']
+REDIRECT_HOSTS = [
+    'am04-c1eccbd13c2a.herokuapp.com',
+    'www.adhenzmiranda.com',  # one main address for search engines: no www
+]
 
 
 # Application definition
@@ -66,6 +70,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'cloudinary',
     'cloudinary_storage',
     'projects',
@@ -108,6 +113,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'projects.context_processors.site_url',
             ],
         },
     },
@@ -182,6 +188,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Public base URL used for canonical links, Open Graph tags, JSON-LD and the
+# sitemap, so they always point at the custom domain.
+SITE_URL = os.getenv('SITE_URL', 'https://adhenzmiranda.com').rstrip('/')
 
 # Lock down the API by default: read-only for anonymous users, and no
 # browsable-API HTML renderer in production.

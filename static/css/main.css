@@ -68,24 +68,24 @@ h3 {
   }
 }
 
-p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, .experience-container .experience-card, a {
   font-family: "IBM Plex Sans", sans-serif;
   font-weight: 400;
 }
 @media screen and (max-width: 440px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, .experience-container .experience-card, a {
     color: #EDEFF8;
     font-size: 16px;
   }
 }
 @media screen and (min-width: 441px) and (max-width: 1023px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, .experience-container .experience-card, a {
     color: #EDEFF8;
     font-size: 18px;
   }
 }
 @media screen and (min-width: 1024px) {
-  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, a {
+  p, .project-detail-container .project-detail-header, .project-detail-container .project-detail-header .project-meta span, .project-detail-container .project-detail-content .project-description ul, .project-detail-container .project-detail-content .project-video, .project-detail-container .project-detail-content .project-gallery .gallery-grid .gallery-item .gallery-caption, .project-detail-container .project-detail-content .project-videos .video-gallery-grid .video-item .video-caption, .project-detail-container .project-detail-content .project-embeds .embed-gallery-grid .embed-item .embed-caption, .project-detail-container .tech-stack-container .tech-item, .name-title-container .subtext, .cv-download, #contact-form, #contact-form .alert, #about-container .lets-connect, .my-expertise-container .my-expertise-cards-container .card .card-content, .experience-container .experience-card, a {
     color: #EDEFF8;
     font-size: 20px;
   }
@@ -218,6 +218,7 @@ a:not([class]) {
 img,
 picture {
   max-width: 100%;
+  height: auto; /* keep aspect ratio when <img> has width/height attributes */
   display: block;
 }
 
@@ -1341,23 +1342,27 @@ body.ios-blend-fallback .card {
     font-size: 36px;
   }
 }
-.home-page .h3 {
+.home-page .h3,
+.home-page .nav-link-lg {
   font-family: "Raleway", sans-serif;
   font-weight: 500;
   color: #EDEFF8;
 }
 @media screen and (max-width: 440px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 20px;
   }
 }
 @media screen and (min-width: 441px) and (max-width: 1023px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 24px;
   }
 }
 @media screen and (min-width: 1024px) {
-  .home-page .h3 {
+  .home-page .h3,
+  .home-page .nav-link-lg {
     font-size: 28px;
   }
 }
@@ -1403,6 +1408,7 @@ body.ios-blend-fallback .card {
 }
 
 body.ios-blend-fallback .card,
+body.ios-blend-fallback .experience-card,
 body.ios-blend-fallback .card-float,
 body.ios-blend-fallback .my-expertise-container .my-expertise-cards-container .card,
 .my-expertise-container .my-expertise-cards-container body.ios-blend-fallback .card {
@@ -1588,6 +1594,90 @@ body.ios-blend-fallback .my-expertise-container .my-expertise-cards-container .c
   .my-expertise-container .my-expertise-cards-container .card {
     flex: 1 1 100%;
     width: 100%;
+  }
+}
+
+.experience-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 760px;
+  margin: 1rem auto;
+}
+.experience-container .experience-title {
+  text-align: center;
+  border-bottom: #2F50E4 1px solid;
+  margin: 0 auto;
+  width: fit-content;
+}
+.experience-container .experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.experience-container .experience-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.75rem 1.75rem 1.25rem;
+  background: url("../assets/images/hero/Voronoi-Texture-256.png") repeat, linear-gradient(180deg, #060636 50%, #0D0D0D 100%);
+  background-blend-mode: overlay;
+  background-size: 256px, 100% 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(237, 239, 248, 0.08);
+  border-left: 3px solid #2F50E4;
+  box-shadow: 0 0 15px rgba(237, 239, 248, 0.05), 0 0 30px rgba(237, 239, 248, 0.03);
+  transition: all 0.3s ease;
+}
+.experience-container .experience-card:hover {
+  border-color: rgba(237, 239, 248, 0.15);
+  border-left-color: #2F50E4;
+  box-shadow: 0 0 20px rgba(237, 239, 248, 0.08), 0 0 40px rgba(237, 239, 248, 0.05);
+}
+.experience-container .experience-card .experience-meta {
+  color: rgba(237, 239, 248, 0.75);
+  font-size: 0.9em;
+  margin-bottom: 0.5rem;
+}
+.experience-container .experience-card .experience-meta .experience-dates {
+  white-space: nowrap;
+}
+.experience-container .experience-card .experience-meta .experience-org {
+  color: #EDEFF8;
+  font-weight: 600;
+}
+.experience-container .experience-card ul {
+  list-style: none;
+  padding-left: 0;
+}
+.experience-container .experience-card ul li {
+  position: relative;
+  padding-left: 2rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+.experience-container .experience-card ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.5rem;
+  top: 0.75em;
+  width: 0.75em;
+  height: 0.75em;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #245CD1, #2F50E4);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transform: translateY(-50%);
+}
+@media screen and (max-width: 440px) {
+  .experience-container .experience-card {
+    padding: 1.25rem 1rem 0.75rem;
+  }
+  .experience-container .experience-card ul li {
+    padding-left: 1.6rem;
+  }
+  .experience-container .experience-card ul li::before {
+    left: 0.3rem;
   }
 }
 

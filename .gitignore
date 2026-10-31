@@ -89,3 +89,8 @@ heroku_live_dump*.json
 
 # Stray temp media from the video editor
 tmp*_compressedTEMP_*.mp4
+
+# Private CV sources (full CV has phone + home address); only
+# static/assets/files/Adhenz-Miranda-CV.pdf (web version) is published
+static/assets/files/*.md
+static/assets/files/Adhenz Miranda - *.pdf

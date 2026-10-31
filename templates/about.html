@@ -8,19 +8,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@100;200;300;400;500;600;700&family=Montserrat:wght@100;200;300;400;500;600;700;800;900&family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
         rel="stylesheet">
 
     <!-- Stylesheet and Favicon -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
 
-    <!-- Dynamic Head Content Container -->
-    <div id="head-container"></div>
-
-    <!-- Page Title -->
-    <title>About | Adhenz Miranda | AM04</title>
+    {% include "components/seo_head.html" with page_title="About Adhenz Miranda" page_description="About Adhenz Miranda, a UAE-based creative developer, content creator and videographer with a BSc in Creative Computing, now studying an MSc in Cybersecurity." %}
 </head>
 
 <body class="home-page">
@@ -29,53 +27,114 @@
     <!-- About -->
     <div id="about-container">
 
-        <div class="about-title h1">
-            About Me
-        </div>
+        <h1 class="about-title h1">
+            About Adhenz Miranda
+        </h1>
 
         <div class="pfp-links-container">
             <div class="pfp-container">
-                <img class="card-float" src="{% static 'assets/images/hero/desktop1-pfp.png' %}" alt="Profile Picture">
+                <img class="card-float" src="{% static 'assets/images/hero/adhenz-miranda.webp' %}" width="554" height="573" alt="Adhenz Miranda">
             </div>
             <div class="socials-icons">
-                <a href="https://linkedin.com/in/am04" class="icon-img" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'assets/images/footer/linkedin.png' %}" alt="LinkedIn">
-                </a>
-                <a href="https://github.com/adhenzmiranda" class="icon-img" target="_blank" rel="noopener noreferrer">
-                    <img src="{% static 'assets/images/footer/github.png' %}" alt="GitHub">
-                </a>
-                <a href="mailto:adhenz.miranda@gmail.com" class="icon-img">
-                    <img src="{% static 'assets/images/footer/email.png' %}" alt="Email">
-                </a>
+                {% include "components/social_links.html" %}
             </div>
         </div>
 
         <div class="who-am-i">
-            <div class="who-am-i-title h2">
+            <h2 class="who-am-i-title h2">
                 Who Am I?
-            </div>
-            <p>Hello there! I'm Adhenz Miranda, a Creative Developer and a student at Bath Spa University, currently
-                based in the UAE. <br><br>
-                My journey blends technical expertise with creative passion, allowing me to craft digital experiences
-                that are both functional and visually compelling. <br><br>
-                As someone who thrives at the intersection of technology and design, I'm constantly exploring new ways
-                to push creative boundaries. Aspiring Cybersecurity Technician
+            </h2>
+            <p>Hello there! I'm Adhenz Miranda, a UAE-based content creator, photographer and videographer, currently
+                completing a part-time MSc in Cybersecurity at Bath Spa University. <br><br>
+                I hold a BSc (Hons) in Creative Computing, and these days I create short-form content for Instagram and
+                TikTok for Dubai real estate and property inspection brands, handling everything from planning and
+                scripting to filming, editing and graphic design. My real estate videos have reached 500k+ views for one
+                brand and 350k+ combined for two others. <br><br>
+                As someone who thrives at the intersection of technology and design, I'm always exploring new ways to
+                push creative boundaries. I'm open to content creation, photography and videography roles in the UAE,
+                and to cybersecurity roles as I complete my MSc.
             </p>
         </div>
 
-        <div class="my-expertise-container">
-            <div class="my-expertise-title h2">
-                My Expertise
+        <section class="experience-container" aria-labelledby="experience-title">
+            <h2 class="experience-title h2" id="experience-title">
+                Experience
+            </h2>
+            <div class="experience-list">
+            <article class="experience-card">
+                <h3 class="h3 experience-role">Content Creator, Photographer &amp; Videographer</h3>
+                <p class="experience-meta"><span class="experience-org">Monarch Hill Real Estate &amp; Inspecto Handover</span> · Business Bay, Dubai · <span class="experience-dates">Aug 2026 - Nov 2026</span></p>
+                <ul>
+                    <li>Filmed 60+ shoots across listings, developer properties and snagging inspections as filming lead, and edited 30+ short-form videos for Instagram and TikTok, with Monarch Hill videos selected for paid ad campaigns</li>
+                    <li>Filmed content across Monarch Hill and Inspecto Handover reaching 350k+ combined views</li>
+                    <li>Redesigned carousel and story graphics, produced the carousels, thumbnails and a branding presentation, and photographed properties and inspections for both company websites</li>
+                    <li>Managed TikTok, launched the company LinkedIn page, and improved Google review presence by optimising listing details and timing review requests</li>
+                    <li>Set up the company's first direct approval channel with leadership for content requests, updates and sign-off</li>
+                </ul>
+            </article>
+            <article class="experience-card">
+                <h3 class="h3 experience-role">Content Creator &amp; Videographer</h3>
+                <p class="experience-meta"><span class="experience-org">Dax &amp; Bax Properties</span> · Business Bay, Dubai · <span class="experience-dates">Feb 2026 - Jun 2026</span></p>
+                <ul>
+                    <li>Conceptualized, shot and edited 80 to 100+ brand and social videos across short-form and reel formats for Instagram and TikTok, from brief to final delivery</li>
+                    <li>Reached 500k+ total views and 20k+ likes and shares on Instagram, outperforming previous benchmarks</li>
+                    <li>Directed and collaborated with 7 property consultants across Bengali, Nepali, Hindi, English and Arabic-speaking backgrounds, managing full production cycles from pre-shoot planning to final delivery</li>
+                    <li>Shot on location across developer showrooms, exhibition events and live properties on a Sony ZV-E10, and edited in Premiere Pro and CapCut with colour grading, caption animation, QR code integration and pacing optimised for short-form</li>
+                    <li>Built 3 operational systems from scratch, including a marketing calendar, content pipeline tracker and scriptwriting agent, streamlining team-wide production workflows</li>
+                </ul>
+            </article>
+            <article class="experience-card">
+                <h3 class="h3 experience-role">Digital Marketing &amp; Admin Support (Part-time)</h3>
+                <p class="experience-meta"><span class="experience-org">Optimal Consulting and Research Center &amp; Optimal Education Center</span> · Deira, Dubai · <span class="experience-dates">Sep 2024 - Mar 2026</span></p>
+                <ul>
+                    <li>Awarded Best Oral &amp; Visual Presentation at the 1st International Interdisciplinary Research Summit for simplifying complex concepts through visual storytelling</li>
+                    <li>Grew LinkedIn followers from 9 to 386 and Facebook from 300 to 1.3k, while managing Instagram and TikTok</li>
+                    <li>Created educational conference promotional content and testimonial videos, translating technical research into accessible visual formats</li>
+                </ul>
+            </article>
+            <article class="experience-card">
+                <h3 class="h3 experience-role">IT Intern</h3>
+                <p class="experience-meta"><span class="experience-org">HIS MENA</span> · Business Bay, Dubai · <span class="experience-dates">Aug 2023 - Sep 2023</span></p>
+                <ul>
+                    <li>Designed visual documentation including UI, technical diagrams and status reports</li>
+                    <li>Developed data visualisations for 9 key research projects, turning complex technical information into clear visuals</li>
+                    <li>Created standardised visual templates to keep every project deliverable consistent</li>
+                </ul>
+            </article>
+            <article class="experience-card">
+                <h3 class="h3 experience-role">Design and Web Development Intern</h3>
+                <p class="experience-meta"><span class="experience-org">Air Arabia Academy</span> · Sharjah Airport, Sharjah · <span class="experience-dates">May 2022 - Jun 2022</span></p>
+                <ul>
+                    <li>Led a visual design team of 7 interns on a corporate rebrand, redesigning 89 presentations and 10 documents</li>
+                    <li>Developed corporate brand guidelines and standardised templates for presentations, reports and documentation</li>
+                    <li>Improved document layout and visual clarity for an aviation academy serving 100+ employees</li>
+                </ul>
+            </article>
+            <article class="experience-card">
+                <h3 class="h3 experience-role">Education</h3>
+                <ul>
+                    <li><strong>MSc in Cybersecurity</strong> (part-time, in progress), Bath Spa University, expected Jan 2027</li>
+                    <li><strong>BSc (Hons) in Creative Computing</strong>, Bath Spa University, RAK, Sep 2023 - Sep 2025</li>
+                    <li><strong>Aspire Leaders Program 2025</strong>, Aspire Institute (co-founded by Harvard Business School professors), May 2025</li>
+                    <li><strong>Certificate in Creative Industries</strong>, Skill Development Council Canada, Optimal Education Center, Dubai, Dec 2024</li>
+                </ul>
+            </article>
             </div>
+        </section>
+
+        <div class="my-expertise-container">
+            <h2 class="my-expertise-title h2">
+                My Expertise
+            </h2>
 
             <div class="my-expertise-cards-container">
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-1.png' %}" alt="">
-                        <div class="card-title h3">Creative Design</div>
+                        <img src="{% static 'assets/images/about/expertise-1.png' %}" width="50" height="51" alt="">
+                        <h3 class="card-title h3">Creative Design</h3>
                         <ul>
                             <li>Graphic Design</li>
-                            <li>Video Ediitng</li>
+                            <li>Video Editing</li>
                             <li>Photography</li>
                             <li>Photo Editing</li>
                         </ul>
@@ -83,8 +142,8 @@
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-2.png' %}" alt="">
-                        <div class="card-title h3">Technical Development</div>
+                        <img src="{% static 'assets/images/about/expertise-2.png' %}" width="50" height="51" alt="">
+                        <h3 class="card-title h3">Technical Development</h3>
                         <ul>
                             <li>Responsive Websites</li>
                             <li>Interactive Games</li>
@@ -94,8 +153,8 @@
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-3.png' %}" alt="">
-                        <div class="card-title h3">Core Focus</div>
+                        <img src="{% static 'assets/images/about/expertise-3.png' %}" width="50" height="51" alt="">
+                        <h3 class="card-title h3">Core Focus</h3>
                         <ul>
                             <li>Front-End Web Development</li>
                             <li>Graphic & Web Design</li>
@@ -106,14 +165,14 @@
                 </div>
                 <div class="card">
                     <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-4.png' %}" alt="">
-                        <div class="card-title h3">Interpersonal Skills</div>
+                        <img src="{% static 'assets/images/about/expertise-4.png' %}" width="50" height="51" alt="">
+                        <h3 class="card-title h3">Interpersonal Skills</h3>
                         <ul>
                             <li>Critical Thinking</li>
                             <li>Problem-solving</li>
                             <li>Leadership</li>
                             <li>Collaboration</li>
-                            <li>Adaptablity</li>
+                            <li>Adaptability</li>
                         </ul>
                     </div>
                 </div>
@@ -122,9 +181,9 @@
 
         <!-- CV Download -->
         <div class="lets-connect">
-            <div class="connect-title h2">
+            <h2 class="connect-title h2">
                 Let's Connect
-            </div>
+            </h2>
             <p>Interested in working together? Whether for a potential project, job opportunity, or just to chat, I'm
                 eager to connect!
                 <br> <br>
