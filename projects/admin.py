@@ -407,9 +407,9 @@ class ProjectsAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': ('admin/css/video_embed.css', 'admin/css/mode_toggle.css', 'admin/css/card_import.css')
+            'all': ('admin/css/mode_toggle.css', 'admin/css/card_import.css')
         }
-        js = ('admin/js/video_embed.js', 'admin/js/mode_toggle.js', 'admin/js/card_import.js')
+        js = ('admin/js/mode_toggle.js', 'admin/js/card_import.js')
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
