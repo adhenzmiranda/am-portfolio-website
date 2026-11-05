@@ -1,4 +1,6 @@
 import os
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 from django.db import models
@@ -345,3 +347,28 @@ class Education(models.Model):
 
     def __str__(self):
         return self.title
+
+
+# Tell Bing (IndexNow) about changed pages after saves in the admin. Runs after
+# the database commit and never blocks or breaks the save if the ping fails.
+def _ping_indexnow(urls):
+    from django.conf import settings
+    from django.db import transaction
+    from . import indexnow
+    if indexnow.enabled() and not settings.DEBUG:
+        transaction.on_commit(lambda: indexnow.submit_quietly([settings.SITE_URL + u for u in urls]))
+
+
+@receiver([post_save, post_delete], sender=Projects)
+def project_changed(sender, instance, **kwargs):
+    if kwargs.get('raw'):  # loaddata, e.g. restoring a backup
+        return
+    _ping_indexnow([instance.get_absolute_url(), '/projects/', '/'])
+
+
+@receiver([post_save, post_delete], sender=Experience)
+@receiver([post_save, post_delete], sender=Education)
+def about_changed(sender, instance, **kwargs):
+    if kwargs.get('raw'):  # loaddata, e.g. restoring a backup
+        return
+    _ping_indexnow(['/about/'])

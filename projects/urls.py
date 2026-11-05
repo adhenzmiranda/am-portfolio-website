@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.sitemaps.views import sitemap
-from django.urls import path
+from django.urls import path, re_path
 from django.views.generic import TemplateView
 from django_otp.admin import OTPAdminSite
 from django.conf import settings
@@ -54,6 +54,7 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('llms.txt', views.llms_txt, name='llms_txt'),
+    re_path(r'^(?P<key>[0-9a-fA-F]{8,128})\.txt$', views.indexnow_key, name='indexnow_key'),
     # API endpoints
     path('api/projects/', views.projects_list),
     path('api/projects/<int:id>', views.projects_detail),
