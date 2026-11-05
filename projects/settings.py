@@ -246,6 +246,11 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Your Gmail address
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Your Gmail app password
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
+# Optional Cloudflare Turnstile on the contact form (free). Leave unset to
+# rely on the honeypot and timing checks only.
+TURNSTILE_SITE_KEY = os.getenv('TURNSTILE_SITE_KEY', '')
+TURNSTILE_SECRET_KEY = os.getenv('TURNSTILE_SECRET_KEY', '')
+
 # File upload settings to handle large media uploads
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB (from default 2.5MB)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100MB
