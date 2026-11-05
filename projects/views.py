@@ -2,7 +2,7 @@ import html
 import json
 import urllib.parse
 import urllib.request
-from django.http import JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.html import strip_tags
 from django.utils.text import Truncator
@@ -146,6 +146,12 @@ def project_detail_page(request, id):
         'json_ld': project_json_ld(project, meta_description),
     }
     return render(request, 'project_detail.html', context)
+
+def indexnow_key(request, key):
+    """Serves the IndexNow key at /<key>.txt so Bing can verify the site owns it."""
+    if not settings.INDEXNOW_KEY or key != settings.INDEXNOW_KEY:
+        raise Http404
+    return HttpResponse(key, content_type='text/plain; charset=utf-8')
 
 def llms_txt(request):
     """Plain-text summary of the site for AI tools (llmstxt.org), built from the featured projects."""

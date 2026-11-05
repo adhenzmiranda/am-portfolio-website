@@ -197,6 +197,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # sitemap, so they always point at the custom domain.
 SITE_URL = os.getenv('SITE_URL', 'https://adhenzmiranda.com').rstrip('/')
 
+# IndexNow (free): pings Bing when pages change. Any 8-128 character hex string;
+# leave unset to turn it off. See projects/indexnow.py.
+INDEXNOW_KEY = os.getenv('INDEXNOW_KEY', '')
+
 # Lock down the API by default: read-only for anonymous users, and no
 # browsable-API HTML renderer in production.
 REST_FRAMEWORK = {
