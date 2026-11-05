@@ -87,6 +87,16 @@
                 {{ form.email }}
                 {{ form.subject }}
                 {{ form.message }}
+                {# Honeypot: hidden from people (and screen readers), filled in by bots #}
+                <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+                    <label for="website">Leave this field empty</label>
+                    {{ form.website }}
+                </div>
+                {{ form.form_ts }}
+                {% if turnstile_site_key %}
+                <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
+                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+                {% endif %}
                 <button type="submit">Send</button>
             </form>
         </div>

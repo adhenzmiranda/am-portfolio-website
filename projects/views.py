@@ -1,4 +1,7 @@
 import html
+import json
+import urllib.parse
+import urllib.request
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils.html import strip_tags
@@ -31,6 +34,29 @@ def client_ip(group, request):
         or request.META.get('REMOTE_ADDR')
     )
 
+TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
+
+
+def turnstile_passed(request):
+    """Check the Cloudflare Turnstile token. Always passes when Turnstile isn't
+    configured (no TURNSTILE_SECRET_KEY), so the form works without it."""
+    if not settings.TURNSTILE_SECRET_KEY:
+        return True
+    token = request.POST.get('cf-turnstile-response', '')
+    if not token:
+        return False
+    data = urllib.parse.urlencode({
+        'secret': settings.TURNSTILE_SECRET_KEY,
+        'response': token,
+        'remoteip': client_ip(None, request) or '',
+    }).encode()
+    try:
+        with urllib.request.urlopen(TURNSTILE_VERIFY_URL, data=data, timeout=5) as resp:
+            return bool(json.load(resp).get('success'))
+    except Exception:
+        logger.exception('Turnstile verification request failed')
+        return False
+
 def home(request):
     # Get featured projects for the hero section
     featured_projects = Projects.objects.filter(featured=True)
@@ -49,7 +75,18 @@ def about(request):
 def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
-        if form.is_valid():
+        if form.is_valid() and form.is_expired():
+            messages.error(request, 'This page was open too long. Please send your message again.')
+            form = ContactForm(initial={k: form.cleaned_data[k] for k in ('name', 'email', 'subject', 'message')})
+        elif form.is_valid() and form.spam_reason():
+            # Pretend it worked so bots don't learn to adapt; nothing is emailed.
+            logger.warning('Contact form spam blocked (%s) from %s', form.spam_reason(), client_ip(None, request))
+            messages.success(request, 'Thank you for your message! I will get back to you soon.')
+            return redirect('contact')
+        elif form.is_valid() and not turnstile_passed(request):
+            logger.warning('Contact form failed Turnstile from %s', client_ip(None, request))
+            messages.error(request, 'Please complete the security check and try again.')
+        elif form.is_valid():
             name = form.cleaned_data['name']
             email = form.cleaned_data['email']
             subject = form.cleaned_data['subject']
@@ -75,7 +112,7 @@ def contact(request):
                 messages.error(request, 'An error occurred while sending your message. Please try again later.')
     else:
         form = ContactForm()
-    return render(request, 'contact.html', {'form': form})
+    return render(request, 'contact.html', {'form': form, 'turnstile_site_key': settings.TURNSTILE_SITE_KEY})
 
 def projects_page(request):
     projects = Projects.objects.all().order_by('-created_at')
