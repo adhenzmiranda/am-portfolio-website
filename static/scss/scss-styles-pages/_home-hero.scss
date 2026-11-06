@@ -26,8 +26,8 @@
 
     @include mobile {
         grid-template-columns: minmax(0, 1fr);
-        gap: $space-60;
-        padding-top: $space-40;
+        gap: $space-20;
+        padding-top: $space-20;
         padding-bottom: $space-60;
     }
 }
@@ -139,9 +139,11 @@
     width: 100%;
     max-width: 440px;
 
+    // Phone: smaller and above the headline, so photo and headline share the first screen.
     @include mobile {
-        justify-self: center;
-        max-width: 320px;
+        order: -1;
+        justify-self: start;
+        max-width: 240px;
     }
 }
 

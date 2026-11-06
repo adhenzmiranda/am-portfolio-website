@@ -1,0 +1,114 @@
+// Project card and grid (Home featured grid, Projects page).
+// Sharp-cornered 16:9 image, then label, title and a one-line summary.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+// Below this width cards go one per row (two would be too narrow to read).
+$single-column-below: 680px;
+
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: $space-60 $space-40;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    &--featured {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @include tablet {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: $space-40 $space-20 + $space-10;
+    }
+
+    @media screen and (max-width: #{$single-column-below - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-40;
+    }
+
+    > li {
+        min-width: 0;
+    }
+}
+
+.project-card {
+    display: block;
+    color: $text;
+    text-decoration: none;
+    @include focus-ring;
+}
+
+.project-card__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background-color: $white-05;
+}
+
+.project-card__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s $ease-out;
+
+    .project-card:hover &,
+    .project-card:focus-visible & {
+        transform: scale(1.03);
+    }
+}
+
+.project-card__placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-montserrat;
+    font-size: 64px;
+    color: $text-muted;
+}
+
+.project-card__label {
+    margin: $space-20 0 0;
+    @include label;
+}
+
+.project-card__title {
+    // Long project names stop at two lines so the grid stays even.
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    margin: $space-10 0 0;
+    font-family: $font-raleway;
+    font-size: 20px;
+    font-weight: $fw-medium;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+    color: $text;
+}
+
+// One line, cut off with an ellipsis at the column edge.
+.project-card__desc {
+    overflow: hidden;
+    margin: $space-5 0 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: $text-muted;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .project-card__img {
+        transition: none;
+    }
+}

@@ -17,7 +17,7 @@
                     {% include "components/social_links.html" %}
                 </div>
             </div>
-            <a href="#featured-projects" class="home-hero__scroll">&darr; Selected projects</a>
+            <a href="#featured-projects" class="home-hero__scroll">&darr; Featured projects</a>
         </div>
 
         <div class="home-hero__portrait">
@@ -33,9 +33,8 @@
             <span class="section-head__num">01</span>
             <h2 class="section-head__title" id="home-stack-title">Technology stack</h2>
         </header>
-        <ol class="stack-rows">
+        <ul class="stack-rows">
             <li class="stack-row">
-                <span class="stack-row__num">01</span>
                 <h3 class="stack-row__name">Creative multimedia</h3>
                 <ul class="stack-row__logos">
                     <li><img src="{% static 'assets/tech-stack-used/figma.png' %}" width="67" height="100" alt="Figma" title="Figma" loading="lazy"></li>
@@ -49,7 +48,6 @@
                 </ul>
             </li>
             <li class="stack-row">
-                <span class="stack-row__num">02</span>
                 <h3 class="stack-row__name">Web &amp; application development</h3>
                 <ul class="stack-row__logos">
                     <li><img src="{% static 'assets/tech-stack-used/html.png' %}" width="100" height="100" alt="HTML5" title="HTML5" loading="lazy"></li>
@@ -62,7 +60,6 @@
                 </ul>
             </li>
             <li class="stack-row">
-                <span class="stack-row__num">03</span>
                 <h3 class="stack-row__name">Cybersecurity</h3>
                 <ul class="stack-row__logos">
                     <li><img src="{% static 'assets/tech-stack-used/cisco.png' %}" width="100" height="100" alt="Cisco" title="Cisco" loading="lazy"></li>
@@ -72,50 +69,31 @@
                     <li><img src="{% static 'assets/tech-stack-used/autopsy.png' %}" width="201" height="70" alt="Autopsy" title="Autopsy" loading="lazy"></li>
                 </ul>
             </li>
-        </ol>
+        </ul>
+    </div>
+</section>
+
+<!-- Featured projects (redesign step 2c) -->
+<section class="home-featured" id="featured-projects" aria-labelledby="home-featured-title">
+    <div class="home-featured__inner">
+        <header class="section-head">
+            <span class="section-head__num">02</span>
+            <h2 class="section-head__title" id="home-featured-title">Featured projects</h2>
+        </header>
+        {% if featured_projects %}
+        <ul class="project-grid project-grid--featured">
+            {% for project in featured_projects %}
+            <li>{% include "components/project_card.html" %}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="home-featured__empty">No featured projects yet.</p>
+        {% endif %}
+        <a class="home-featured__all" href="{% url 'projects_page' %}">View all projects <span aria-hidden="true">&rarr;</span></a>
     </div>
 </section>
 
 <div class="hero">
-
-    <!-- Featured Projects Section -->
-    <div class="hero-section3" id="featured-projects">
-        <h2 class="projects-title h2">
-            Featured Projects
-        </h2>
-
-        <div class="project-carousel">
-            {% for project in featured_projects %}
-            <div class="project">
-                <a href="{% url 'project_detail' project.id %}" class="project-link">
-                    {% if project.thumbnail_image %}
-                    <div class="project-thumbnail">
-                        <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
-                    </div>
-                    {% else %}
-                    <div class="project-thumbnail placeholder">
-                        <span>No Image</span>
-                    </div>
-                    {% endif %}
-                    <h3>{{ project.name }}</h3>
-                </a>
-            </div>
-            {% empty %}
-            <div class="no-featured">No featured projects yet.</div>
-            {% endfor %}
-        </div>
-
-        <div class="arrows-container">
-            <img src="{% static 'assets/images/hero/arrow-left.png' %}" alt="Previous project" class="arrow a-left">
-            <img src="{% static 'assets/images/hero/arrow-right.png' %}" alt="Next project" class="arrow a-right">
-        </div>
-
-        <div class="mobile-carousel-indicators">
-            {% for project in featured_projects %}
-            <span class="carousel-dot{% if forloop.first %} active{% endif %}"></span>
-            {% endfor %}
-        </div>
-    </div>
 
     <!-- Contact Me Section -->
     <div class="hero-section4">

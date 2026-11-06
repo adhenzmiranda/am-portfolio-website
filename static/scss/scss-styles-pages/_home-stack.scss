@@ -1,5 +1,5 @@
 // Home: technology stack (redesign step 2b).
-// Numbered rows split by hairlines; tool logos sit muted and monochrome,
+// Rows split by hairlines (the section is numbered, the rows are not); tool logos sit muted and monochrome,
 // and each one shows its real colours on hover.
 @use '../base/breakpoints' as *;
 @use '../base/typography' as *;
@@ -49,11 +49,8 @@
     }
 }
 
-.stack-row__num {
-    @include label;
-}
-
 .stack-row__name {
+    grid-column: 2; // first column stays empty so names line up under the section title
     margin: 0;
     font-family: $font-raleway;
     font-size: 24px;

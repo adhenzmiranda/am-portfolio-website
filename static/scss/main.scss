@@ -16,10 +16,10 @@
 @use "components/navbar";
 @use "components/footer";
 @use "components/hero-contact";
-@use "components/hero-featured-projects";
 @use "components/lightbox";
 @use "components/scroll-progress";
 @use "components/section-head";
+@use "components/project-card";
 
 // LAYOUTS
 @use "layouts/hero-layout";
@@ -34,6 +34,7 @@
 @use "scss-styles-pages/hero";
 @use "scss-styles-pages/home-hero";
 @use "scss-styles-pages/home-stack";
+@use "scss-styles-pages/home-featured";
 @use "scss-styles-pages/project_details";
 
 
