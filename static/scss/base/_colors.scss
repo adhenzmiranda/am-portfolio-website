@@ -9,3 +9,15 @@ $dark-mode-accent-blue: #245CD1;
 // Gradient Overlay Colors
 $gradient-dark-blue: #060636;
 $gradient-black: #0D0D0D;
+
+// Neutrals
+$black: #000;
+$white: #fff;
+$light-gray: #f5f5f5;
+
+// Named transparencies of the main white (hairlines, faint surfaces)
+$white-03: rgba($dark-mode-white, 0.03);
+$white-05: rgba($dark-mode-white, 0.05);
+$white-08: rgba($dark-mode-white, 0.08);
+$white-10: rgba($dark-mode-white, 0.1);
+$white-15: rgba($dark-mode-white, 0.15);

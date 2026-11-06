@@ -186,7 +186,7 @@
 
             &.active {
                 transform: scale(1.08) translateY(-8px); // Increased scale and lift
-                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); // Deeper shadow
+                box-shadow: 0 8px 16px rgba($black, 0.3); // Deeper shadow
                 z-index: 2; // Brings active project forward
                 
                 // ~ .project {

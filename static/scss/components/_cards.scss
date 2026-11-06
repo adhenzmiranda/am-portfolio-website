@@ -56,17 +56,17 @@ body.ios-blend-fallback .card {
             border-radius: 10px;
             gap: 1.5rem;
             /* Enhanced white glow effect (+5% brightness) */
-            border: 1px solid rgba($dark-mode-white, 0.08);
+            border: 1px solid $white-08;
             box-shadow: 
-                0 0 15px rgba($dark-mode-white, 0.05),
-                0 0 30px rgba($dark-mode-white, 0.03);
+                0 0 15px $white-05,
+                0 0 30px $white-03;
             transition: all 0.3s ease;
 
             &:hover {
-                border-color: rgba($dark-mode-white, 0.15);
+                border-color: $white-15;
                 box-shadow: 
-                    0 0 20px rgba($dark-mode-white, 0.08),
-                    0 0 40px rgba($dark-mode-white, 0.05);
+                    0 0 20px $white-08,
+                    0 0 40px $white-05;
             }
 
             .card-content {
