@@ -1,25 +1,9 @@
+{% extends "base.html" %}
 {% load static %}
 {% load custom_filters %}
 {% load markdownify %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <!-- Character Encoding and Viewport Settings -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Google Fonts Import -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
-        rel="stylesheet">
-
-    <!-- Stylesheet and Favicon -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
-
+{% block head %}
     <!-- Lightbox Component -->
     <script src="{% static 'js/components/lightbox.js' %}" defer></script>
 
@@ -27,38 +11,10 @@
     <script async src="//www.instagram.com/embed.js"></script>
     <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
     
-    <script>
-        document.addEventListener("DOMContentLoaded", (event) => {
-            // Initialize GSAP plugins
-            gsap.registerPlugin();
-            // gsap code here!
-            
-            // Initialize embed handler (defined in main.js)
-            if (window.EmbedHandler) {
-                window.EmbedHandler.init();
-            }
-            
-            // Additional debugging for iframe dimensions
-            setTimeout(() => {
-                const fbIframes = document.querySelectorAll('iframe[src*="facebook.com"]');
-                fbIframes.forEach((iframe, index) => {
-                    console.log(`Facebook iframe ${index}:`, {
-                        src: iframe.src,
-                        width: iframe.getAttribute('width'),
-                        height: iframe.getAttribute('height'),
-                        computedStyle: window.getComputedStyle(iframe),
-                        aspectRatio: window.getComputedStyle(iframe).aspectRatio
-                    });
-                });
-            }, 2000);
-        });
-    </script>
     {% include "components/seo_head.html" with page_title=project.name|add:" | Adhenz Miranda" page_description=meta_description %}
-</head>
+{% endblock %}
 
-<body class="home-page">
-    {% include 'navbar.html' %}
-
+{% block content %}
     <div class="project-detail-container">
         <div class="project-detail-header">
             <h1 class="project-detail-title h1">{{ project.name }}</h1>
@@ -203,8 +159,4 @@
         </div>
 
     </div>
-
-    {% include 'footer.html' %}
-</body>
-
-</html>
+{% endblock %}
