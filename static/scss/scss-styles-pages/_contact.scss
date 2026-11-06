@@ -1,148 +1,257 @@
+// Contact page (redesign step 6): pitch on the left, form on the right;
+// stacked (pitch first) below 1024px. Labelled, lightly filled square fields.
+// The form's fields, honeypot, timestamp and Turnstile are unchanged; this is styling only.
 @use '../base/breakpoints' as *;
 @use '../base/typography' as *;
 @use '../base/colors' as *;
-@use '../base/mixins' as *;
 @use '../base/variable' as *;
-@use '../components/animations' as *;
-@use '../components/buttons' as *;
+@use '../base/mixins' as *;
 
-#contact-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
+.contact-page {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-
-    a {
-        text-decoration: none;
-    }
-
-    padding: max(1rem, 3vw);
 }
 
-.cv-download {
-    @extend .cta, p;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.8rem;
-    max-width: 600px;
+.contact-page__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+    gap: $space-60 $space-120;
+    padding-top: $space-60;
+    padding-bottom: $space-120;
+    @include page-container;
 
-    button {
-        @include cta-button;
+    @media screen and (max-width: #{$desktop - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-60;
+        padding-bottom: $space-60 + $space-20;
     }
 
-    .cv-title {
-        text-align: center;
-        border-bottom: $dark-mode-secondary-blue 1px solid
+    @include mobile {
+        padding-top: $space-20;
+        padding-bottom: $space-60;
     }
 }
 
-.contact-form-container {
-    display: flex;
-    align-self: center;
-    align-items: center;
-    flex-direction: column;
-    padding: 2rem 1.5rem; // More consistent padding
-    background:
-        url('../assets/images/hero/Voronoi-Texture-256.png') repeat,
-        linear-gradient(180deg,
-            $gradient-dark-blue 50%,
-            $gradient-black 100%);
-    background-blend-mode: overlay;
-    background-size: 100% 100%;
-    border-radius: 10px;
-    gap: 1.5rem;
-    width: 100%; // Make it take full width of container
-    max-width: 600px; // But limit maximum width
+// ---------------------------------------------------------------- Pitch
 
-    border: 1px solid $white-08;
-    box-shadow: 
-    0 0 15px $white-05,
-    0 0 30px $white-03;
-    transition: all 0.3s ease;
+.contact-pitch__title {
+    margin: 0 0 $space-40;
+    font-family: $font-montserrat;
+    font-size: 56px;
+    font-weight: $fw-regular;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    strong {
+        font-weight: $fw-semibold;
+    }
+
+    @include tablet {
+        font-size: 44px;
+    }
+
+    @include mobile {
+        font-size: 40px;
+    }
+}
+
+.contact-reasons {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid $hairline;
+}
+
+.contact-reason {
+    display: grid;
+    grid-template-columns: $num-col-small minmax(0, 1fr);
+    padding: $space-20 0;
+    border-bottom: 1px solid $hairline;
+}
+
+.contact-reason__num {
+    padding-top: 6px;
+    @include label;
+}
+
+.contact-reason__title {
+    margin: 0 0 $space-5;
+    font-family: $font-raleway;
+    font-size: 20px;
+    font-weight: $fw-medium;
+    line-height: 1.35;
+    color: $text;
+}
+
+.contact-reason__text {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.55;
+    color: $text-muted;
+}
+
+.contact-pitch__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-20 $space-40;
+    margin-top: $space-40;
+}
+
+.contact-pitch__social {
+    display: flex;
+    gap: $space-20;
+
+    .icon-img {
+        display: block;
+        line-height: 0;
+        opacity: 0.75;
+        transition: opacity $duration-fast;
+        @include focus-ring;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    img {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+// ---------------------------------------------------------------- Form
+
+.contact-form-panel__title {
+    margin: $space-10 0 $space-40;
+    font-weight: $fw-regular;
+    @include label;
+
+    @media screen and (max-width: #{$desktop - 1}) {
+        margin-top: 0;
+    }
+}
+
+.contact-form__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 $space-20 + $space-10;
+
+    @include mobile {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.field {
+    margin-bottom: $space-20 + $space-10;
+}
+
+.field__label {
+    display: block;
+    margin-bottom: $space-5;
+    @include label;
+}
+
+.contact-form input[type='text'],
+.contact-form input[type='email'],
+.contact-form textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: $white-05;
+    border: 1px solid rgba($dark-mode-white, 0.4); // ~3.3:1 against the background (WCAG 1.4.11)
+    border-radius: 0;
+    box-shadow: none;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    color: $text;
+    transition:
+        border-color $duration-fast,
+        background-color $duration-fast,
+        box-shadow $duration-fast;
+    appearance: none;
+
+    // Labels name the fields, so the placeholders (set in forms.py) are hidden.
+    &::placeholder {
+        color: transparent;
+    }
 
     &:hover {
-    border-color: $white-15;
-    box-shadow: 
-        0 0 20px $white-08,
-        0 0 40px $white-05;
+        border-color: rgba($dark-mode-white, 0.6);
     }
 
-    .contact-title {
-        text-align: center;
-        border-bottom: $dark-mode-secondary-blue 1px solid;
-    }
-}
-
-#contact-form {
-    display: flex;
-    flex-direction: column;
-    @extend p;
-    width: 100%; // Make form take full width
-    gap: 0.5rem;
-    align-items: center;
-    justify-content: center;
-
-    .alert {
-        align-self: center;
-        @extend p;
-        justify-self: center;
-    }
-
-    input,
-    textarea {
-        @extend input;
-        margin: 0.5rem 0;
-        padding: 10px 15px; // Changed from fixed paddings
-        width: 100%; // Make inputs take full width
-        border-radius: 5px;
+    // Typing: blue border (thickened with a shadow, so nothing moves) and a lighter fill.
+    &:focus {
         outline: none;
-        transition: border-color 0.3s ease;
+        border-color: $accent;
+        background-color: $white-08;
+        box-shadow: 0 0 0 1px $accent;
     }
 
-    button,
-    a {
-        @extend .cta;
-        padding: 20px;
-        width: 165px;
-        height: 45px;
-        color: $dark-mode-white;
-        background-color: $dark-mode-primary-blue;
-        outline: none;
-        box-shadow: none;
-        border: none;
-        border-radius: 10px;
-        align-self: center;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        position: relative;
-        transition: transform 0.3s ease;
+    &[aria-invalid='true'] {
+        border-color: $error;
+    }
 
-        @include hover-scale(1.04, -1px); // Custom scale and y-offset
-        @include button-border-animation();
+    // Browser autofill keeps the dark box instead of a pale yellow one.
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus {
+        -webkit-text-fill-color: $text;
+        caret-color: $text;
+        transition: background-color 9999s ease-out 0s;
+    }
+
+    @include mobile {
+        font-size: 16px; // 16px stops iOS zooming in on focus
     }
 }
 
-// Add responsive breakpoints like you did for the cards
-@include tablet {
-    #contact-container {
-        padding: 2rem 1.5rem;
+.contact-form textarea {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.field__label {
+    margin-bottom: $space-10;
+}
+
+.field__error {
+    margin: $space-5 0 0;
+    font-family: $font-ibm;
+    font-size: 14px;
+    line-height: 1.4;
+    color: $error;
+}
+
+// Turnstile check (only rendered when a site key is configured).
+.contact-form .cf-turnstile {
+    margin-bottom: $space-20 + $space-10;
+}
+
+.contact-form__alerts {
+    margin-bottom: $space-20 + $space-10;
+}
+
+.alert {
+    margin: 0 0 $space-10;
+    padding: 14px $space-20;
+    border-left: 2px solid $accent;
+    background-color: $white-05;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    color: $text;
+
+    &.alert-error {
+        border-left-color: $error;
+        background-color: rgba($error, 0.08);
     }
 }
 
-@include mobile {
-    #contact-container {
-        padding: 1.5rem 1rem;
-    }
-
-    .contact-form-container {
-        padding: 1.5rem 1rem;
-    }
+.contact-form__submit {
+    margin-top: $space-10;
 }

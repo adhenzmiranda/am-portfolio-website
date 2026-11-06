@@ -33,6 +33,9 @@ $accent: $dark-mode-secondary-blue;
 $button-bg: $dark-mode-primary-blue;
 $button-bg-hover: $dark-mode-secondary-blue;
 
+// Form feedback only (error messages and invalid fields): the one non-palette colour
+$error: #ff8f8f;
+
 // Motion
 $ease-out: cubic-bezier(0.2, 0, 0, 1);
 $duration-fast: 0.15s;

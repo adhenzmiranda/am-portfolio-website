@@ -6,69 +6,84 @@
 {% endblock %}
 
 {% block content %}
-    <!-- Contact -->
-    <div id="contact-container">
-        <div class="technology-stack">
-            <h1 class="tech-stack-title h1">
-                Contact Me
+<section class="contact-page" aria-labelledby="contact-title">
+    <div class="contact-page__inner">
+
+        <!-- Left: the pitch -->
+        <div class="contact-pitch">
+            <h1 class="contact-pitch__title" id="contact-title">
+                <span class="page-head__eyebrow">Contact</span>
+                Let's work <strong>together</strong>.
             </h1>
-            <div class="card-container">
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/contact/briefcase.png' %}" width="42" height="40" alt="">
-                        <h2 class="card-title h3">Work With Me</h2>
-                        <p>Looking for a <span class="bld">Creative Developer</span> to join your team?
-                            <br> <br>
-                            I'm currently <span class="bld-und-itl">seeking internships</span> and <span
-                                class="bld-und-itl">job opportunities</span> in the UAE and beyond.
-                        </p>
+
+            <ol class="contact-reasons">
+                <li class="contact-reason">
+                    <span class="contact-reason__num">01</span>
+                    <div>
+                        <h2 class="contact-reason__title">Work with me</h2>
+                        <p class="contact-reason__text">Looking for a creative developer to join your team? I'm currently seeking internships and job opportunities in the UAE and beyond.</p>
                     </div>
-                </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/contact/collab.png' %}" width="56" height="40" alt="">
-                        <h2 class="card-title h3">Collaborate</h2>
-                        <p>Have an <span class="bld">exciting project idea?</span><br>Let's <span class="bld">join
-                                forces</span> and <span class="bld">create something amazing</span> together.
-                            <br> <br>
-                            I'm always open to <span class="bld-und-itl">creative collaborations.</span>
-                        </p>
+                </li>
+                <li class="contact-reason">
+                    <span class="contact-reason__num">02</span>
+                    <div>
+                        <h2 class="contact-reason__title">Collaborate</h2>
+                        <p class="contact-reason__text">Have an exciting project idea? Let's join forces and create something together. I'm always open to creative collaborations.</p>
                     </div>
-                </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/contact/message.png' %}" width="48" height="46" alt="">
-                        <h2 class="card-title h3">Get In Touch</h2>
-                        <p><span class="bld-und">Connect with me</span> through my social channels or the <span
-                                class="bld-und">contact form below.</span>
-                            <br> <br>
-                            Feel free to <span class="bld-und-itl">download my CV</span> to learn more about <span
-                                class="bld-und-itl">my skills and experience.</span>
-                        </p>
+                </li>
+                <li class="contact-reason">
+                    <span class="contact-reason__num">03</span>
+                    <div>
+                        <h2 class="contact-reason__title">Get in touch</h2>
+                        <p class="contact-reason__text">Send a message with the form, or reach me through my social channels. My CV has the full picture of my skills and experience.</p>
                     </div>
+                </li>
+            </ol>
+
+            <div class="contact-pitch__actions">
+                <a class="btn btn--ghost" href="{% static 'assets/files/Adhenz-Miranda-CV.pdf' %}" download>Download CV <span aria-hidden="true">&darr;</span></a>
+                <div class="contact-pitch__social">
+                    {% include "components/social_links.html" %}
                 </div>
             </div>
         </div>
 
-        <!-- Contact Form -->
-        <div class="contact-form-container">
-            <h2 class="contact-title h2">
-                Contact Form
-            </h2>
+        <!-- Right: the form (field names, honeypot, timestamp and Turnstile unchanged) -->
+        <div class="contact-form-panel">
+            <h2 class="contact-form-panel__title">Send a message</h2>
 
-            <form id="contact-form" method="post">
+            <form id="contact-form" class="contact-form" method="post">
                 {% csrf_token %}
                 {% if messages %}
+                <div class="contact-form__alerts" role="status">
                     {% for message in messages %}
-                        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-                            {{ message }}
-                        </div>
+                    <p class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</p>
                     {% endfor %}
+                </div>
                 {% endif %}
-                {{ form.name }}
-                {{ form.email }}
-                {{ form.subject }}
-                {{ form.message }}
+
+                <div class="contact-form__row">
+                    <div class="field">
+                        <label class="field__label" for="name">Name</label>
+                        {{ form.name }}
+                        {% for error in form.name.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+                    </div>
+                    <div class="field">
+                        <label class="field__label" for="email">Email</label>
+                        {{ form.email }}
+                        {% for error in form.email.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="subject">Subject</label>
+                    {{ form.subject }}
+                    {% for error in form.subject.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+                </div>
+                <div class="field">
+                    <label class="field__label" for="message">Message</label>
+                    {{ form.message }}
+                    {% for error in form.message.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+                </div>
                 {# Honeypot: hidden from people (and screen readers), filled in by bots #}
                 <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
                     <label for="website">Leave this field empty</label>
@@ -79,23 +94,9 @@
                 <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="dark"></div>
                 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
                 {% endif %}
-                <button type="submit">Send</button>
+                <button type="submit" class="btn btn--primary contact-form__submit">Send message <span aria-hidden="true">&rarr;</span></button>
             </form>
         </div>
-
-        <!-- CV Download -->
-        <div class="cv-download">
-            <h2 class="cv-title h2">
-                CV Download
-            </h2>
-            <p>Get a complete overview of my skills and experience. Download my CV to see how I can contribute to your
-                team or project.
-                <br> <br>
-                Currently seeking internships and job opportunities.
-            </p>
-            <a href="{% static 'assets/files/Adhenz-Miranda-CV.pdf' %}" download>
-                <button>Download</button>
-            </a>
-        </div>
     </div>
+</section>
 {% endblock %}
