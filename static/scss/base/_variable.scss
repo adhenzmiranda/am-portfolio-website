@@ -1,1 +1,34 @@
-// Stores SCSS variables like colors and fonts.
+// Design tokens for the redesign (see docs/REDESIGN_SPEC.md).
+// Variables only: this file must never output CSS.
+@use 'colors' as *;
+
+// Spacing steps
+$space-5: 5px;
+$space-10: 10px;
+$space-20: 20px;
+$space-40: 40px;
+$space-60: 60px;
+$space-120: 120px;
+
+// Widest the page content gets (gutters included); centred on wider screens
+$page-max-width: 1440px;
+
+// Side padding of the page at each breakpoint
+$gutter-phone: 20px;
+$gutter-tablet: 40px;
+$gutter-desktop: 60px;
+
+// Text and lines
+$text: $dark-mode-white;
+$text-muted: rgba($dark-mode-white, 0.6);
+$hairline: $white-15;
+
+// Blue is only for actions and active / hover / focus states
+$accent: $dark-mode-secondary-blue;
+$button-bg: $dark-mode-primary-blue;
+$button-bg-hover: $dark-mode-secondary-blue;
+
+// Motion
+$ease-out: cubic-bezier(0.2, 0, 0, 1);
+$duration-fast: 0.15s;
+$duration: 0.3s;
