@@ -6,29 +6,27 @@
 @use '../base/variable' as *;
 
 // Button Animations - Fixed Version
+// The version that has been live: it used to sit in the home contact section
+// styles, which loaded later and overrode the scaleY version that was here.
 @keyframes borderAnimation {
     0% {
-        // Start with no border visible
-        transform: scaleY(0);
-        transform-origin: bottom;
+        clip-path: polygon(50% 100%, 50% 100%, 50% 100%, 50% 100%);
+        border-color: $dark-mode-white;
     }
 
-    30% {
-        // Grow to 15% from bottom
-        transform: scaleY(0.15);
-        transform-origin: bottom;
+    25% {
+        clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+        border-color: $dark-mode-white;
     }
 
-    60% {
-        // Grow to 60% from bottom
-        transform: scaleY(0.6);
-        transform-origin: bottom;
+    50% {
+        clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
+        border-color: $dark-mode-white;
     }
 
     100% {
-        // Full height
-        transform: scaleY(1);
-        transform-origin: bottom;
+        clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
+        border-color: $dark-mode-white;
     }
 }
 
@@ -124,21 +122,4 @@
     &:focus-visible {
         transform: translateY(-5px);
     }
-}
-
-// Demo of border animation on a button element
-.button-animated {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: transparent;
-    color: $dark-mode-white;
-    font-family: 'Red Hat Display', sans-serif;
-    font-weight: 700;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    @include button-border-animation();
-    
-    // Optional: add the hover scale effect
-    @include hover-scale(1.03, -2px);
 }

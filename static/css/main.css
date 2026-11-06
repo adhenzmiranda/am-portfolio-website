@@ -246,20 +246,20 @@ select {
 }
 @keyframes borderAnimation {
   0% {
-    transform: scaleY(0);
-    transform-origin: bottom;
+    clip-path: polygon(50% 100%, 50% 100%, 50% 100%, 50% 100%);
+    border-color: #EDEFF8;
   }
-  30% {
-    transform: scaleY(0.15);
-    transform-origin: bottom;
+  25% {
+    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+    border-color: #EDEFF8;
   }
-  60% {
-    transform: scaleY(0.6);
-    transform-origin: bottom;
+  50% {
+    clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
+    border-color: #EDEFF8;
   }
   100% {
-    transform: scaleY(1);
-    transform-origin: bottom;
+    clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
+    border-color: #EDEFF8;
   }
 }
 @keyframes borderAnimationClipPath {
@@ -282,38 +282,6 @@ select {
 }
 .card-float:hover, .my-expertise-container .my-expertise-cards-container .card:hover, .technology-stack .card-container .card:hover, .card-float:focus-visible, .my-expertise-container .my-expertise-cards-container .card:focus-visible, .technology-stack .card-container .card:focus-visible {
   transform: translateY(-5px);
-}
-
-.button-animated {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: transparent;
-  color: #EDEFF8;
-  font-family: "Red Hat Display", sans-serif;
-  font-weight: 700;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  position: relative;
-  overflow: visible;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-}
-.button-animated::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px solid #EDEFF8;
-  border-radius: inherit;
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.3s ease;
-  pointer-events: none;
-}
-.button-animated:hover::after {
-  animation: borderAnimation 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.button-animated:hover {
-  transform: translateY(-2px) scale(1.03);
 }
 
 .btn {
@@ -1298,73 +1266,6 @@ body.menu-open {
   list-style: none;
 }
 
-@keyframes borderAnimation {
-  0% {
-    clip-path: polygon(50% 100%, 50% 100%, 50% 100%, 50% 100%);
-    border-color: #EDEFF8;
-  }
-  25% {
-    clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-    border-color: #EDEFF8;
-  }
-  50% {
-    clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
-    border-color: #EDEFF8;
-  }
-  100% {
-    clip-path: polygon(0 100%, 100% 100%, 100% 0, 0 0);
-    border-color: #EDEFF8;
-  }
-}
-.hero-section4 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 32px;
-}
-.hero-section4 .contact-title {
-  text-align: center;
-  border-bottom: #2F50E4 1px solid;
-}
-.hero-section4 .contact-btn {
-  width: 165px;
-  height: 45px;
-  color: #EDEFF8;
-  background-color: #2436BC;
-  outline: none;
-  box-shadow: none;
-  border: none;
-  border-radius: 10px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-  position: relative;
-  overflow: visible;
-}
-.hero-section4 .contact-btn:hover {
-  transform: translateY(-3px) scale(1.03);
-}
-.hero-section4 .contact-btn::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 2px solid #EDEFF8;
-  border-radius: inherit;
-  transform: scaleY(0);
-  transform-origin: bottom;
-  transition: transform 0.3s ease;
-  pointer-events: none;
-}
-.hero-section4 .contact-btn:hover::after {
-  animation: borderAnimation 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 .lightbox {
   display: none;
   position: fixed;
@@ -1715,10 +1616,98 @@ body.menu-open {
     transition: none;
   }
 }
-.hero {
-  display: flex;
-  flex-direction: column;
-  gap: 80px;
+.closing-cta {
+  width: 100%;
+}
+
+.closing-cta__inner {
+  position: relative;
+  padding-top: 60px;
+  padding-bottom: 60px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 60px;
+  padding-right: 60px;
+}
+@media screen and (min-width: 441px) and (max-width: 1023px) {
+  .closing-cta__inner {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+@media screen and (max-width: 440px) {
+  .closing-cta__inner {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+.closing-cta__inner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 60px;
+  right: 60px;
+  border-top: 1px solid rgba(237, 239, 248, 0.15);
+}
+@media screen and (min-width: 441px) and (max-width: 1023px) {
+  .closing-cta__inner::before {
+    left: 40px;
+    right: 40px;
+  }
+}
+@media screen and (max-width: 440px) {
+  .closing-cta__inner::before {
+    left: 20px;
+    right: 20px;
+  }
+}
+@media screen and (max-width: 440px) {
+  .closing-cta__inner {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+.closing-cta__title {
+  max-width: 14em;
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: #EDEFF8;
+}
+.closing-cta__title strong {
+  font-weight: 600;
+}
+@media screen and (min-width: 441px) and (max-width: 1023px) {
+  .closing-cta__title {
+    font-size: 40px;
+  }
+}
+@media screen and (max-width: 440px) {
+  .closing-cta__title {
+    font-size: 32px;
+  }
+}
+
+.closing-cta__text {
+  max-width: 34em;
+  margin: 20px 0 40px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgba(237, 239, 248, 0.6);
+}
+@media screen and (max-width: 440px) {
+  .closing-cta__text {
+    margin-bottom: 30px;
+    font-size: 16px;
+  }
 }
 
 .card-container {
@@ -2397,15 +2386,6 @@ body.ios-blend-fallback .my-expertise-container .my-expertise-cards-container .c
     height: 180px;
   }
 }
-.hero {
-  padding: max(1rem, 3vw);
-  overflow-x: hidden;
-  width: 100%;
-  max-width: 100vw;
-  position: relative;
-  box-sizing: border-box;
-}
-
 .pfp-links-container {
   display: flex;
   flex-direction: column;

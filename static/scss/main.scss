@@ -15,14 +15,13 @@
 @use "components/content-cards";
 @use "components/navbar";
 @use "components/footer";
-@use "components/hero-contact";
 @use "components/lightbox";
 @use "components/scroll-progress";
 @use "components/section-head";
 @use "components/project-card";
+@use "components/closing-cta";
 
 // LAYOUTS
-@use "layouts/hero-layout";
 @use "layouts/grid-layout";
 @use "layouts/hero_cards-layout";
 
