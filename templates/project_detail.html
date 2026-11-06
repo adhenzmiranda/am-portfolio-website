@@ -4,7 +4,9 @@
 {% load markdownify %}
 
 {% block head %}
-    <script src="{% static 'js/components/lightbox.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'vendor/plyr/plyr.css' %}">
+    <script src="{% static 'vendor/plyr/plyr.min.js' %}" defer></script>
+    <script src="{% static 'js/components/lightbox.js' %}" data-plyr-icons="{% static 'vendor/plyr/plyr.svg' %}" defer></script>
     {% include "components/seo_head.html" with page_title=project.name|add:" | Adhenz Miranda" page_description=meta_description %}
 {% endblock %}
 
@@ -126,7 +128,12 @@
                         <p class="embed-item__warning">This embed couldn't be shown.</p>
                         {% endif %}
                     </div>
-                    {% if embed.caption %}<p class="embed-caption">{{ embed.caption }}</p>{% endif %}
+                    <div class="embed-item__footer">
+                        {% if embed.caption %}<p class="embed-caption">{{ embed.caption }}</p>{% endif %}
+                        {% if embed.is_safe and embed.safe_src %}
+                        <button type="button" class="embed-item__expand" data-lightbox-open>Expand<span class="visually-hidden"> {{ embed.caption|default:"embed" }}</span> <span aria-hidden="true">&#8599;</span></button>
+                        {% endif %}
+                    </div>
                 </li>
                 {% endfor %}
             </ul>

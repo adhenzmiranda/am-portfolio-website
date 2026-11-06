@@ -451,13 +451,47 @@ $tiles-two-columns-below: 600px; // video tiles and photos
     color: $text-muted;
 }
 
+.embed-item__footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-20;
+    margin-top: $space-10;
+}
+
 .embed-caption {
-    margin: $space-10 0 0;
+    margin: 0;
     font-family: $font-ibm;
     font-size: 15px;
     line-height: 1.5;
     color: $text-muted;
-    cursor: zoom-in;
+}
+
+// Opens the embed large in the lightbox (the player itself stays interactive in place).
+.embed-item__expand {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: $space-5 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color $duration-fast;
+    @include label;
+    @include underline-link;
+    @include focus-ring;
+
+    &:hover {
+        color: $text;
+    }
+}
+
+// Video tiles and photos open the lightbox; show where keyboard focus is.
+.media-tile,
+.photo-masonry .gallery-item {
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: 3px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,0 +1,4 @@
+Plyr 3.8.5 (MIT) - https://github.com/sampotts/plyr
+Copied unmodified from the npm package plyr@3.8.5 (dist/), integrity
+sha512-SqGU1s76fq4lI8ABYhi1uxwrcLGYqmyiMazFAUIOQKKwt6S7FfflEMljLaM3SV8HUUb1KdZ04FY/SNFRpPZHUw==
+Used by static/js/components/lightbox.js for the lightbox video player.
