@@ -1,0 +1,167 @@
+// Long-form text rendered from markdown (project descriptions, articles).
+// Covers every tag MARKDOWNIFY allows (see settings.MARKDOWNIFY).
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.prose {
+    max-width: 40em;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.65;
+    letter-spacing: -0.003em;
+    color: $text;
+    overflow-wrap: anywhere; // long URLs never push the page sideways
+
+    @include mobile {
+        font-size: 16px;
+    }
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+
+    // Override the global p / a sizes from base/typography.
+    p,
+    li,
+    a,
+    td,
+    th {
+        font-size: inherit;
+        line-height: inherit;
+        color: inherit;
+    }
+
+    p {
+        margin: 0 0 1em;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin: 1.8em 0 0.6em;
+        font-family: $font-raleway;
+        font-weight: $fw-medium;
+        line-height: 1.3;
+        color: $text;
+    }
+
+    h1,
+    h2 {
+        font-size: 1.5em;
+    }
+
+    h3 {
+        font-size: 1.25em;
+    }
+
+    h4,
+    h5,
+    h6 {
+        font-size: 1em;
+        font-weight: $fw-semibold;
+    }
+
+    a {
+        color: $text;
+        text-decoration: underline;
+        text-decoration-color: $accent;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 3px;
+        @include focus-ring;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+    }
+
+    strong,
+    b {
+        font-weight: $fw-semibold;
+    }
+
+    ul,
+    ol {
+        margin: 0 0 1em;
+        padding-left: 1.25em;
+    }
+
+    li {
+        margin-bottom: 0.4em;
+
+        &::marker {
+            color: $text-muted;
+        }
+    }
+
+    blockquote {
+        margin: 1.5em 0;
+        padding-left: $space-20;
+        border-left: 2px solid $accent;
+        color: $text-muted;
+    }
+
+    hr {
+        margin: 2em 0;
+        border: 0;
+        border-top: 1px solid $hairline;
+    }
+
+    img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 1.5em 0;
+    }
+
+    code {
+        padding: 0.1em 0.35em;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 0.9em;
+        background-color: $white-08;
+    }
+
+    pre {
+        margin: 1.5em 0;
+        padding: $space-20;
+        overflow-x: auto;
+        background-color: $white-05;
+
+        code {
+            padding: 0;
+            background: none;
+        }
+    }
+
+    // Wide tables scroll inside themselves instead of widening the page.
+    table {
+        display: block;
+        max-width: 100%;
+        margin: 1.5em 0;
+        overflow-x: auto;
+        border-collapse: collapse;
+        font-size: 0.9em;
+    }
+
+    th,
+    td {
+        padding: $space-10 $space-20 $space-10 0;
+        border-bottom: 1px solid $hairline;
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        @include label;
+        color: $text-muted;
+    }
+}

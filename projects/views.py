@@ -137,12 +137,19 @@ def plain_text_summary(markdown_text, length=155):
     return Truncator(' '.join(text.split())).chars(length)
 
 def project_detail_page(request, id):
-    project = get_object_or_404(Projects, id=id)
+    project = get_object_or_404(Projects.objects.select_related('category'), id=id)
     meta_description = plain_text_summary(project.description)
+    videos, photos, embeds = list(project.videos.all()), list(project.photos.all()), list(project.embeds.all())
+    # Media sections in page order, numbered 01, 02... counting only the ones this project has.
+    sections = [name for name, items in (('videos', videos), ('photos', photos), ('embeds', embeds)) if items]
     context = {
         'project': project,
         'meta_description': meta_description,
         'json_ld': project_json_ld(project, meta_description),
+        'videos': videos,
+        'photos': photos,
+        'embeds': embeds,
+        'section_numbers': {name: f'{i:02d}' for i, name in enumerate(sections, 1)},
     }
     return render(request, 'project_detail.html', context)
 

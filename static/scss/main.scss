@@ -21,6 +21,7 @@
 @use "components/project-card";
 @use "components/closing-cta";
 @use "components/page-head";
+@use "components/prose";
 
 // LAYOUTS
 @use "layouts/grid-layout";
@@ -35,6 +36,6 @@
 @use "scss-styles-pages/home-hero";
 @use "scss-styles-pages/home-stack";
 @use "scss-styles-pages/home-featured";
-@use "scss-styles-pages/project_details";
+@use "scss-styles-pages/project-detail";
 
 

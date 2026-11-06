@@ -40,3 +40,41 @@ def one_liner(markdown_text, length=110):
 # unless the word before is a common abbreviation ("Mr. Khan", "e.g. Unity").
 _SENTENCE_END = re.compile(r'[.!?](?=\s+[A-Z0-9"“])')
 _ABBREVIATIONS = {'mr.', 'mrs.', 'ms.', 'dr.', 'prof.', 'st.', 'e.g.', 'i.e.', 'etc.', 'vs.', 'no.', 'inc.', 'ltd.', 'co.'}
+
+
+@register.filter
+def cloudinary(url, transformation):
+    """Ask Cloudinary for a resized/re-encoded version of an uploaded file.
+
+    `transformation` is a Cloudinary transformation string, optionally followed by
+    `|ext` to change the delivered format, e.g.:
+        {{ photo.image.url|cloudinary:"w_800,c_limit,q_auto,f_auto" }}
+        {{ video.video.url|cloudinary:"so_1,w_640,h_800,c_fill,q_auto|jpg" }}  (video poster frame)
+    Non-Cloudinary URLs are returned unchanged.
+    """
+    url = str(url or '')
+    if '/upload/' not in url or 'res.cloudinary.com' not in url:
+        return url
+    transformation, _, ext = str(transformation).partition('|')
+    url = url.replace('/upload/', f'/upload/{transformation}/', 1)
+    if ext:
+        url = re.sub(r'\.[A-Za-z0-9]+$', f'.{ext}', url)
+    return url
+
+
+# Embed platforms whose player is not 16:9; the template turns the name into a CSS class
+# (classes rather than inline styles, so a future Content-Security-Policy can block inline styles).
+_EMBED_SHAPES = {
+    'itch.io': 'itch',            # itch.io game widget, 552 x 167
+    'linkedin.com': 'linkedin',   # LinkedIn post, roughly 504 x 600
+}
+
+
+@register.filter
+def embed_shape(src):
+    """Shape name for an embed iframe based on where it comes from: 'wide' (16:9) by default."""
+    src = str(src or '')
+    for host, shape in _EMBED_SHAPES.items():
+        if host in src:
+            return shape
+    return 'wide'
