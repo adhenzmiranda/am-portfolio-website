@@ -1,0 +1,43 @@
+// Numbered section heading used across redesigned pages:  "01  Technology stack"
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.section-head {
+    display: grid;
+    grid-template-columns: $num-col minmax(0, 1fr);
+    align-items: baseline;
+    margin-bottom: $space-40;
+
+    @include tablet {
+        grid-template-columns: $num-col-small minmax(0, 1fr);
+    }
+
+    @include mobile {
+        grid-template-columns: $num-col-small minmax(0, 1fr);
+        margin-bottom: $space-20 + $space-10;
+    }
+}
+
+.section-head__num {
+    @include label;
+}
+
+.section-head__title {
+    margin: 0;
+    font-family: $font-montserrat;
+    font-size: 32px;
+    font-weight: $fw-regular;
+    line-height: 1.2;
+    letter-spacing: -0.008em;
+    color: $text;
+
+    @include tablet {
+        font-size: 28px;
+    }
+
+    @include mobile {
+        font-size: 24px;
+    }
+}

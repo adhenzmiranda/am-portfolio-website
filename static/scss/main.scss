@@ -19,6 +19,7 @@
 @use "components/hero-featured-projects";
 @use "components/lightbox";
 @use "components/scroll-progress";
+@use "components/section-head";
 
 // LAYOUTS
 @use "layouts/hero-layout";
@@ -32,6 +33,7 @@
 @use "scss-styles-pages/projects";
 @use "scss-styles-pages/hero";
 @use "scss-styles-pages/home-hero";
+@use "scss-styles-pages/home-stack";
 @use "scss-styles-pages/project_details";
 
 

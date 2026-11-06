@@ -18,6 +18,11 @@ $gutter-phone: 20px;
 $gutter-tablet: 40px;
 $gutter-desktop: 60px;
 
+// Width of the number column in numbered headings and rows ("01  Title"),
+// so section titles and row titles share one left edge
+$num-col: 64px;
+$num-col-small: 48px;
+
 // Text and lines
 $text: $dark-mode-white;
 $text-muted: rgba($dark-mode-white, 0.6);
