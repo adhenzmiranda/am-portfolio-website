@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{% static 'vendor/plyr/plyr.css' %}">
     <script src="{% static 'vendor/plyr/plyr.min.js' %}" defer></script>
     <script src="{% static 'js/components/lightbox.js' %}" data-plyr-icons="{% static 'vendor/plyr/plyr.svg' %}" defer></script>
+    {% if project.display_mode == 'blogpost' %}<script src="{% static 'js/components/chapters.js' %}" defer></script>{% endif %}
     {% include "components/seo_head.html" with page_title=project.name|add:" | Adhenz Miranda" page_description=meta_description %}
 {% endblock %}
 
@@ -62,8 +63,8 @@
         {% if project.display_mode == 'blogpost' %}
         {% with cards=project.cards.all %}
         {% if cards %}
-        <section class="project-section project-cards" aria-label="Sections">
-            {% include 'components/content_cards.html' with cards=cards %}
+        <section class="project-section" aria-label="Chapters">
+            {% include 'components/chapters.html' with cards=cards %}
         </section>
         {% endif %}
         {% endwith %}

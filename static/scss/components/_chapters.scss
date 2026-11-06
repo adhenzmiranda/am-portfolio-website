@@ -1,0 +1,418 @@
+// Blog-post chapters: index + reading pane on desktop, accordion rows below 1024px.
+// Rule: hover only changes colour; layout changes only on click (see chapters.js).
+// Without JavaScript: index of jump links, every chapter shown in full.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+// ---------------------------------------------------------------- Layout
+
+.chapters {
+    @include desktop {
+        display: grid;
+        grid-template-columns: minmax(240px, 300px) minmax(0, 1fr);
+        align-items: start;
+        gap: $space-60;
+    }
+}
+
+// ---------------------------------------------------------------- Index (left column)
+
+.chapters__index {
+    margin-bottom: $space-60;
+
+    @include desktop {
+        position: sticky;
+        top: 100px; // clear of the header when it slides back in
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+        margin-bottom: 0;
+    }
+
+    // Smaller screens with JavaScript: the accordion rows are the index.
+    .chapters.is-accordion & {
+        display: none;
+    }
+}
+
+.chapters__label {
+    margin: 0 0 $space-20;
+    @include label;
+}
+
+.chapters__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid $hairline;
+}
+
+.chapters__link {
+    position: relative;
+    display: grid;
+    grid-template-columns: $num-col-small minmax(0, 1fr);
+    align-items: baseline;
+    padding: 14px 0 14px $space-20;
+    border-bottom: 1px solid $hairline;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.4;
+    color: $text-muted;
+    text-decoration: none;
+    transition: color $duration-fast;
+    @include focus-ring;
+
+    // Active marker: drawn over the padding, so it never shifts the text.
+    &::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        bottom: -1px;
+        left: 0;
+        width: 2px;
+        background-color: $accent;
+        transform: scaleY(0);
+        transition: transform $duration $ease-out;
+    }
+
+    &:hover {
+        color: $text;
+    }
+
+    &.is-active {
+        color: $text;
+
+        &::before {
+            transform: scaleY(1);
+        }
+    }
+}
+
+.chapters__num {
+    @include label;
+    transition: color $duration-fast;
+
+    .chapters__link:hover &,
+    .chapters__link.is-active & {
+        color: $accent;
+    }
+}
+
+// ---------------------------------------------------------------- Chapter
+
+.chapter[hidden] {
+    display: none;
+}
+
+// No JavaScript: chapters follow each other as one article.
+.chapter + .chapter {
+    margin-top: $space-120;
+
+    .chapters.is-accordion & {
+        margin-top: 0;
+    }
+}
+
+.chapter__title {
+    margin: 0;
+    font-weight: $fw-regular;
+
+    &:focus {
+        outline: none;
+    }
+}
+
+.chapter__num {
+    display: block;
+    margin-bottom: $space-10;
+    @include label;
+}
+
+.chapter__name {
+    display: block;
+    font-family: $font-montserrat;
+    font-size: 40px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    @include tablet {
+        font-size: 32px;
+    }
+
+    @include mobile {
+        font-size: 28px;
+    }
+}
+
+.chapter__teaser {
+    max-width: 36em;
+    margin: $space-20 0 0;
+    font-family: $font-ibm;
+    font-size: 20px;
+    line-height: 1.45;
+    color: $text-muted;
+
+    @include mobile {
+        font-size: 17px;
+    }
+}
+
+.chapter__media {
+    margin: $space-40 0;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background-color: $white-05;
+    }
+}
+
+.chapter__prose {
+    max-width: 42em;
+}
+
+.chapter__points {
+    max-width: 42em;
+    margin-top: $space-40;
+    padding-top: $space-20;
+    border-top: 1px solid $hairline;
+
+    ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    li {
+        position: relative;
+        margin-bottom: $space-10;
+        padding-left: $space-20 + $space-5;
+        font-family: $font-ibm;
+        font-size: 17px;
+        line-height: 1.5;
+        color: $text;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0.75em;
+            left: 0;
+            width: 12px;
+            height: 1px;
+            background-color: $accent;
+        }
+    }
+}
+
+.chapter__points-label {
+    margin: 0 0 $space-20;
+    @include label;
+}
+
+.chapter__placeholder {
+    margin: $space-40 0 0;
+    padding: $space-20;
+    border: 1px dashed $hairline;
+    font-family: $font-ibm;
+    font-size: 15px;
+    color: $text-muted;
+}
+
+// Previous / Next: only in the desktop reading pane.
+.chapter__pager {
+    display: none;
+
+    .chapters.is-pane & {
+        display: flex;
+        justify-content: space-between;
+        gap: $space-40;
+        margin-top: $space-60;
+        padding-top: $space-20;
+        border-top: 1px solid $hairline;
+    }
+}
+
+.chapter__pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: $space-5;
+    max-width: 48%;
+    color: $text;
+    text-decoration: none;
+    @include focus-ring;
+
+    &--next {
+        margin-left: auto;
+        text-align: right;
+    }
+}
+
+.chapter__pager-label {
+    @include label;
+    transition: color $duration-fast;
+
+    .chapter__pager-link:hover & {
+        color: $accent;
+    }
+}
+
+.chapter__pager-name {
+    font-family: $font-raleway;
+    font-size: 18px;
+    line-height: 1.35;
+    @include underline-link;
+}
+
+// Fade the new chapter in when switching in the pane.
+.chapters.is-pane .chapter:not([hidden]) {
+    animation: chapter-in $duration $ease-out;
+}
+
+@keyframes chapter-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+// ---------------------------------------------------------------- Accordion (below 1024px)
+
+.chapters.is-accordion {
+    border-top: 1px solid $hairline;
+
+    .chapter {
+        border-bottom: 1px solid $hairline;
+    }
+
+    .chapter__head {
+        padding: $space-20 0;
+    }
+
+    .chapter__toggle {
+        display: grid;
+        grid-template-columns: $num-col-small minmax(0, 1fr) 24px;
+        align-items: baseline;
+        width: 100%;
+        padding: 0;
+        background: none;
+        border: 0;
+        cursor: pointer;
+        text-align: left;
+        color: $text;
+        @include focus-ring;
+    }
+
+    .chapter__num {
+        display: inline;
+        margin: 0;
+        transition: color $duration-fast;
+    }
+
+    .chapter__name {
+        font-family: $font-raleway;
+        font-size: 22px;
+        font-weight: $fw-medium;
+        line-height: 1.3;
+
+        @include mobile {
+            font-size: 19px;
+        }
+    }
+
+    .chapter__toggle:hover .chapter__num,
+    .chapter.is-open .chapter__num {
+        color: $accent;
+    }
+
+    .chapter__teaser {
+        margin: $space-5 0 0 $num-col-small;
+        font-size: 15px;
+    }
+
+    // Opens to its natural height without measuring (grid rows 0fr -> 1fr).
+    .chapter__body {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.4s $ease-out;
+    }
+
+    .chapter.is-open .chapter__body {
+        grid-template-rows: 1fr;
+    }
+
+    .chapter__body-inner {
+        min-height: 0;
+        overflow: hidden;
+        visibility: hidden; // closed chapters stay out of the tab order
+        transition: visibility 0s linear 0.4s;
+
+        @include tablet {
+            padding-left: $num-col-small;
+        }
+    }
+
+    .chapter.is-open .chapter__body-inner {
+        padding-bottom: $space-40;
+        visibility: visible;
+        transition-delay: 0s;
+    }
+
+    .chapter__media {
+        margin-top: $space-10;
+    }
+}
+
+// Plus that turns into a minus when open.
+.chapter__icon {
+    position: relative;
+    align-self: center;
+    width: 14px;
+    height: 14px;
+    justify-self: end;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        width: 100%;
+        height: 1.5px;
+        background-color: currentColor;
+        transition: transform $duration $ease-out;
+    }
+
+    &::after {
+        transform: rotate(90deg);
+    }
+
+    .chapter.is-open &::after {
+        transform: rotate(0deg);
+    }
+
+    .chapter__toggle:hover & {
+        color: $accent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .chapters__link::before,
+    .chapter__icon::before,
+    .chapter__icon::after,
+    .chapters.is-accordion .chapter__body {
+        transition: none;
+    }
+
+    .chapters.is-pane .chapter:not([hidden]) {
+        animation: none;
+    }
+}

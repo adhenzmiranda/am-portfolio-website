@@ -183,6 +183,43 @@ $tiles-two-columns-below: 600px; // video tiles and photos
     }
 }
 
+// Single-column screens (below 1024px): the cover image comes first, then the
+// title, like the photo above the headline on Home. Order: back link, cover,
+// header, text, sections. (.project-intro steps aside so its two children can
+// be placed independently.)
+@media screen and (max-width: #{$desktop - 1}) {
+    .project-page__inner {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .project-page__back:not(.project-page__back--bottom) {
+        order: -3;
+        align-self: flex-start;
+    }
+
+    .project-intro {
+        display: contents;
+    }
+
+    .project-intro__cover {
+        order: -2;
+        margin-top: $space-20;
+    }
+
+    .project-head {
+        order: -1;
+    }
+
+    .project-intro__text {
+        margin-top: $space-40;
+    }
+
+    .project-page__back--bottom {
+        align-self: flex-start;
+    }
+}
+
 .project-intro__cover {
     margin: 0;
     max-width: 600px;
