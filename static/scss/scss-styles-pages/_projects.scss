@@ -30,7 +30,8 @@
     color: $text-muted;
 }
 
-.year-group + .year-group {
+// Space between years, counting only years still shown (a hidden year leaves no gap).
+.year-group:not([hidden]) ~ .year-group:not([hidden]) {
     margin-top: $space-120;
 
     @include tablet {
@@ -71,3 +72,74 @@
 .year-group__count {
     @include label;
 }
+
+// ---------------------------------------------------------------- Category filter (step 3b)
+
+.project-filter {
+    margin-top: $space-40;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.project-filter__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-10 $space-20 + $space-5;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    // Phone: one row that scrolls sideways instead of five wrapped lines.
+    @include mobile {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        margin-right: -$gutter-phone; // let the row run to the screen edge
+        padding-right: $gutter-phone;
+        padding-bottom: $space-5;
+        scrollbar-width: none;
+        // Soft fade at the right edge hints that the row scrolls.
+        mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+        -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent);
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        li {
+            flex: 0 0 auto;
+        }
+    }
+}
+
+.project-filter__btn {
+    padding: $space-5 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color $duration-fast;
+    @include label;
+    @include underline-link(2px);
+    @include focus-ring;
+
+    &:hover,
+    &.is-active {
+        color: $text;
+    }
+}
+
+.project-filter__count {
+    margin-left: 2px;
+    opacity: 0.6;
+}
+
+.project-filter__status {
+    @include visually-hidden;
+}
+
+.year-group[hidden] {
+    display: none;
+}
+

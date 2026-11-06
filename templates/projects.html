@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block head %}
     {% include "components/seo_head.html" with page_title="Projects by Adhenz Miranda" page_description="Projects by Adhenz Miranda: videography and content creation, graphic design, web and app development, games and cybersecurity work from 2022 to today." %}
@@ -8,23 +9,36 @@
 <section class="projects-page" aria-labelledby="projects-title">
     <div class="projects-page__inner">
         <header class="page-head">
-            <p class="page-head__eyebrow">Work &middot; {{ project_count }} projects</p>
+            <p class="page-head__eyebrow">Work &middot; <span data-filter-total>{{ project_count }} project{{ project_count|pluralize }}</span></p>
             <h1 class="page-head__title" id="projects-title">Projects</h1>
             <p class="page-head__intro">
                 Videography and content creation, graphic design, web and app development,
                 games and cybersecurity work, from 2022 to today. Open any project to see the work and how it was made.
             </p>
+
+            {% if categories|length > 1 %}
+            {# Revealed by projectFilter.js; without JavaScript every project simply shows. #}
+            <div class="project-filter" data-project-filter hidden>
+                <ul class="project-filter__list" aria-label="Filter projects by category">
+                    <li><button type="button" class="project-filter__btn is-active" data-filter="all" aria-pressed="true">All <span class="project-filter__count">{{ project_count }}</span></button></li>
+                    {% for category in categories %}
+                    <li><button type="button" class="project-filter__btn" data-filter="{{ category.name|slugify }}" aria-pressed="false">{{ category.name }} <span class="project-filter__count">{{ category.project_total }}</span></button></li>
+                    {% endfor %}
+                </ul>
+                <p class="project-filter__status" data-filter-status aria-live="polite"></p>
+            </div>
+            {% endif %}
         </header>
 
         {% for group in year_groups %}
-        <section class="year-group" aria-labelledby="year-{{ group.year }}">
+        <section class="year-group" aria-labelledby="year-{{ group.year }}" data-year-group>
             <h2 class="year-group__head" id="year-{{ group.year }}">
                 <span class="year-group__year">{{ group.year }}</span>
-                <span class="year-group__count">{{ group.projects|length }} project{{ group.projects|length|pluralize }}</span>
+                <span class="year-group__count" data-year-count>{{ group.projects|length }} project{{ group.projects|length|pluralize }}</span>
             </h2>
             <ul class="project-grid">
                 {% for project in group.projects %}
-                <li>{% include "components/project_card.html" %}</li>
+                <li data-category="{{ project.category.name|slugify|default:'uncategorised' }}">{% include "components/project_card.html" %}</li>
                 {% endfor %}
             </ul>
         </section>
@@ -33,4 +47,8 @@
         {% endfor %}
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/components/projectFilter.js' %}" defer></script>
 {% endblock %}

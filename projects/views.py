@@ -11,7 +11,8 @@ from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
 import logging
-from .models import Projects, Experience, Education
+from django.db.models import Count
+from .models import Category, Projects, Experience, Education
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
 from .seo import home_json_ld, project_json_ld
@@ -122,9 +123,12 @@ def projects_page(request):
         if not year_groups or year_groups[-1]['year'] != project.year:
             year_groups.append({'year': project.year, 'projects': []})
         year_groups[-1]['projects'].append(project)
+    # Categories that have at least one project, for the filter row (count shown on each button).
+    categories = Category.objects.annotate(project_total=Count('projects')).filter(project_total__gt=0).order_by('name')
     return render(request, 'projects.html', {
         'year_groups': year_groups,
         'project_count': len(projects),
+        'categories': categories,
     })
 
 def plain_text_summary(markdown_text, length=155):
