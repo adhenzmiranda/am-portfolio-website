@@ -35,7 +35,9 @@
                 Source code licensed under the <a href="https://opensource.org/licenses/MIT" class="text-link" target="_blank" rel="license noopener noreferrer">MIT License</a>.
             </p>
             <div class="site-footer__meta">
-                <p class="site-footer__updated">Last updated: {% now "m-d-Y" %}</p>
+                {% if SITE_LAST_UPDATED %}
+                <p class="site-footer__updated">Last updated: <time datetime="{{ SITE_LAST_UPDATED|date:'Y-m-d' }}">{{ SITE_LAST_UPDATED|date:"m-d-Y" }}</time></p>
+                {% endif %}
                 <p class="site-footer__powered">
                     <span>Powered by</span>
                     <a href="https://www.heroku.com" class="site-footer__heroku" target="_blank" rel="noopener noreferrer">
