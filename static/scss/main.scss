@@ -24,7 +24,6 @@
 // LAYOUTS
 
 // PAGES
-@use "scss-styles-pages/home";
 @use "scss-styles-pages/about";
 @use "scss-styles-pages/contact";
 @use "scss-styles-pages/projects";
@@ -32,5 +31,6 @@
 @use "scss-styles-pages/home-stack";
 @use "scss-styles-pages/home-featured";
 @use "scss-styles-pages/project-detail";
+@use "scss-styles-pages/error";
 
 

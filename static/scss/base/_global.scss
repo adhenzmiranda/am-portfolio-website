@@ -41,6 +41,7 @@ body {
 }
 
 .home-page {
+    overflow-x: hidden; // safety net against sideways scrolling (moved from the old _home.scss)
     width: 100vw;
     min-height: 100vh;
     flex-direction: column;
