@@ -1,122 +1,73 @@
-@use '../base/colors' as *;
-@use '../base/typography' as *;
+// Projects page (redesign step 3): header, then projects grouped by year,
+// each year a hairline heading with a count and a card grid
+// (3 columns on desktop, 2 from 680px, 1 below; see components/project-card).
 @use '../base/breakpoints' as *;
-@use '../components/animations' as *;
+@use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
 
-#projects-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
+.projects-page {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: max(1rem, 3vw);
+}
 
-    .project-subtitle {
-        max-width: 800px;
-        margin: 0 auto;
+.projects-page__inner {
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        padding-bottom: $space-60 + $space-20;
     }
 
-    a {
-        text-decoration: none;
-    }
-
-    .project-title,
-    .project-year {
-        text-align: center;
-        border-bottom: $dark-mode-secondary-blue 1px solid;
-        max-width: fit-content;
-        margin: 0 auto;
-        color: $dark-mode-white;
-    }
-
-    .project-contents {
-        width: 100%;
-
-        .year-group {
-            display: grid;
-            grid-template-columns: 1fr; // Default: 1 column
-            justify-content: center;
-            justify-items: center;
-
-            // 2 projects: 2 columns, centered
-            &:has(.project:nth-child(2)):not(:has(.project:nth-child(4))) {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            // 3 or more projects: 3 columns, centered
-            &:has(.project:nth-child(3)) {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        .project {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-            transition: transform 0.3s ease;
-
-            &:hover {
-                transform: translateY(-5px);
-            }
-        }
-    }
-
-    .project-thumbnail {
-        aspect-ratio: 16/9;
-        overflow: hidden;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        background-color: $dark-mode-primary-blue;
-
-        img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        &.placeholder {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: $dark-mode-secondary-blue;
-            color: $dark-mode-white;
-        }
-    }
-
-    .project:hover .project-thumbnail img {
-        transform: scale(1.05);
+    @include mobile {
+        padding-bottom: $space-60;
     }
 }
 
-@media (max-width: $tablet) {
-    #projects-container {
-        .project-contents {
-            .year-group {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-        }
+.projects-page__empty {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    color: $text-muted;
+}
+
+.year-group + .year-group {
+    margin-top: $space-120;
+
+    @include tablet {
+        margin-top: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        margin-top: $space-60;
     }
 }
 
-@media (max-width: $mobile) {
-    #projects-container {
-        .project-contents {
-            .year-group {
-                grid-template-columns: 1fr !important;
-            }
+.year-group__head {
+    display: flex;
+    align-items: baseline;
+    gap: $space-20;
+    margin: 0 0 $space-40;
+    padding-bottom: $space-20;
+    border-bottom: 1px solid $hairline;
+    font-weight: $fw-regular;
 
-            .project-thumbnail {
-                width: 100%;
-                height: 180px;
-            }
-        }
+    @include mobile {
+        margin-bottom: $space-20 + $space-10;
     }
+}
+
+.year-group__year {
+    font-family: $font-montserrat;
+    font-size: 32px;
+    line-height: 1.2;
+    letter-spacing: -0.008em;
+    color: $text;
+
+    @include mobile {
+        font-size: 28px;
+    }
+}
+
+.year-group__count {
+    @include label;
 }

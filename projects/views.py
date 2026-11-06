@@ -115,22 +115,17 @@ def contact(request):
     return render(request, 'contact.html', {'form': form, 'turnstile_site_key': settings.TURNSTILE_SITE_KEY})
 
 def projects_page(request):
-    projects = Projects.objects.all().order_by('-created_at')
-    # Group projects by year
-    projects_by_year = {}
+    """All projects, grouped by year (newest year first, newest project first within a year)."""
+    projects = Projects.objects.select_related('category').order_by('-year', '-created_at')
+    year_groups = []
     for project in projects:
-        if project.year not in projects_by_year:
-            projects_by_year[project.year] = []
-        projects_by_year[project.year].append(project)
-    
-    # Sort years in descending order
-    sorted_years = sorted(projects_by_year.keys(), reverse=True)
-    
-    context = {
-        'projects_by_year': projects_by_year,
-        'sorted_years': sorted_years
-    }
-    return render(request, 'projects.html', context)
+        if not year_groups or year_groups[-1]['year'] != project.year:
+            year_groups.append({'year': project.year, 'projects': []})
+        year_groups[-1]['projects'].append(project)
+    return render(request, 'projects.html', {
+        'year_groups': year_groups,
+        'project_count': len(projects),
+    })
 
 def plain_text_summary(markdown_text, length=155):
     """Render markdown, strip the HTML and collapse whitespace for meta tags."""

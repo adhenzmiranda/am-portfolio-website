@@ -6,8 +6,10 @@
 @use '../base/variable' as *;
 @use '../base/mixins' as *;
 
-// Below this width cards go one per row (two would be too narrow to read).
+// Column count by width, chosen so card widths grow steadily instead of
+// dropping when a column is added: 1 below 680px, 2 up to 1199px, 3 from 1200px.
 $single-column-below: 680px;
+$three-columns-from: 1200px;
 
 .project-grid {
     display: grid;
@@ -18,6 +20,10 @@ $single-column-below: 680px;
     list-style: none;
 
     &--featured {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    @media screen and (max-width: #{$three-columns-from - 1}) {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 

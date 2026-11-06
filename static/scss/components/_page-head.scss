@@ -1,0 +1,61 @@
+// Page header for inner pages (Projects, and later About / Contact):
+// small label, large title, short muted intro. Left-aligned.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.page-head {
+    padding-top: $space-60;
+    margin-bottom: $space-120;
+
+    @include tablet {
+        margin-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-top: $space-20;
+        margin-bottom: $space-60;
+    }
+}
+
+.page-head__eyebrow {
+    margin: 0 0 $space-20;
+    @include label;
+}
+
+.page-head__title {
+    margin: 0;
+    font-family: $font-montserrat;
+    font-size: 56px;
+    font-weight: $fw-regular;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    strong {
+        font-weight: $fw-semibold;
+    }
+
+    @include tablet {
+        font-size: 44px;
+    }
+
+    @include mobile {
+        font-size: 40px;
+    }
+}
+
+.page-head__intro {
+    max-width: 38em;
+    margin: $space-20 + $space-10 0 0;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: $text-muted;
+
+    @include mobile {
+        font-size: 16px;
+    }
+}
