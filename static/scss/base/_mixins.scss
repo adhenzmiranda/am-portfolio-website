@@ -30,6 +30,40 @@
     @include page-gutter;
 }
 
+// Text link whose underline slides in on hover (muted) and stays on when active (blue).
+@mixin underline-link($thickness: 1px) {
+    position: relative;
+    text-decoration: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: $thickness;
+        background-color: $text-muted;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform $duration $ease-out;
+    }
+
+    &:hover::after {
+        transform: scaleX(1);
+    }
+
+    &.is-active::after {
+        background-color: $accent;
+        transform: scaleX(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &::after {
+            transition: none;
+        }
+    }
+}
+
 // Small spaced-out uppercase label (categories, years, section numbers).
 @mixin label {
     font-family: $font-ibm;

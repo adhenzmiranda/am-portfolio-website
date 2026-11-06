@@ -1,43 +1,48 @@
 {% load static %}
-<footer class="footer">
-    <div class="footer-logo-container">
-        <a href="{% url 'home' %}">
-            <img class="footer-logo" src="{% static 'assets/images/navbar/PortfolioLogo.png' %}" width="500" height="188" alt="Adhenz Miranda logo">
-        </a>
-    </div>
+<footer class="site-footer">
+    <div class="site-footer__inner">
+        <div class="site-footer__main">
+            <div class="site-footer__brand">
+                <a class="site-footer__logo-link" href="{% url 'home' %}">
+                    <img class="site-footer__logo" src="{% static 'assets/images/navbar/PortfolioLogo.svg' %}" width="500" height="188" alt="Adhenz Miranda, home">
+                </a>
+                <p class="site-footer__bio">Creative developer and content creator based in the UAE, studying an MSc in Cybersecurity.</p>
+            </div>
 
-    <div class="socials-icons">
-        {% include "components/social_links.html" %}
-    </div>
+            <nav class="site-footer__columns" aria-label="Footer">
+                <div class="site-footer__column">
+                    <h2 class="site-footer__heading">Pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a href="{% url 'home' %}" class="text-link">Home</a></li>
+                        <li><a href="{% url 'about' %}" class="text-link">About</a></li>
+                        <li><a href="{% url 'projects_page' %}" class="text-link">Projects</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-link">Contact</a></li>
+                        <li><a href="{% static 'assets/files/Adhenz-Miranda-CV.pdf' %}" class="text-link" download>Download CV</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__column">
+                    <h2 class="site-footer__heading">Social</h2>
+                    <ul class="site-footer__list">
+                        {% include "components/social_links.html" with variant="text" %}
+                    </ul>
+                </div>
+            </nav>
+        </div>
 
-    <div class="page-links">
-        <a href="{% url 'home' %}">Home</a>
-        <span class="separator">|</span>
-        <a href="{% url 'about' %}">About</a>
-        <span class="separator">|</span>
-        <a href="{% url 'projects_page' %}">Projects</a>
-        <span class="separator">|</span>
-        <a href="{% url 'contact' %}">Contact Me</a>
-        <span class="separator">|</span>
-        <a href="{% static 'assets/files/Adhenz-Miranda-CV.pdf' %}" download>Download CV</a>
-    </div>
-
-    <div class="copyright">
-        <p>
-            &copy; {% now 'Y' %} Adhenz Miranda. All rights reserved.<br>
-            Source code licensed under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="license noopener noreferrer">MIT License</a>.
-        </p>
-    </div>
-
-    <div class="footer-last-updated">
-        <p>Last updated: {% now "m-d-Y" %}</p>
-    </div>
-
-    <div class="powered-by">
-        <p>POWERED BY</p>
-        <span class="separator">|</span>
-        <a href="https://www.heroku.com" target="_blank" rel="noopener noreferrer" class="heroku-logo">
-            <img src="{% static 'assets/tech-stack-used/heroku.png' %}" width="198" height="70" alt="Heroku">
-        </a>
+        <div class="site-footer__bottom">
+            <p class="site-footer__legal">
+                &copy; {% now 'Y' %} Adhenz Miranda. All rights reserved.
+                Source code licensed under the <a href="https://opensource.org/licenses/MIT" class="text-link" target="_blank" rel="license noopener noreferrer">MIT License</a>.
+            </p>
+            <div class="site-footer__meta">
+                <p class="site-footer__updated">Last updated: {% now "m-d-Y" %}</p>
+                <p class="site-footer__powered">
+                    <span>Powered by</span>
+                    <a href="https://www.heroku.com" class="site-footer__heroku" target="_blank" rel="noopener noreferrer">
+                        <img src="{% static 'assets/tech-stack-used/heroku.png' %}" width="198" height="70" alt="Heroku">
+                    </a>
+                </p>
+            </div>
+        </div>
     </div>
 </footer>
