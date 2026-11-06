@@ -1,0 +1,155 @@
+// Home hero (redesign step 2a): mixed-weight statement on the left,
+// portrait on the right with a soft blue glow. Stacks on phone.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.home-hero {
+    width: 100%;
+}
+
+.home-hero__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+    gap: $space-60;
+    padding-top: $space-60;
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        gap: $space-40;
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-60;
+        padding-top: $space-40;
+        padding-bottom: $space-60;
+    }
+}
+
+// ---------------------------------------------------------------- Text
+
+.home-hero__title {
+    margin: 0;
+    font-weight: $fw-regular;
+}
+
+.home-hero__eyebrow {
+    display: block;
+    margin-bottom: $space-20;
+    @include label;
+}
+
+.home-hero__statement {
+    display: block;
+    font-family: $font-montserrat;
+    font-size: 56px;
+    font-weight: $fw-regular;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    strong {
+        font-weight: $fw-semibold;
+    }
+
+    @include tablet {
+        font-size: 40px;
+    }
+
+    @include mobile {
+        font-size: 36px;
+    }
+}
+
+.home-hero__intro {
+    max-width: 34em;
+    margin: $space-40 0 0;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: $text-muted;
+
+    @include mobile {
+        margin-top: $space-20 + $space-10;
+        font-size: 16px;
+    }
+}
+
+.home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: $space-20 $space-40;
+    margin-top: $space-40;
+}
+
+.home-hero__social {
+    display: flex;
+    align-items: center;
+    gap: $space-20;
+
+    .icon-img {
+        display: block;
+        line-height: 0;
+        opacity: 0.75;
+        transition: opacity $duration-fast;
+        @include focus-ring;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    img {
+        width: 24px;
+        height: 24px;
+    }
+}
+
+.home-hero__scroll {
+    display: inline-block;
+    margin-top: $space-60;
+    @include label;
+    @include underline-link;
+    @include focus-ring;
+
+    &:hover {
+        color: $text;
+    }
+
+    @include mobile {
+        margin-top: $space-40;
+    }
+}
+
+// ---------------------------------------------------------------- Portrait
+// The photo is a cut-out (transparent around the arch), so the glow is a
+// drop-shadow that follows its shape rather than a box around it.
+
+.home-hero__portrait {
+    position: relative;
+    justify-self: end;
+    width: 100%;
+    max-width: 440px;
+
+    @include mobile {
+        justify-self: center;
+        max-width: 320px;
+    }
+}
+
+.home-hero__photo {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0 48px rgba($accent, 0.45));
+}

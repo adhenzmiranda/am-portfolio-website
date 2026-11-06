@@ -1,39 +1,32 @@
 {% load static %}
-<div class="hero">
-
-    <!-- Main Hero Section -->
-    <div class="hero-section1">
-
-        <div class="name-title-container">
-            <h1 class="name">
-                Adhenz Miranda
+<!-- Home hero (redesign step 2a) -->
+<section class="home-hero" aria-labelledby="home-hero-title">
+    <div class="home-hero__inner">
+        <div class="home-hero__text">
+            <h1 class="home-hero__title" id="home-hero-title">
+                <span class="home-hero__eyebrow">Adhenz Miranda &mdash; Creative Developer</span>
+                <span class="home-hero__statement">Creative <strong>developer</strong> &amp; <strong>content creator</strong> based in the UAE.</span>
             </h1>
-            <div class="line"></div>
-            <p class="personal-title">
-                Creative Developer
+            <p class="home-hero__intro">
+                Crafting immersive digital experiences through code, design and security.
+                Currently studying an MSc in Cybersecurity at Bath Spa University.
             </p>
-            <p class="subtext">
-                Crafting <span class="bld">immersive digital experiences</span> through code, design, and security.
-                <span class="bld-und">Creative
-                    Developer</span> blending <span class="bld">technical expertise with artistic vision</span>— ready
-                to
-                bring
-                your next project to life.
-            </p>
-            <a href="{% url 'about' %}" class="about-me-btn">
-                About Me
-            </a>
+            <div class="home-hero__actions">
+                <a href="{% url 'about' %}" class="btn btn--primary">About me</a>
+                <div class="home-hero__social">
+                    {% include "components/social_links.html" %}
+                </div>
+            </div>
+            <a href="#featured-projects" class="home-hero__scroll">&darr; Selected projects</a>
         </div>
 
-        <div class="pfp-links-container">
-            <div class="pfp-container">
-                <img class="card-float" src="{% static 'assets/images/hero/adhenz-miranda.webp' %}" width="554" height="573" alt="Adhenz Miranda">
-            </div>
-            <div class="socials-icons">
-                {% include "components/social_links.html" %}
-            </div>
+        <div class="home-hero__portrait">
+            <img class="home-hero__photo" src="{% static 'assets/images/hero/portrait-main.webp' %}" width="516" height="719" alt="Adhenz Miranda" fetchpriority="high">
         </div>
     </div>
+</section>
+
+<div class="hero">
 
     <!-- Technology Stack Section -->
     <div class="hero-section2">
@@ -70,7 +63,7 @@
     </div>
 
     <!-- Featured Projects Section -->
-    <div class="hero-section3">
+    <div class="hero-section3" id="featured-projects">
         <h2 class="projects-title h2">
             Featured Projects
         </h2>
