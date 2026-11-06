@@ -136,3 +136,46 @@ Built as described under Shared pieces.
 - **Do not change:** `seo_head.html` includes, `{% url %}` / `{% static %}` tags, or the contact form backend.
 - **Build:** run `npm run sass` before committing. The compiled `static/css/main.css` is committed, and Heroku serves it as-is.
 - **Review:** each PR comes with "after" screenshots matching the "before" set (phone, tablet and desktop) plus a local run for clicking around. The PR goes live only when merged; merging to `main` deploys immediately.
+
+## As built: changes made during review (2026-11-06)
+
+These override the plan above where they differ.
+
+### Layout and rules
+- **Content column:** every page is held to a centred 1440px column (`page-container`), so navbar, sections and footer share one left edge on wide screens.
+- **Photo first on phones:** below 1024px the image comes before the title on Home, project pages, About and the error pages.
+- **Section numbers:** shown on sections only, never on rows inside a section.
+- **Card grid:** 1 column below 680px, 2 up to 1199px, 3 from 1200px. The Home featured grid stays at 2.
+- **Hover:** only changes colour or underline, never layout.
+
+### Shared pieces
+- **Navbar:** 20px links (18px on tablet), SVG logo.
+- **Footer:** "Last updated" shows the Heroku release date in Dubai time. This needs `runtime-dyno-metadata` to be enabled.
+
+### Home
+- **Portrait:** the cut-out portrait floats with its glow (no panel or frame).
+- **Featured projects:** ordered newest first.
+
+### Projects
+- **Category filter:** with counts, kept in the URL (`?category=…`).
+
+### Project detail
+- **Lightbox:**
+  - Sizes every item from its real dimensions.
+  - Videos play in Plyr 3.8.5, vendored in `static/vendor/plyr` with no CDN requests.
+  - Embeds open from an Expand button.
+- **Blog posts:** an index and reading pane on desktop and accordion rows below 1024px, in place of the content cards.
+
+### About
+- **Statement:** sits directly above the bio, beside the photo: "Working where creativity meets technology, from short-form video to secure systems."
+
+### Contact
+- **Fields:** labelled, lightly filled square boxes rather than underline-only. The border is about 3.3:1 against the background (WCAG 1.4.11).
+- **Errors:** shown per field in a single extra colour, used only for form errors (`$error: #ff8f8f`).
+
+### Error pages
+- **Template:** all three share `templates/error_base.html`.
+- **Preview locally** at `/preview-error/<403|404|500>/`. This only works while `DEBUG` is on.
+
+### Before every merge
+Run the production check: `collectstatic` with `DEBUG` off (manifest storage), then render every page. A missing file referenced from CSS or JS only fails there.
