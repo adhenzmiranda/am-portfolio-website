@@ -1,299 +1,249 @@
+// About page (redesign step 5): statement, photo + bio, then numbered sections:
+// experience and education as two-column CV rows, expertise as open columns.
 @use '../base/breakpoints' as *;
 @use '../base/typography' as *;
-@use '../base/colors' as *;
-@use '../base/mixins' as *;
 @use '../base/variable' as *;
-@use '../components/animations' as *;
-@use '../components/buttons' as *;
+@use '../base/mixins' as *;
 
-
-// iOS blend mode fallback for cards
-body.ios-blend-fallback .card,
-body.ios-blend-fallback .experience-card,
-body.ios-blend-fallback .card-float {
-    background: linear-gradient(180deg, $gradient-dark-blue 50%, $gradient-black 100%) !important;
-    background-blend-mode: normal !important;
-}
-
-#about-container {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    padding: max(1rem, 3vw);
-
-
-    .lets-connect {
-        @extend .cta, p;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.8rem;
-        max-width: 600px;
-        align-self: center;
-
-        button {
-            @include cta-button;
-        }
-
-        .connect-title {
-            text-align: center;
-            border-bottom: $dark-mode-secondary-blue 1px solid
-        }
-
-        a {
-            text-decoration: none;
-        }
-    }
-}
-
-.about-title {
-    text-align: center;
-    border-bottom: $dark-mode-secondary-blue 1px solid;
-    max-width: fit-content;
-    margin: 0 auto;
-}
-
-.who-am-i {
+.about-page {
     width: 100%;
-    max-width: 620px;
-    align-items: center;
-    display: inline-block;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+}
 
-    .who-am-i-title {
-        border-bottom: $dark-mode-secondary-blue 1px solid;
+.about-page__inner {
+    padding-top: $space-60;
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-top: $space-20;
+        padding-bottom: $space-60;
     }
 }
 
-.my-expertise-container {
+// ---------------------------------------------------------------- Photo + bio
+// Markup order is photo, statement, bio: side by side on desktop, stacked
+// (photo first) on smaller screens.
 
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+.about-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: $space-60;
 
-    .my-expertise-title {
-        text-align: center;
-        border-bottom: $dark-mode-secondary-blue 1px solid;
-        margin: 0 auto;
-        width: fit-content;
+    @media screen and (max-width: #{$desktop - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-40;
     }
+}
 
-    .my-expertise-cards-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem;
+// Same cut-out portrait as Home, without the glow.
+.about-intro__photo {
+    max-width: 420px;
+    margin: 0;
+
+    img {
+        display: block;
         width: 100%;
-        justify-content: center;
-        align-items: center;
-        align-content: center;
+        height: auto;
+    }
 
-        .card {
-
-            @extend .card-float;
-            // Default for screens below 1920px - 2 columns
-            flex: 0 1 calc(50% - 2rem);
-            min-width: 320px;
-            min-height: 450px;
-            max-width: 330px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1.5rem;
-            background:
-                url('../assets/images/hero/Voronoi-Texture-256.png') repeat,
-                linear-gradient(180deg,
-                    $gradient-dark-blue 50%,
-                    $gradient-black 100%);
-            background-blend-mode: overlay;
-            background-size: contain, 100% 100%;
-            border-radius: 10px;
-            border: 1px solid $white-08;
-            box-shadow:
-                0 0 15px $white-05,
-                0 0 30px $white-03;
-            transition: all 0.3s ease;
-            gap: 1.5rem;
-
-            &:hover {
-                border-color: $white-15;
-                box-shadow:
-                    0 0 20px $white-08,
-                    0 0 40px $white-05;
-            }
-
-            .card-content {
-                @extend p;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 1rem;
-
-                ul {
-                    list-style: none;
-                    padding-left: 0;
-
-                    li {
-                        position: relative;
-                        padding-left: 2rem;
-                        margin-bottom: 0.75rem;
-
-                        &::before {
-                            content: '';
-                            position: absolute;
-                            left: 0.5rem;
-                            top: 0.7em;
-                            width: 0.75em;
-                            height: 0.75em;
-                            border-radius: 50%;
-                            background: linear-gradient(135deg, $dark-mode-accent-blue, $dark-mode-secondary-blue);
-                            box-shadow: 0 2px 6px rgba($black, 0.12);
-                            transform: translateY(-50%);
-                        }
-
-                        &:hover::before {
-                            box-shadow: 0 4px 12px rgba($black, 0.24);
-                            transform: scale(1.2) translateY(-50%);
-                        }
-                    }
-                }
-            }
-
-            .card-title {
-                color: $dark-mode-white;
-                text-align: center;
-                padding: 0 1rem;
-                word-wrap: break-word;
-                width: 100%;
-            }
-        }
-
-        // Large Desktop (1920px and above) - 4 columns
-        @media (min-width: 1920px) {
-            .card {
-                flex: 0 1 calc(25% - 2rem); // For 4 cards per row
-            }
-        }
-
-        // Mobile styles (1 column)
-        @include mobile {
-            flex-direction: column;
-
-            .card {
-                flex: 1 1 100%;
-                width: 100%;
-            }
-        }
+    @include mobile {
+        max-width: 260px;
     }
 }
 
-// Experience timeline: one card per role, same surface as the expertise cards
-.experience-container {
+.about-intro__text {
+    padding-top: $space-20;
+
+    @media screen and (max-width: #{$desktop - 1}) {
+        padding-top: 0;
+    }
+}
+
+// The statement, directly above the bio.
+.about-intro__title {
+    max-width: 18em;
+    margin: 0 0 $space-20 + $space-10;
+    font-family: $font-montserrat;
+    font-size: 40px;
+    font-weight: $fw-regular;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    strong {
+        font-weight: $fw-semibold;
+    }
+
+    @include tablet {
+        font-size: 34px;
+    }
+
+    @include mobile {
+        font-size: 28px;
+    }
+}
+
+.about-intro__social {
     display: flex;
-    flex-direction: column;
-    gap: 16px;
-    width: 100%;
-    max-width: 760px;
-    margin: 1rem auto;
+    gap: $space-20;
+    margin-top: $space-40;
 
-    .experience-title {
-        text-align: center;
-        border-bottom: $dark-mode-secondary-blue 1px solid;
-        margin: 0 auto;
-        width: fit-content;
-    }
-
-    .experience-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .experience-card {
-        @extend p;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 1.75rem 1.75rem 1.25rem;
-        background:
-            url('../assets/images/hero/Voronoi-Texture-256.png') repeat,
-            linear-gradient(180deg,
-                $gradient-dark-blue 50%,
-                $gradient-black 100%);
-        background-blend-mode: overlay;
-        background-size: 256px, 100% 100%;
-        border-radius: 10px;
-        border: 1px solid $white-08;
-        border-left: 3px solid $dark-mode-secondary-blue;
-        box-shadow:
-            0 0 15px $white-05,
-            0 0 30px $white-03;
-        transition: all 0.3s ease;
+    .icon-img {
+        display: block;
+        line-height: 0;
+        opacity: 0.75;
+        transition: opacity $duration-fast;
+        @include focus-ring;
 
         &:hover {
-            border-color: $white-15;
-            border-left-color: $dark-mode-secondary-blue;
-            box-shadow:
-                0 0 20px $white-08,
-                0 0 40px $white-05;
+            opacity: 1;
         }
+    }
 
-        .experience-meta {
-            color: rgba($dark-mode-white, 0.75);
-            font-size: 0.9em;
-            margin-bottom: 0.5rem;
+    img {
+        width: 24px;
+        height: 24px;
+    }
+}
 
-            .experience-dates {
-                white-space: nowrap;
-            }
+// ---------------------------------------------------------------- Sections
 
-            .experience-org {
-                color: $dark-mode-white;
-                font-weight: 600;
-            }
+.about-section {
+    margin-top: $space-120;
+
+    @include tablet {
+        margin-top: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        margin-top: $space-60;
+    }
+}
+
+// CV rows: meta (dates, organisation, place) left, role and highlights right.
+.cv-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid $hairline;
+}
+
+.cv-row {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: $space-20 $space-60;
+    padding: $space-20 + $space-10 0;
+    border-bottom: 1px solid $hairline;
+
+    @include tablet {
+        gap: $space-20 $space-40;
+    }
+
+    @include mobile {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-10;
+    }
+}
+
+.cv-row__meta p {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 15px;
+    line-height: 1.5;
+    color: $text-muted;
+}
+
+.cv-row__meta .cv-row__dates {
+    margin-bottom: $space-5;
+    @include label;
+}
+
+.cv-row__meta .cv-row__org {
+    color: $text;
+}
+
+.cv-row__title {
+    margin: 0;
+    font-family: $font-raleway;
+    font-size: 22px;
+    font-weight: $fw-medium;
+    line-height: 1.3;
+    color: $text;
+
+    @include mobile {
+        font-size: 19px;
+    }
+}
+
+.cv-row__points {
+    max-width: 42em;
+    margin: $space-20 0 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        position: relative;
+        margin-bottom: $space-10;
+        padding-left: $space-20 + $space-5;
+        font-family: $font-ibm;
+        font-size: 16px;
+        line-height: 1.55;
+        color: $text-muted;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0.78em;
+            left: 0;
+            width: 12px;
+            height: 1px;
+            background-color: $accent;
         }
+    }
+}
 
-        ul {
-            list-style: none;
-            padding-left: 0;
+// Expertise: four open columns, each topped by a hairline.
+.expertise {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: $space-40;
 
-            li {
-                position: relative;
-                padding-left: 2rem;
-                margin-bottom: 0.75rem;
-                line-height: 1.5;
+    @media screen and (max-width: #{$desktop - 1}) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-                &::before {
-                    content: '';
-                    position: absolute;
-                    left: 0.5rem;
-                    top: 0.75em;
-                    width: 0.75em;
-                    height: 0.75em;
-                    border-radius: 50%;
-                    background: linear-gradient(135deg, $dark-mode-accent-blue, $dark-mode-secondary-blue);
-                    box-shadow: 0 2px 6px rgba($black, 0.12);
-                    transform: translateY(-50%);
-                }
-            }
-        }
+    @include mobile {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-20 + $space-10;
+    }
+}
 
-        @include mobile {
-            padding: 1.25rem 1rem 0.75rem;
+.expertise__group {
+    padding-top: $space-20;
+    border-top: 1px solid $hairline;
+}
 
-            ul li {
-                padding-left: 1.6rem;
+.expertise__label {
+    margin: 0 0 $space-20;
+    font-weight: $fw-regular;
+    @include label;
+}
 
-                &::before {
-                    left: 0.3rem;
-                }
-            }
-        }
+.expertise__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+        margin-bottom: $space-10;
+        font-family: $font-ibm;
+        font-size: 17px;
+        line-height: 1.4;
+        color: $text;
     }
 }

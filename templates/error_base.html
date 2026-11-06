@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% comment %}
+Shared layout for the 403 / 404 / 500 pages. Each page sets:
+  error_code   the number shown large and used for the cat picture (http.cat)
+  error_title  the browser tab title
+  error_line   the short headline
+  error_text   one supporting sentence
+Kept free of database queries so it still renders when something is broken (500).
+{% endcomment %}
+
+{% block head %}
+    <meta name="robots" content="noindex">
+    <title>{% block error_title %}{% endblock %} | Adhenz Miranda</title>
+{% endblock %}
+
+{% block content %}
+<section class="error-page" aria-labelledby="error-title">
+    <div class="error-page__inner">
+        <div class="error-page__text">
+            <p class="error-page__code" aria-hidden="true">{% block error_code %}{% endblock %}</p>
+            <h1 class="error-page__title" id="error-title">
+                <span class="page-head__eyebrow">Error {% block error_code_label %}{% endblock %}</span>
+                {% block error_line %}{% endblock %}
+            </h1>
+            <p class="error-page__intro">{% block error_text %}{% endblock %}</p>
+            <div class="error-page__actions">
+                <a class="btn btn--primary" href="{% url 'home' %}"><span aria-hidden="true">&larr;</span> Back home</a>
+                <a class="btn btn--ghost" href="{% url 'projects_page' %}">View projects</a>
+            </div>
+        </div>
+        <figure class="error-page__cat">
+            <img src="https://http.cat/{% block error_cat %}{% endblock %}.jpg" width="750" height="600" alt="" loading="lazy">
+        </figure>
+    </div>
+</section>
+{% endblock %}

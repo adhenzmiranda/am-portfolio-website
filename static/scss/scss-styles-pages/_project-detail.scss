@@ -1,0 +1,542 @@
+// Project detail page (redesign step 4), rebuilt from scratch.
+// Header with a details row, intro beside the cover image, then numbered
+// media sections: 4:5 video tiles, masonry photos and an embed grid.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+$single-column-below: 680px;   // embeds: same steps as the project card grid
+$three-columns-from: 1200px;
+$tiles-two-columns-below: 600px; // video tiles and photos
+
+.project-page {
+    width: 100%;
+}
+
+.project-page__inner {
+    padding-top: $space-40;
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-top: $space-20;
+        padding-bottom: $space-60;
+    }
+}
+
+// ---------------------------------------------------------------- Back links
+
+.project-page__back {
+    display: inline-block;
+    padding: $space-5 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    color: $text-muted;
+    transition: color $duration-fast;
+    @include underline-link;
+    @include focus-ring;
+
+    &:hover {
+        color: $text;
+    }
+
+    &--bottom {
+        margin-top: $space-120;
+
+        @include tablet {
+            margin-top: $space-60 + $space-20;
+        }
+
+        @include mobile {
+            margin-top: $space-60;
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Header
+
+.project-head {
+    margin-top: $space-40;
+
+    @include mobile {
+        margin-top: $space-20 + $space-10;
+    }
+}
+
+.project-head__title {
+    max-width: 22em;
+    margin: 0;
+    font-family: $font-montserrat;
+    font-size: 48px;
+    font-weight: $fw-regular;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: $text;
+    overflow-wrap: break-word;
+
+    @include tablet {
+        font-size: 40px;
+    }
+
+    @include mobile {
+        font-size: 30px;
+    }
+}
+
+// Details row: YEAR / CATEGORY / TOOLS / UPDATED between two hairlines.
+.project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-20 $space-60;
+    margin: $space-40 0 0;
+    padding: $space-20 0;
+    border-top: 1px solid $hairline;
+    border-bottom: 1px solid $hairline;
+
+    @include mobile {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: $space-20;
+        margin-top: $space-20 + $space-10;
+    }
+
+    dt {
+        margin-bottom: $space-5;
+        @include label;
+    }
+
+    dd {
+        margin: 0;
+        font-family: $font-ibm;
+        font-size: 16px;
+        line-height: 1.5;
+        color: $text;
+    }
+}
+
+.project-meta__item--tools {
+    @include mobile {
+        grid-column: 1 / -1;
+    }
+}
+
+.project-meta__link {
+    font-size: 16px;
+    color: $text;
+    @include underline-link;
+    @include focus-ring;
+}
+
+.project-meta__tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-10;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    img {
+        display: block;
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        filter: grayscale(1) brightness(1.5);
+        opacity: 0.7;
+        transition:
+            filter $duration $ease-out,
+            opacity $duration $ease-out;
+
+        &:hover {
+            filter: none;
+            opacity: 1;
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Intro
+
+.project-intro {
+    margin-top: $space-60;
+
+    @include mobile {
+        margin-top: $space-40;
+    }
+}
+
+// Text beside the cover on wide screens; stacked (text first) below 1024px.
+.project-intro--with-cover {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+    align-items: start;
+    gap: $space-60;
+
+    @media screen and (max-width: #{$desktop - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-40;
+    }
+}
+
+// Single-column screens (below 1024px): the cover image comes first, then the
+// title, like the photo above the headline on Home. Order: back link, cover,
+// header, text, sections. (.project-intro steps aside so its two children can
+// be placed independently.)
+@media screen and (max-width: #{$desktop - 1}) {
+    .project-page__inner {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .project-page__back:not(.project-page__back--bottom) {
+        order: -3;
+        align-self: flex-start;
+    }
+
+    .project-intro {
+        display: contents;
+    }
+
+    .project-intro__cover {
+        order: -2;
+        margin-top: $space-20;
+    }
+
+    .project-head {
+        order: -1;
+    }
+
+    .project-intro__text {
+        margin-top: $space-40;
+    }
+
+    .project-page__back--bottom {
+        align-self: flex-start;
+    }
+}
+
+.project-intro__cover {
+    margin: 0;
+    max-width: 600px;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        background-color: $white-05;
+    }
+}
+
+// ---------------------------------------------------------------- Media sections
+
+.project-section {
+    margin-top: $space-120;
+
+    @include tablet {
+        margin-top: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        margin-top: $space-60;
+    }
+}
+
+// Videos: Instagram-style 4:5 tiles, title shown on hover (always on touch screens).
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media screen and (max-width: #{$tiles-two-columns-below - 1}) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.media-tile {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background-color: $black;
+    cursor: pointer;
+
+    // Dark fade at the bottom so the title stays readable over any frame.
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 45%, rgba($black, 0.8));
+        opacity: 0;
+        transition: opacity $duration $ease-out;
+        pointer-events: none;
+    }
+
+    &:hover::after,
+    &:focus-within::after {
+        opacity: 1;
+    }
+}
+
+.media-tile__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none; // the whole tile is the click target
+    transition: transform 0.6s $ease-out;
+
+    .media-tile:hover & {
+        transform: scale(1.03);
+    }
+}
+
+.media-tile__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba($white, 0.7);
+    border-radius: 50%; // a play button is the one round shape
+    background-color: rgba($black, 0.35);
+    transform: translate(-50%, -50%);
+    transition: background-color $duration-fast;
+    pointer-events: none;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 54%;
+        border-style: solid;
+        border-width: 8px 0 8px 13px;
+        border-color: transparent transparent transparent $white;
+        transform: translate(-50%, -50%);
+    }
+
+    .media-tile:hover & {
+        background-color: $button-bg;
+    }
+
+    @include mobile {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+.media-tile__title {
+    position: absolute;
+    right: $space-20;
+    bottom: $space-20;
+    left: $space-20;
+    z-index: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 15px;
+    line-height: 1.4;
+    color: $text;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+        opacity $duration $ease-out,
+        transform $duration $ease-out;
+
+    .media-tile:hover &,
+    .media-tile:focus-within & {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+// Touch screens can't hover: keep a small title and the fade always visible.
+@media (hover: none) {
+    .media-tile::after {
+        opacity: 1;
+    }
+
+    .media-tile__title {
+        right: $space-10;
+        bottom: $space-10;
+        left: $space-10;
+        font-size: 12px;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+// Photos: masonry columns, each photo at its natural shape.
+.photo-masonry {
+    column-count: 3;
+    column-gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include tablet {
+        column-count: 2;
+    }
+
+    @media screen and (max-width: #{$tiles-two-columns-below - 1}) {
+        column-count: 2;
+        column-gap: 8px;
+    }
+
+    .gallery-item {
+        margin-bottom: 12px;
+        overflow: hidden;
+        background-color: $white-05;
+        break-inside: avoid;
+        cursor: zoom-in;
+
+        @media screen and (max-width: #{$tiles-two-columns-below - 1}) {
+            margin-bottom: 8px;
+        }
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        transition:
+            transform 0.6s $ease-out,
+            opacity $duration $ease-out;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.03);
+    }
+
+    // Read by the lightbox; not shown in the grid.
+    .gallery-caption {
+        @include visually-hidden;
+    }
+}
+
+// Embeds: grid of players at each platform's own shape, caption below.
+.embed-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: $space-40;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @media screen and (max-width: #{$three-columns-from - 1}) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: $space-40 $space-20 + $space-10;
+    }
+
+    @media screen and (max-width: #{$single-column-below - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    > li {
+        min-width: 0;
+    }
+}
+
+.embed-item__frame {
+    position: relative;
+    width: 100%;
+    background-color: $black;
+
+    &--wide {
+        aspect-ratio: 16 / 9;
+    }
+
+    &--itch {
+        aspect-ratio: 552 / 167;
+    }
+
+    &--linkedin {
+        max-width: 504px;
+        aspect-ratio: 504 / 600;
+    }
+
+    iframe {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+}
+
+.embed-item__warning {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 14px;
+    color: $text-muted;
+}
+
+.embed-item__footer {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-20;
+    margin-top: $space-10;
+}
+
+.embed-caption {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 15px;
+    line-height: 1.5;
+    color: $text-muted;
+}
+
+// Opens the embed large in the lightbox (the player itself stays interactive in place).
+.embed-item__expand {
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: $space-5 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    transition: color $duration-fast;
+    @include label;
+    @include underline-link;
+    @include focus-ring;
+
+    &:hover {
+        color: $text;
+    }
+}
+
+// Video tiles and photos open the lightbox; show where keyboard focus is.
+.media-tile,
+.photo-masonry .gallery-item {
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: 3px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .media-tile::after,
+    .media-tile__video,
+    .media-tile__title,
+    .photo-masonry img,
+    .project-meta__tools img {
+        transition: none;
+    }
+}

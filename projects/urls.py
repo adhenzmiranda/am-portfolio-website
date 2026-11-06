@@ -65,4 +65,10 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
+    # Preview the 403 / 404 / 500 pages locally (never added when DEBUG is off).
+    from projects.error_views import preview_error
+    urlpatterns += [
+        re_path(r'^preview-error/(?P<code>403|404|500)/$', lambda request, code: preview_error(request, int(code))),
+    ]
+
 urlpatterns = format_suffix_patterns(urlpatterns)

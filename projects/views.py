@@ -11,7 +11,8 @@ from django.core.mail import EmailMessage
 from django.contrib import messages
 from django.conf import settings
 import logging
-from .models import Projects, Experience, Education
+from django.db.models import Count
+from .models import Category, Projects, Experience, Education
 from .serializer import ProjectsSerializer
 from .forms import ContactForm
 from .seo import home_json_ld, project_json_ld
@@ -115,22 +116,20 @@ def contact(request):
     return render(request, 'contact.html', {'form': form, 'turnstile_site_key': settings.TURNSTILE_SITE_KEY})
 
 def projects_page(request):
-    projects = Projects.objects.all().order_by('-created_at')
-    # Group projects by year
-    projects_by_year = {}
+    """All projects, grouped by year (newest year first, newest project first within a year)."""
+    projects = Projects.objects.select_related('category').order_by('-year', '-created_at')
+    year_groups = []
     for project in projects:
-        if project.year not in projects_by_year:
-            projects_by_year[project.year] = []
-        projects_by_year[project.year].append(project)
-    
-    # Sort years in descending order
-    sorted_years = sorted(projects_by_year.keys(), reverse=True)
-    
-    context = {
-        'projects_by_year': projects_by_year,
-        'sorted_years': sorted_years
-    }
-    return render(request, 'projects.html', context)
+        if not year_groups or year_groups[-1]['year'] != project.year:
+            year_groups.append({'year': project.year, 'projects': []})
+        year_groups[-1]['projects'].append(project)
+    # Categories that have at least one project, for the filter row (count shown on each button).
+    categories = Category.objects.annotate(project_total=Count('projects')).filter(project_total__gt=0).order_by('name')
+    return render(request, 'projects.html', {
+        'year_groups': year_groups,
+        'project_count': len(projects),
+        'categories': categories,
+    })
 
 def plain_text_summary(markdown_text, length=155):
     """Render markdown, strip the HTML and collapse whitespace for meta tags."""
@@ -138,12 +137,19 @@ def plain_text_summary(markdown_text, length=155):
     return Truncator(' '.join(text.split())).chars(length)
 
 def project_detail_page(request, id):
-    project = get_object_or_404(Projects, id=id)
+    project = get_object_or_404(Projects.objects.select_related('category'), id=id)
     meta_description = plain_text_summary(project.description)
+    videos, photos, embeds = list(project.videos.all()), list(project.photos.all()), list(project.embeds.all())
+    # Media sections in page order, numbered 01, 02... counting only the ones this project has.
+    sections = [name for name, items in (('videos', videos), ('photos', photos), ('embeds', embeds)) if items]
     context = {
         'project': project,
         'meta_description': meta_description,
         'json_ld': project_json_ld(project, meta_description),
+        'videos': videos,
+        'photos': photos,
+        'embeds': embeds,
+        'section_numbers': {name: f'{i:02d}' for i, name in enumerate(sections, 1)},
     }
     return render(request, 'project_detail.html', context)
 

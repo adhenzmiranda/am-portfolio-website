@@ -1,49 +1,8 @@
-{% extends "base.html" %}
-{% load static %}
+{% extends "error_base.html" %}
 
-{% block head %}
-    <meta name="robots" content="noindex">
-    <title>403 Forbidden</title>
-        <style>
-            .error-container {
-                text-align: center;
-                margin-top: 40px;
-            }
-            .error-container .h1 {
-                font-family: 'Montserrat', sans-serif;
-                font-weight: 700;
-                color: #EDEFF8;
-                font-size: 48px;
-                margin-bottom: 16px;
-            }
-            .error-container .h2 {
-                font-family: 'Raleway', sans-serif;
-                font-weight: 600;
-                color: #EDEFF8;
-                font-size: 36px;
-                margin-bottom: 24px;
-            }
-            .error-container img {
-                max-width: 100%;
-                height: auto;
-                margin-top: 24px;
-                border-radius: 12px;
-                box-shadow: 0 4px 24px rgba(0,0,0,0.25);
-            }
-            body.home-page {
-                background: url('{% static "assets/images/hero/Voronoi-Texture-256.png" %}') repeat, linear-gradient(180deg, #060636 50%, #0D0D0D 100%);
-                background-blend-mode: overlay;
-                background-attachment: scroll, fixed;
-                background-position: center var(--parallax-y, 0px), center center;
-                background-size: 256px, 100% 100%;
-            }
-        </style>
-{% endblock %}
-
-{% block content %}
-        <div class="error-container">
-            <div class="h1">403 - Forbidden</div>
-            <p class="h2">You do not have permission to access this page.</p>
-            <img src="https://http.cat/403.jpg" alt="403 Cat">
-        </div>
-{% endblock %}
+{% block error_title %}403 Access denied{% endblock %}
+{% block error_code %}403{% endblock %}
+{% block error_code_label %}403{% endblock %}
+{% block error_cat %}403{% endblock %}
+{% block error_line %}This page is <strong>off limits</strong>.{% endblock %}
+{% block error_text %}You don't have permission to view this page.{% endblock %}

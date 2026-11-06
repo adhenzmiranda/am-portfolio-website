@@ -1,0 +1,109 @@
+// Error pages (403 / 404 / 500, redesign step 7): a huge code, a short line,
+// one sentence and the way back, with the http.cat picture beside it
+// (above it on smaller screens, like the photo-first pages).
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.error-page {
+    width: 100%;
+}
+
+.error-page__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+    gap: $space-60;
+    padding-top: $space-60;
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @media screen and (max-width: #{$desktop - 1}) {
+        grid-template-columns: minmax(0, 1fr);
+        gap: $space-40;
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-top: $space-20;
+        padding-bottom: $space-60;
+    }
+}
+
+.error-page__code {
+    margin: 0 0 $space-20;
+    font-family: $font-montserrat;
+    font-size: clamp(112px, 16vw, 220px);
+    font-weight: $fw-regular;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    color: $text;
+}
+
+.error-page__title {
+    max-width: 16em;
+    margin: 0;
+    font-family: $font-montserrat;
+    font-size: 40px;
+    font-weight: $fw-regular;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    strong {
+        font-weight: $fw-semibold;
+    }
+
+    @include tablet {
+        font-size: 34px;
+    }
+
+    @include mobile {
+        font-size: 28px;
+    }
+}
+
+.error-page__intro {
+    max-width: 34em;
+    margin: $space-20 0 0;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    color: $text-muted;
+
+    @include mobile {
+        font-size: 16px;
+    }
+}
+
+.error-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-20;
+    margin-top: $space-40;
+}
+
+.error-page__cat {
+    max-width: 440px;
+    margin: 0;
+    justify-self: end;
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background-color: $white-05;
+    }
+
+    @media screen and (max-width: #{$desktop - 1}) {
+        order: -1;
+        justify-self: start;
+        max-width: 360px;
+    }
+
+    @include mobile {
+        max-width: 280px;
+    }
+}

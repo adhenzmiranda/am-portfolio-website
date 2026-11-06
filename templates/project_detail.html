@@ -4,159 +4,146 @@
 {% load markdownify %}
 
 {% block head %}
-    <!-- Lightbox Component -->
-    <script src="{% static 'js/components/lightbox.js' %}" defer></script>
-
-    <!-- Social Media Embed Scripts -->
-    <script async src="//www.instagram.com/embed.js"></script>
-    <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
-    
+    <link rel="stylesheet" href="{% static 'vendor/plyr/plyr.css' %}">
+    <script src="{% static 'vendor/plyr/plyr.min.js' %}" defer></script>
+    <script src="{% static 'js/components/lightbox.js' %}" data-plyr-icons="{% static 'vendor/plyr/plyr.svg' %}" defer></script>
+    {% if project.display_mode == 'blogpost' %}<script src="{% static 'js/components/chapters.js' %}" defer></script>{% endif %}
     {% include "components/seo_head.html" with page_title=project.name|add:" | Adhenz Miranda" page_description=meta_description %}
 {% endblock %}
 
 {% block content %}
-    <div class="project-detail-container">
-        <div class="project-detail-header">
-            <h1 class="project-detail-title h1">{{ project.name }}</h1>
-            <div class="project-meta">
-                <span class="project-year">{{ project.year }}</span>
-                <span class="project-category">{{ project.category }}</span>
-            </div>
-            <div class="project-last-updated">
-                <p>Last updated: {{ project.updated_at|date:"m-d-Y H:i" }}</p>
-            </div>
-        </div>
+<article class="project-page{% if project.display_mode == 'blogpost' %} project-page--article{% endif %}" aria-labelledby="project-title">
+    <div class="project-page__inner">
 
+        <a class="project-page__back" href="{% url 'projects_page' %}"><span aria-hidden="true">&larr;</span> All projects</a>
 
-        <div class="project-detail-content">
+        <!-- Header: title and a row of details -->
+        <header class="project-head">
+            <h1 class="project-head__title" id="project-title">{{ project.name }}</h1>
+            <dl class="project-meta">
+                <div class="project-meta__item">
+                    <dt>Year</dt>
+                    <dd>{{ project.year }}</dd>
+                </div>
+                {% if project.category %}
+                <div class="project-meta__item">
+                    <dt>Category</dt>
+                    <dd><a class="project-meta__link" href="{% url 'projects_page' %}?category={{ project.category.name|slugify }}">{{ project.category.name }}</a></dd>
+                </div>
+                {% endif %}
+                {% if project.technologies %}
+                <div class="project-meta__item project-meta__item--tools">
+                    <dt>Tools</dt>
+                    <dd>
+                        <ul class="project-meta__tools">
+                            {% for tech in project.technologies %}
+                            <li><img src="{% static 'assets/tech-stack-used/'|add:tech|add:'.png' %}" width="24" height="24" alt="{{ tech|tech_display }}" title="{{ tech|tech_display }}"></li>
+                            {% endfor %}
+                        </ul>
+                    </dd>
+                </div>
+                {% endif %}
+                <div class="project-meta__item">
+                    <dt>Updated</dt>
+                    <dd><time datetime="{{ project.updated_at|date:'Y-m-d' }}">{{ project.updated_at|date:"m-d-Y" }}</time></dd>
+                </div>
+            </dl>
+        </header>
 
+        <!-- Intro: description (the whole article for blog posts) beside the cover image -->
+        <div class="project-intro{% if project.thumbnail_image %} project-intro--with-cover{% endif %}">
+            <div class="prose project-intro__text">{{ project.description|markdownify }}</div>
             {% if project.thumbnail_image %}
-            <div class="project-image">
-                <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
-            </div>
+            <figure class="project-intro__cover">
+                <img src="{{ project.thumbnail_image.url }}" width="600" height="338" alt="{{ project.name }} cover image">
+            </figure>
             {% endif %}
-
-            <div class="project-tags">
-                <h2 class="h3">Technology Stack</h2>
-                <div class="tech-stack-container">
-                    {% for tech in project.technologies %}
-                    <div class="tech-item">
-                        <img src="{% static 'assets/tech-stack-used/'|add:tech|add:'.png' %}"
-                            alt="{{ tech|tech_display }}" class="tech-icon">
-                        <span class="tech-name">{{ tech|tech_display }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <div class="project-description">
-                {% if project.display_mode != 'blogpost' %}
-                <h2 class="h2">About the Project</h2>
-                {% endif %}
-                <div class="markdown-content">{{ project.description|markdownify }}</div>
-            </div>
-
-            {% if project.display_mode == 'blogpost' and project.cards.all %}
-            <div class="project-cards">
-                {% include 'components/content_cards.html' with cards=project.cards.all %}
-            </div>
-            {% endif %}
-
-            {% if project.display_mode == 'portfolio' %}
-
-            {% if project.embeds.all %}
-            <div class="project-embeds">
-                <h2 class="h2">Project Embeds</h2>
-                <div class="embed-gallery-grid">
-                    {% for embed in project.embeds.all %}
-                    <div class="embed-item">
-                        <div class="embed-wrapper">
-                            {% if embed.is_safe and embed.safe_src %}
-                                <iframe src="{{ embed.safe_src }}" width="560" height="315"
-                                    frameborder="0" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
-                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
-                                    allow="fullscreen" allowfullscreen></iframe>
-                            {% else %}
-                                <div class="embed-warning">Invalid or unsafe embed code.</div>
-                            {% endif %}
-                        </div>
-                        {% if embed.caption %}
-                        <div class="embed-caption">{{ embed.caption }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if project.videos.all %}
-            <div class="project-videos">
-                <h2 class="h2">Project Videos</h2>
-                <div class="video-gallery-grid">
-                    {% for video in project.videos.all %}
-                    <div class="video-item">
-                        <div class="video-wrapper">
-                            <video controls preload="metadata">
-                                <source src="{{ video.video.url }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                        {% if video.caption %}
-                        <div class="video-caption">{{ video.caption }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            {% if project.photos.all %}
-            <div class="project-gallery">
-                <h2 class="h2">Project Gallery</h2>
-                <div class="gallery-grid">
-                    {% for photo in project.photos.all %}
-                    <div class="gallery-item">
-                        <img src="{{ photo.image.url }}" alt="{{ photo.caption|default:project.name }}">
-                        {% if photo.caption %}
-                        <div class="gallery-caption">{{ photo.caption }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            {% endif %}{# end portfolio mode #}
-
-            <div class="project-details">
-
-                {% if project.github_link %}
-                <div class="project-links">
-                    <h3 class="h3">Project Links</h3>
-                    <a href="{{ project.github_link }}" class="project-link" target="_blank" rel="noopener noreferrer">
-                        <img src="{% static 'assets/images/footer/github.png' %}" width="36" height="36" alt="GitHub">
-                        View on GitHub
-                    </a>
-                </div>
-                {% endif %}
-
-                {% if project.demo_link %}
-                <div class="project-links">
-                    <a href="{{ project.demo_link }}" class="project-link" target="_blank" rel="noopener noreferrer">
-                        View Live Demo
-                    </a>
-                </div>
-                {% endif %}
-            </div>
         </div>
 
+        {% if project.display_mode == 'blogpost' %}
+        {% with cards=project.cards.all %}
+        {% if cards %}
+        <section class="project-section" aria-label="Chapters">
+            {% include 'components/chapters.html' with cards=cards %}
+        </section>
+        {% endif %}
+        {% endwith %}
+        {% else %}
 
-        <div class="project-navigation">
-            <a href="{% url 'projects_page' %}" class="back-to-projects-btn">
-                <img src="{% static 'assets/images/projects/back-arrow.png' %}" width="16" height="16" alt="Back">
-                Back to Projects
-            </a>
-        </div>
+        {% if videos %}
+        <section class="project-section" aria-labelledby="videos-title">
+            <header class="section-head">
+                <span class="section-head__num">{{ section_numbers.videos }}</span>
+                <h2 class="section-head__title" id="videos-title">Videos</h2>
+            </header>
+            <ul class="video-grid">
+                {% for video in videos %}
+                <li class="video-item media-tile">
+                    <video class="media-tile__video" preload="none" muted playsinline
+                           poster="{{ video.video.url|cloudinary:'so_1,w_640,h_800,c_fill,q_auto|jpg' }}">
+                        <source src="{{ video.video.url }}" type="video/mp4">
+                    </video>
+                    <span class="media-tile__play" aria-hidden="true"></span>
+                    <p class="media-tile__title video-caption">{% if video.caption %}{{ video.caption }}{% else %}Video {{ forloop.counter }}{% endif %}</p>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
 
+        {% if photos %}
+        <section class="project-section" aria-labelledby="gallery-title">
+            <header class="section-head">
+                <span class="section-head__num">{{ section_numbers.photos }}</span>
+                <h2 class="section-head__title" id="gallery-title">Gallery</h2>
+            </header>
+            <ul class="photo-masonry">
+                {% for photo in photos %}
+                <li class="gallery-item">
+                    <img src="{{ photo.image.url|cloudinary:'w_800,c_limit,q_auto,f_auto' }}"
+                         data-full="{{ photo.image.url|cloudinary:'w_2000,c_limit,q_auto,f_auto' }}"
+                         alt="{{ photo.caption|default:project.name }}" loading="lazy">
+                    {% if photo.caption %}<p class="gallery-caption">{{ photo.caption }}</p>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% if embeds %}
+        <section class="project-section" aria-labelledby="embeds-title">
+            <header class="section-head">
+                <span class="section-head__num">{{ section_numbers.embeds }}</span>
+                <h2 class="section-head__title" id="embeds-title">Embedded work</h2>
+            </header>
+            <ul class="embed-grid">
+                {% for embed in embeds %}
+                <li class="embed-item">
+                    <div class="embed-item__frame embed-item__frame--{{ embed.safe_src|embed_shape }}">
+                        {% if embed.is_safe and embed.safe_src %}
+                        <iframe src="{{ embed.safe_src }}" title="{{ embed.caption|default:project.name }}"
+                                loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+                                sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                                allow="fullscreen" allowfullscreen></iframe>
+                        {% else %}
+                        <p class="embed-item__warning">This embed couldn't be shown.</p>
+                        {% endif %}
+                    </div>
+                    <div class="embed-item__footer">
+                        {% if embed.caption %}<p class="embed-caption">{{ embed.caption }}</p>{% endif %}
+                        {% if embed.is_safe and embed.safe_src %}
+                        <button type="button" class="embed-item__expand" data-lightbox-open>Expand<span class="visually-hidden"> {{ embed.caption|default:"embed" }}</span> <span aria-hidden="true">&#8599;</span></button>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+
+        {% endif %}{# end portfolio mode #}
+
+        <a class="project-page__back project-page__back--bottom" href="{% url 'projects_page' %}"><span aria-hidden="true">&larr;</span> Back to all projects</a>
     </div>
+</article>
 {% endblock %}

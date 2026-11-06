@@ -1,202 +1,275 @@
-@use '../base/colors' as *;
-@use '../base/typography' as *;
+// Media lightbox (redesign step 4b): flat, full screen.
+// Top bar: counter + type and Close. Middle: the media. Bottom: title and arrows.
+// Behaviour lives in static/js/components/lightbox.js.
 @use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+// Shared utility: hide visually, keep for screen readers.
+.visually-hidden {
+    @include visually-hidden;
+}
+
+body.lightbox-open {
+    overflow: hidden;
+}
 
 .lightbox {
-    display: none;
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
+    z-index: 2000; // above the header (1006) and the scroll progress bar (1010)
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background-color: $gradient-black; // solid, so nothing on the page shows through
+    opacity: 0;
+    transition: opacity $duration $ease-out;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &.is-open {
+        opacity: 1;
+    }
+}
+
+.lightbox__bar,
+.lightbox__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-20;
+    padding-top: $space-20;
+    padding-bottom: $space-20;
+    @include page-gutter;
+}
+
+.lightbox__footer {
+    align-items: flex-end;
+    border-top: 1px solid $hairline;
+}
+
+.lightbox__counter {
+    margin: 0;
+    @include label;
+}
+
+.lightbox__close {
+    padding: $space-10 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font-family: $font-ibm;
+    font-size: 16px;
+    color: $text;
+    @include focus-ring;
+
+    span {
+        margin-left: $space-5;
+    }
+
+    &:hover {
+        color: $accent;
+    }
+}
+
+// The media fills the space between the bars and is never cropped.
+.lightbox__stage {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 0;
+    padding-top: $space-10;
+    padding-bottom: $space-20;
+    overflow: hidden;
+    @include page-gutter;
+}
+
+// lightbox.js sets each item's exact width and height from its real proportions,
+// so these only apply for the moment before that (or if sizing is unavailable).
+.lightbox__media {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    transition: opacity $duration-fast;
+
+    &.is-sizing {
+        opacity: 0;
+    }
+}
+
+// Video player: Plyr (static/vendor/plyr), themed to the site through its CSS variables.
+// The wrapper gets its exact size from lightbox.js; Plyr fills it.
+.lightbox__player {
+    --plyr-color-main: #{$accent};
+    --plyr-video-background: transparent;
+    --plyr-font-family: #{$font-ibm};
+    --plyr-font-size-base: 14px;
+    --plyr-font-size-small: 13px;
+    --plyr-control-radius: 0;
+    --plyr-menu-radius: 0;
+    --plyr-tooltip-radius: 0;
+    --plyr-badge-border-radius: 0;
+    --plyr-control-icon-size: 16px;
+    --plyr-control-spacing: 10px;
+    --plyr-range-track-height: 3px;
+    --plyr-range-thumb-height: 12px;
+    --plyr-range-thumb-background: #{$text};
+    --plyr-video-range-track-background: #{rgba($dark-mode-white, 0.25)};
+    --plyr-video-control-color: #{$text};
+    --plyr-video-control-color-hover: #{$text};
+    --plyr-video-controls-background: linear-gradient(transparent, #{rgba($black, 0.75)});
+    --plyr-menu-background: #{$gradient-black};
+    --plyr-menu-color: #{$text};
+    --plyr-tooltip-background: #{$gradient-black};
+    --plyr-tooltip-color: #{$text};
+    --plyr-badge-background: #{$accent};
+    --plyr-focus-visible-color: #{$accent};
+
+    .plyr,
+    .plyr__video-wrapper,
+    video {
+        width: 100%;
+        height: 100%;
+    }
+
+    video {
+        object-fit: contain;
+    }
+
+    // Progress bar on its own full-width line above the buttons, so it never gets
+    // squeezed on narrow (portrait) videos. Buttons: play + time left, the rest right.
+    .plyr__controls {
+        flex-wrap: wrap;
+        row-gap: 2px;
+    }
+
+    .plyr__controls .plyr__progress__container {
+        order: -1;
+        flex: 1 0 100%;
+        margin: 0;
+        padding: 0 4px;
+    }
+
+    .plyr__controls .plyr__volume {
+        margin-left: auto;
+    }
+
+    // Square, flat menu to match the rest of the lightbox.
+    .plyr__menu__container {
+        border: 1px solid $hairline;
+        box-shadow: none;
+
+        &::after {
+            display: none; // the little pointer triangle
+        }
+    }
+}
+
+// Fallback when Plyr isn't available: the browser's own player.
+.lightbox__player > video {
+    display: block;
     width: 100%;
     height: 100%;
-    background: rgba($black, 0.95);
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    object-fit: contain;
+}
 
-    &.active {
-        display: flex;
-        opacity: 1;
-        align-items: center;
-        justify-content: center;
-    }
+.lightbox__embed {
+    position: relative;
+    background-color: $black;
 
-    .lightbox-content {
-        position: relative;
-        max-width: 90vw;
-        max-height: 90vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .lightbox-media-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        max-width: 100%;
-        max-height: 80vh;
-    }
-
-    .lightbox-image {
-        max-width: 100%;
-        max-height: 80vh;
-        object-fit: contain;
-        border-radius: 8px;
-        box-shadow: 0 10px 50px rgba($black, 0.5);
-    }
-
-    .lightbox-video {
-        max-width: 100%;
-        max-height: 80vh;
-        width: auto;
-        height: auto;
-        border-radius: 8px;
-        box-shadow: 0 10px 50px rgba($black, 0.5);
-    }
-
-    .lightbox-embed {
-        width: 90vw;
-        max-width: 1200px;
-        height: 70vh;
-        max-height: 675px;
-        border-radius: 8px;
-        box-shadow: 0 10px 50px rgba($black, 0.5);
-    }
-
-    .lightbox-caption {
-        color: $dark-mode-white;
-        font-family: $font-ibm;
-        font-size: clamp(0.875rem, 1.5vw, 1rem);
-        margin-top: 1rem;
-        text-align: center;
-        max-width: 80%;
-        padding: 0.5rem 1rem;
-    }
-
-    .lightbox-close {
+    iframe {
         position: absolute;
-        top: 2rem;
-        right: 2rem;
-        background: rgba($white, 0.1);
-        border: none;
-        color: $dark-mode-white;
-        font-size: 2rem;
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        z-index: 10001;
-
-        &:hover {
-            background: rgba($white, 0.2);
-            transform: rotate(90deg);
-        }
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
     }
+}
 
-    .lightbox-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        background: rgba($white, 0.1);
-        border: none;
-        color: $dark-mode-white;
-        font-size: 2rem;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-        z-index: 10000;
+.lightbox__title {
+    min-width: 0;
+    max-width: 40em;
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    color: $text;
 
-        &:hover {
-            background: rgba($white, 0.2);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        &.lightbox-prev {
-            left: 2rem;
-        }
-
-        &.lightbox-next {
-            right: 2rem;
-        }
-
-        &:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            &:hover {
-                transform: translateY(-50%);
-            }
-        }
-    }
-
-    .lightbox-counter {
-        position: absolute;
-        top: 2rem;
-        left: 50%;
-        transform: translateX(-50%);
-        color: $dark-mode-white;
-        font-family: $font-ibm;
-        font-size: 1rem;
-        background: rgba($white, 0.1);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        backdrop-filter: blur(10px);
-        z-index: 10001;
+    &:empty {
+        visibility: hidden;
     }
 
     @include mobile {
-        .lightbox-close {
-            top: 1rem;
-            right: 1rem;
-            width: 40px;
-            height: 40px;
-            font-size: 1.5rem;
-        }
+        font-size: 14px;
+    }
+}
 
-        .lightbox-nav {
-            width: 50px;
-            height: 50px;
-            font-size: 1.5rem;
+.lightbox__nav {
+    display: flex;
+    flex: 0 0 auto;
+    gap: $space-10;
 
-            &.lightbox-prev {
-                left: 1rem;
-            }
+    &[hidden] {
+        display: none;
+    }
+}
 
-            &.lightbox-next {
-                right: 1rem;
-            }
-        }
+.lightbox__btn {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    background: none;
+    border: 1px solid $hairline;
+    cursor: pointer;
+    font-size: 20px;
+    color: $text;
+    transition:
+        background-color $duration-fast,
+        border-color $duration-fast;
+    @include focus-ring;
 
-        .lightbox-embed {
-            width: 95vw;
-            height: 60vh;
-        }
+    &:hover {
+        background-color: $button-bg;
+        border-color: $button-bg;
+    }
 
-        .lightbox-counter {
-            top: 1rem;
-            font-size: 0.875rem;
-            padding: 0.4rem 0.8rem;
-        }
+    @include mobile {
+        width: 44px;
+        height: 44px;
+    }
+}
 
-        .lightbox-image {
-            max-height: 70vh;
-        }
+// Short screens (a phone held sideways): slimmer bars leave more room for the media.
+@media (max-height: 500px) {
+    .lightbox__bar,
+    .lightbox__footer {
+        padding-top: $space-5;
+        padding-bottom: $space-5;
+    }
 
-        .lightbox-caption {
-            font-size: 0.875rem;
-            max-width: 90%;
-        }
+    .lightbox__stage {
+        padding-top: $space-5;
+        padding-bottom: $space-5;
+    }
+
+    .lightbox__btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    .lightbox__title {
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .lightbox {
+        transition: none;
     }
 }

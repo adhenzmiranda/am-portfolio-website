@@ -6,140 +6,131 @@
 {% endblock %}
 
 {% block content %}
-    <!-- About -->
-    <div id="about-container">
+<section class="about-page" aria-labelledby="about-title">
+    <div class="about-page__inner">
 
-        <h1 class="about-title h1">
-            About Adhenz Miranda
-        </h1>
-
-        <div class="pfp-links-container">
-            <div class="pfp-container">
-                <img class="card-float" src="{% static 'assets/images/hero/adhenz-miranda.webp' %}" width="554" height="573" alt="Adhenz Miranda">
-            </div>
-            <div class="socials-icons">
-                {% include "components/social_links.html" %}
+        <!-- Photo, then the statement directly above the bio -->
+        <div class="about-intro">
+            <figure class="about-intro__photo">
+                <img src="{% static 'assets/images/hero/portrait-main.webp' %}" width="516" height="719" alt="Adhenz Miranda">
+            </figure>
+            <div class="about-intro__text">
+                <h1 class="about-intro__title" id="about-title">
+                    <span class="page-head__eyebrow">About Adhenz Miranda</span>
+                    Working where <strong>creativity</strong> meets <strong>technology</strong>, from short-form video to secure systems.
+                </h1>
+                <div class="prose">
+                    <p>Hello there! I'm Adhenz Miranda, a UAE-based content creator, photographer and videographer, currently
+                        completing a part-time MSc in Cybersecurity at Bath Spa University.</p>
+                    <p>I hold a BSc (Hons) in Creative Computing, and these days I create short-form content for Instagram and
+                        TikTok for Dubai real estate and property inspection brands, handling everything from planning and
+                        scripting to filming, editing and graphic design. My real estate videos have reached 500k+ views for one
+                        brand and 350k+ combined for two others.</p>
+                    <p>As someone who thrives at the intersection of technology and design, I'm always exploring new ways to
+                        push creative boundaries. I'm open to content creation, photography and videography roles in the UAE,
+                        and to cybersecurity roles as I complete my MSc.</p>
+                </div>
+                <div class="about-intro__social">
+                    {% include "components/social_links.html" %}
+                </div>
             </div>
         </div>
 
-        <div class="who-am-i">
-            <h2 class="who-am-i-title h2">
-                Who Am I?
-            </h2>
-            <p>Hello there! I'm Adhenz Miranda, a UAE-based content creator, photographer and videographer, currently
-                completing a part-time MSc in Cybersecurity at Bath Spa University. <br><br>
-                I hold a BSc (Hons) in Creative Computing, and these days I create short-form content for Instagram and
-                TikTok for Dubai real estate and property inspection brands, handling everything from planning and
-                scripting to filming, editing and graphic design. My real estate videos have reached 500k+ views for one
-                brand and 350k+ combined for two others. <br><br>
-                As someone who thrives at the intersection of technology and design, I'm always exploring new ways to
-                push creative boundaries. I'm open to content creation, photography and videography roles in the UAE,
-                and to cybersecurity roles as I complete my MSc.
-            </p>
-        </div>
-
-        {% if experiences or education %}
-        <section class="experience-container" aria-labelledby="experience-title">
-            <h2 class="experience-title h2" id="experience-title">
-                Experience
-            </h2>
-            <div class="experience-list">
+        {% if experiences %}
+        <section class="about-section" aria-labelledby="experience-title">
+            <header class="section-head">
+                <span class="section-head__num">01</span>
+                <h2 class="section-head__title" id="experience-title">Experience</h2>
+            </header>
+            <ol class="cv-rows">
                 {% for job in experiences %}
-                <article class="experience-card">
-                    <h3 class="h3 experience-role">{{ job.role }}</h3>
-                    <p class="experience-meta"><span class="experience-org">{{ job.organisation }}</span> · {{ job.location }} · <span class="experience-dates">{{ job.dates }}</span></p>
-                    <ul>
-                        {% for line in job.highlights %}
-                        <li>{{ line }}</li>
-                        {% endfor %}
-                    </ul>
-                </article>
+                <li class="cv-row">
+                    <div class="cv-row__meta">
+                        <p class="cv-row__dates">{{ job.dates }}</p>
+                        <p class="cv-row__org">{{ job.organisation }}</p>
+                        <p class="cv-row__place">{{ job.location }}</p>
+                    </div>
+                    <div class="cv-row__main">
+                        <h3 class="cv-row__title">{{ job.role }}</h3>
+                        {% if job.highlights %}
+                        <ul class="cv-row__points">
+                            {% for line in job.highlights %}<li>{{ line }}</li>{% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                </li>
                 {% endfor %}
-                {% if education %}
-                <article class="experience-card">
-                    <h3 class="h3 experience-role">Education</h3>
-                    <ul>
-                        {% for item in education %}
-                        <li><strong>{{ item.title }}</strong>{% if item.details %}, {{ item.details }}{% endif %}</li>
-                        {% endfor %}
-                    </ul>
-                </article>
-                {% endif %}
-            </div>
+            </ol>
         </section>
         {% endif %}
 
-        <div class="my-expertise-container">
-            <h2 class="my-expertise-title h2">
-                My Expertise
-            </h2>
+        {% if education %}
+        <section class="about-section" aria-labelledby="education-title">
+            <header class="section-head">
+                <span class="section-head__num">{% if experiences %}02{% else %}01{% endif %}</span>
+                <h2 class="section-head__title" id="education-title">Education</h2>
+            </header>
+            <ol class="cv-rows">
+                {% for item in education %}
+                <li class="cv-row">
+                    <div class="cv-row__meta">
+                        {% if item.details %}<p class="cv-row__org">{{ item.details }}</p>{% endif %}
+                    </div>
+                    <div class="cv-row__main">
+                        <h3 class="cv-row__title">{{ item.title }}</h3>
+                    </div>
+                </li>
+                {% endfor %}
+            </ol>
+        </section>
+        {% endif %}
 
-            <div class="my-expertise-cards-container">
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-1.png' %}" width="50" height="51" alt="">
-                        <h3 class="card-title h3">Creative Design</h3>
-                        <ul>
-                            <li>Graphic Design</li>
-                            <li>Video Editing</li>
-                            <li>Photography</li>
-                            <li>Photo Editing</li>
-                        </ul>
-                    </div>
+        <section class="about-section" aria-labelledby="expertise-title">
+            <header class="section-head">
+                <span class="section-head__num">{% if experiences and education %}03{% elif experiences or education %}02{% else %}01{% endif %}</span>
+                <h2 class="section-head__title" id="expertise-title">Expertise</h2>
+            </header>
+            <div class="expertise">
+                <div class="expertise__group">
+                    <h3 class="expertise__label">Creative design</h3>
+                    <ul class="expertise__list">
+                        <li>Graphic design</li>
+                        <li>Video editing</li>
+                        <li>Photography</li>
+                        <li>Photo editing</li>
+                    </ul>
                 </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-2.png' %}" width="50" height="51" alt="">
-                        <h3 class="card-title h3">Technical Development</h3>
-                        <ul>
-                            <li>Responsive Websites</li>
-                            <li>Interactive Games</li>
-                            <li>Web & Python Applications</li>
-                        </ul>
-                    </div>
+                <div class="expertise__group">
+                    <h3 class="expertise__label">Technical development</h3>
+                    <ul class="expertise__list">
+                        <li>Responsive websites</li>
+                        <li>Interactive games</li>
+                        <li>Web &amp; Python applications</li>
+                    </ul>
                 </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-3.png' %}" width="50" height="51" alt="">
-                        <h3 class="card-title h3">Core Focus</h3>
-                        <ul>
-                            <li>Front-End Web Development</li>
-                            <li>Graphic & Web Design</li>
-                            <li>Cybersecurity</li>
-                            <li>Information Technology</li>
-                        </ul>
-                    </div>
+                <div class="expertise__group">
+                    <h3 class="expertise__label">Core focus</h3>
+                    <ul class="expertise__list">
+                        <li>Front-end web development</li>
+                        <li>Graphic &amp; web design</li>
+                        <li>Cybersecurity</li>
+                        <li>Information technology</li>
+                    </ul>
                 </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/about/expertise-4.png' %}" width="50" height="51" alt="">
-                        <h3 class="card-title h3">Interpersonal Skills</h3>
-                        <ul>
-                            <li>Critical Thinking</li>
-                            <li>Problem-solving</li>
-                            <li>Leadership</li>
-                            <li>Collaboration</li>
-                            <li>Adaptability</li>
-                        </ul>
-                    </div>
+                <div class="expertise__group">
+                    <h3 class="expertise__label">Interpersonal</h3>
+                    <ul class="expertise__list">
+                        <li>Critical thinking</li>
+                        <li>Problem-solving</li>
+                        <li>Leadership</li>
+                        <li>Collaboration</li>
+                        <li>Adaptability</li>
+                    </ul>
                 </div>
             </div>
-        </div>
-
-        <!-- CV Download -->
-        <div class="lets-connect">
-            <h2 class="connect-title h2">
-                Let's Connect
-            </h2>
-            <p>Interested in working together? Whether for a potential project, job opportunity, or just to chat, I'm
-                eager to connect!
-                <br> <br>
-                Reach out through LinkedIn or email—I look forward to expanding my professional network and hearing from
-                you.
-            </p>
-            <a href="{% url 'contact' %}">
-                <button>Contact</button>
-            </a>
-        </div>
+        </section>
     </div>
+</section>
+
+{% include "components/closing_cta.html" %}
 {% endblock %}

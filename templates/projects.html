@@ -1,49 +1,54 @@
 {% extends "base.html" %}
 {% load static %}
-{% load custom_filters %}
 
 {% block head %}
     {% include "components/seo_head.html" with page_title="Projects by Adhenz Miranda" page_description="Projects by Adhenz Miranda: videography and content creation, graphic design, web and app development, games and cybersecurity work from 2022 to today." %}
 {% endblock %}
 
 {% block content %}
-    <!-- Projects -->
-    <div id="projects-container">
-        <h1 class="project-title h1">
-            Projects
-        </h1>
-        <div class="project-subtitle">
-            <p>
-                Welcome to my projects page, from here you will see all my projects I have done and created by yours
-                truly.
-                <br><br>
-                My projects are of variety and of different skills. Click on a project you’re interested in to see a
-                preview and detailed process of how I go on to developing my project.
+<section class="projects-page" aria-labelledby="projects-title">
+    <div class="projects-page__inner">
+        <header class="page-head">
+            <p class="page-head__eyebrow">Work &middot; <span data-filter-total>{{ project_count }} project{{ project_count|pluralize }}</span></p>
+            <h1 class="page-head__title" id="projects-title">Projects</h1>
+            <p class="page-head__intro">
+                Videography and content creation, graphic design, web and app development,
+                games and cybersecurity work, from 2022 to today. Open any project to see the work and how it was made.
             </p>
 
-        </div>
-        <div class="project-contents">
-            {% for year in sorted_years %}
-            <h2 class="project-year h2">{{ year }}</h2>
-            <div class="year-group">
-                {% for project in projects_by_year|get_item:year %}
-                <div class="project">
-                    <a href="{% url 'project_detail' project.id %}" class="project-link">
-                        {% if project.thumbnail_image %}
-                        <div class="project-thumbnail">
-                            <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
-                        </div>
-                        {% else %}
-                        <div class="project-thumbnail placeholder">
-                            <span>No Image</span>
-                        </div>
-                        {% endif %}
-                        <h3>{{ project.name }}</h3>
-                    </a>
-                </div>
-                {% endfor %}
+            {% if categories|length > 1 %}
+            {# Revealed by projectFilter.js; without JavaScript every project simply shows. #}
+            <div class="project-filter" data-project-filter hidden>
+                <ul class="project-filter__list" aria-label="Filter projects by category">
+                    <li><button type="button" class="project-filter__btn is-active" data-filter="all" aria-pressed="true">All <span class="project-filter__count">{{ project_count }}</span></button></li>
+                    {% for category in categories %}
+                    <li><button type="button" class="project-filter__btn" data-filter="{{ category.name|slugify }}" aria-pressed="false">{{ category.name }} <span class="project-filter__count">{{ category.project_total }}</span></button></li>
+                    {% endfor %}
+                </ul>
+                <p class="project-filter__status" data-filter-status aria-live="polite"></p>
             </div>
-            {% endfor %}
-        </div>
+            {% endif %}
+        </header>
+
+        {% for group in year_groups %}
+        <section class="year-group" aria-labelledby="year-{{ group.year }}" data-year-group>
+            <h2 class="year-group__head" id="year-{{ group.year }}">
+                <span class="year-group__year">{{ group.year }}</span>
+                <span class="year-group__count" data-year-count>{{ group.projects|length }} project{{ group.projects|length|pluralize }}</span>
+            </h2>
+            <ul class="project-grid">
+                {% for project in group.projects %}
+                <li data-category="{{ project.category.name|slugify|default:'uncategorised' }}">{% include "components/project_card.html" %}</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% empty %}
+        <p class="projects-page__empty">No projects yet.</p>
+        {% endfor %}
     </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/components/projectFilter.js' %}" defer></script>
 {% endblock %}

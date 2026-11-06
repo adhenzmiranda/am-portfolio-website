@@ -1,0 +1,83 @@
+{% load markdownify custom_filters %}{% comment %}
+Chapters for blog-post projects (ProjectCard items), shown as an index + reading pane.
+
+Include with: {% include 'components/chapters.html' with cards=project.cards.all %}
+Each card needs: title, teaser, body (markdown), takeaways (list), image_url (optional),
+visual_placeholder (optional).
+
+Without JavaScript: the index is a list of jump links and every chapter shows in full,
+one after another. chapters.js turns it into:
+  - desktop (1024px+): the index stays on the left, one chapter shows in the pane on the right
+  - smaller screens: accordion rows that open in place
+Hover never changes the layout; only a click/tap does.
+{% endcomment %}
+<div class="chapters" data-chapters>
+    <nav class="chapters__index" aria-label="Chapters">
+        <p class="chapters__label">Chapters</p>
+        <ol class="chapters__list">
+            {% for card in cards %}
+            <li>
+                <a class="chapters__link" href="#chapter-{{ forloop.counter }}" data-chapter-link="{{ forloop.counter }}">
+                    <span class="chapters__num">{{ forloop.counter|stringformat:"02d" }}</span>
+                    <span class="chapters__name">{{ card.title }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="chapters__panes">
+        {% for card in cards %}
+        <section class="chapter" id="chapter-{{ forloop.counter }}" data-chapter="{{ forloop.counter }}" aria-labelledby="chapter-{{ forloop.counter }}-title">
+            <header class="chapter__head">
+                <h2 class="chapter__title" id="chapter-{{ forloop.counter }}-title">
+                    <span class="chapter__num">{{ forloop.counter|stringformat:"02d" }}</span>
+                    <span class="chapter__name">{{ card.title }}</span>
+                </h2>
+                {% if card.teaser %}<p class="chapter__teaser">{{ card.teaser }}</p>{% endif %}
+            </header>
+
+            <div class="chapter__body" id="chapter-{{ forloop.counter }}-body">
+                <div class="chapter__body-inner">
+                    {% if card.image_url %}
+                    <figure class="chapter__media">
+                        <img src="{{ card.image_url|cloudinary:'w_1400,c_limit,q_auto,f_auto' }}" alt="" loading="lazy">
+                    </figure>
+                    {% endif %}
+
+                    <div class="prose chapter__prose">{{ card.body|markdownify }}</div>
+
+                    {% if card.takeaways %}
+                    <aside class="chapter__points" aria-label="Key points">
+                        <p class="chapter__points-label">Key points</p>
+                        <ul>
+                            {% for point in card.takeaways %}<li>{{ point }}</li>{% endfor %}
+                        </ul>
+                    </aside>
+                    {% endif %}
+
+                    {% if card.visual_placeholder %}
+                    <p class="chapter__placeholder">{{ card.visual_placeholder }}</p>
+                    {% endif %}
+
+                    {# Previous / next chapter (shown in the reading pane on desktop) #}
+                    <nav class="chapter__pager" aria-label="Chapter navigation">
+                        {% if not forloop.first %}
+                        <a class="chapter__pager-link chapter__pager-link--prev" href="#chapter-{{ forloop.counter0 }}" data-chapter-link="{{ forloop.counter0 }}">
+                            <span class="chapter__pager-label"><span aria-hidden="true">&larr;</span> Previous</span>
+                            <span class="chapter__pager-name" data-chapter-name-of="{{ forloop.counter0 }}"></span>
+                        </a>
+                        {% endif %}
+                        {% if not forloop.last %}
+                        <a class="chapter__pager-link chapter__pager-link--next" href="#chapter-{{ forloop.counter|add:1 }}" data-chapter-link="{{ forloop.counter|add:1 }}">
+                            <span class="chapter__pager-label">Next <span aria-hidden="true">&rarr;</span></span>
+                            <span class="chapter__pager-name" data-chapter-name-of="{{ forloop.counter|add:1 }}"></span>
+                        </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</div>
