@@ -1,0 +1,56 @@
+// Home: featured projects (redesign step 2c). Two-column card grid.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.home-featured {
+    width: 100%;
+    scroll-margin-top: $space-20; // the hero's "Featured projects" link lands with a little air
+}
+
+.home-featured__inner {
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-bottom: $space-60;
+    }
+}
+
+.home-featured__empty {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    color: $text-muted;
+}
+
+.home-featured__all {
+    display: inline-block;
+    margin-top: $space-60;
+    padding: $space-5 0;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    color: $text;
+    @include underline-link;
+    @include focus-ring;
+
+    span {
+        display: inline-block;
+        transition: transform $duration $ease-out;
+    }
+
+    &:hover span {
+        transform: translateX(4px);
+    }
+
+    @include mobile {
+        margin-top: $space-40;
+        font-size: 16px;
+    }
+}

@@ -1,30 +1,12 @@
+{% extends "base.html" %}
 {% load static %}
 {% load custom_filters %}
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <!-- Character Encoding and Viewport Settings -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Google Fonts Import -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap"
-        rel="stylesheet">
-
-    <!-- Stylesheet and Favicon -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
-
+{% block head %}
     {% include "components/seo_head.html" with page_title="Projects by Adhenz Miranda" page_description="Projects by Adhenz Miranda: videography and content creation, graphic design, web and app development, games and cybersecurity work from 2022 to today." %}
-</head>
+{% endblock %}
 
-<body class="home-page">
-    {% include 'navbar.html' %}
-
+{% block content %}
     <!-- Projects -->
     <div id="projects-container">
         <h1 class="project-title h1">
@@ -64,8 +46,4 @@
             {% endfor %}
         </div>
     </div>
-
-    {% include 'footer.html' %}
-</body>
-
-</html>
+{% endblock %}

@@ -1,7 +1,15 @@
 {% load static %}{% comment %}
-Shared social links (hero, About, footer). rel="me" tells crawlers these
-profiles belong to the owner of this site.
-{% endcomment %}
+Shared social links (hero, About, phone menu, footer). rel="me" tells crawlers
+these profiles belong to the owner of this site.
+
+Icons by default. For plain text links, include with: variant="text"
+(each link is then wrapped in an <li>, so put the include inside a <ul>).
+{% endcomment %}{% if variant == "text" %}
+<li><a href="https://www.linkedin.com/in/am04" class="text-link" target="_blank" rel="me noopener noreferrer">LinkedIn</a></li>
+<li><a href="https://github.com/adhenzmiranda" class="text-link" target="_blank" rel="me noopener noreferrer">GitHub</a></li>
+<li><a href="https://www.instagram.com/i_am.just_adhenz/" class="text-link" target="_blank" rel="me noopener noreferrer">Instagram</a></li>
+<li><a href="mailto:adhenz.miranda@gmail.com" class="text-link">Email</a></li>
+{% else %}
 <a href="https://www.linkedin.com/in/am04" class="icon-img" target="_blank" rel="me noopener noreferrer">
     <img src="{% static 'assets/images/footer/linkedin.png' %}" width="36" height="36" alt="LinkedIn">
 </a>
@@ -14,3 +22,4 @@ profiles belong to the owner of this site.
 <a href="mailto:adhenz.miranda@gmail.com" class="icon-img">
     <img src="{% static 'assets/images/footer/email.png' %}" width="36" height="36" alt="Email">
 </a>
+{% endif %}

@@ -15,16 +15,14 @@
 @use "components/content-cards";
 @use "components/navbar";
 @use "components/footer";
-@use "components/hero-contact";
-@use "components/hero-featured-projects";
 @use "components/lightbox";
 @use "components/scroll-progress";
+@use "components/section-head";
+@use "components/project-card";
+@use "components/closing-cta";
 
 // LAYOUTS
-@use "layouts/hero-layout";
-@use "layouts/footer-layout";
 @use "layouts/grid-layout";
-@use "layouts/navbar-layout";
 @use "layouts/hero_cards-layout";
 
 // PAGES
@@ -33,6 +31,9 @@
 @use "scss-styles-pages/contact";
 @use "scss-styles-pages/projects";
 @use "scss-styles-pages/hero";
+@use "scss-styles-pages/home-hero";
+@use "scss-styles-pages/home-stack";
+@use "scss-styles-pages/home-featured";
 @use "scss-styles-pages/project_details";
 
 

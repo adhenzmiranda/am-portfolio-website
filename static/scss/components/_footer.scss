@@ -1,120 +1,186 @@
+// Site footer: compact columns (brand + bio, page links, social links), then a
+// small bottom row (copyright, MIT licence, last updated, Powered by Heroku).
 @use '../base/breakpoints' as *;
 @use '../base/typography' as *;
 @use '../base/colors' as *;
-@use '../components/animations' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
 
-// Footer
-.footer {
-    position: relative; // Changed from top: 0
+.site-footer {
     width: 100%;
-    padding: 20px 0; // Added padding top and bottom
+    margin-top: $space-60;
+    border-top: 1px solid $hairline;
+    color: $text;
+}
+
+.site-footer__inner {
+    padding-top: $space-60;
+    padding-bottom: $space-40;
+    @include page-container;
+
+    @include mobile {
+        padding-top: $space-40;
+    }
+}
+
+// ---------------------------------------------------------------- Top: brand + columns
+
+.site-footer__main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: $space-60;
+
+    @include tablet {
+        gap: $space-40;
+    }
+
+    @include mobile {
+        flex-direction: column;
+        gap: $space-40;
+    }
+}
+
+.site-footer__brand {
+    max-width: 360px;
+}
+
+.site-footer__logo-link {
+    display: inline-block;
+    line-height: 0;
+    @include focus-ring;
+}
+
+.site-footer__logo {
+    display: block;
+    width: auto;
+    height: 52px;
+
+    @include mobile {
+        height: 40px;
+    }
+}
+
+.site-footer__bio {
+    margin: $space-20 0 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: $text-muted;
+}
+
+.site-footer__columns {
+    display: flex;
+    gap: 96px;
+
+    @include tablet {
+        gap: $space-60;
+    }
+
+    @include mobile {
+        gap: $space-60;
+    }
+}
+
+.site-footer__heading {
+    margin: 0 0 $space-20;
+    @include label;
+}
+
+.site-footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-10;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.site-footer .text-link {
+    display: inline-block;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    letter-spacing: -0.003em;
+    color: $text;
+    @include underline-link;
+    @include focus-ring;
+}
+
+// ---------------------------------------------------------------- Bottom row
+
+.site-footer__bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: transparent;
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    z-index: 1001;
-    flex-direction: column;
-    color: $dark-mode-white;
+    gap: $space-20 $space-40;
+    margin-top: $space-60;
+    padding-top: $space-20;
+    border-top: 1px solid $hairline;
 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        z-index: -1;
-    }
-
-    .socials-icons {
-        .icon-img {
-            @include icon-scale();
-        }
-    }
-
-    .copyright {
-        display: flex;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
+    @include tablet {
         flex-direction: column;
-        margin: 15px;
+        align-items: flex-start;
     }
 
-    .powered-by {
-        display: flex;
-        text-align: center;
-        justify-content: center;
-        align-items: center;
-        flex-direction: row;
-        gap: 15px;
-
-        .heroku-logo {
-            padding: 0;
-            margin: 0;
-            align-self: center;
-            justify-self: center;
-            width: 30%;
-            height: 30%;
-        }
-
+    @include mobile {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-top: $space-40;
     }
 }
 
-// Footer Logo
-.footer-logo {
-    width: 180px;
-    height: 75px;
-    margin: 15px;
+.site-footer__legal,
+.site-footer__updated,
+.site-footer__powered {
+    margin: 0;
+    font-family: $font-ibm;
+    font-size: 13px;
+    line-height: 1.5;
+    color: $text-muted;
 }
 
-// Socials Icons
+.site-footer__legal {
+    max-width: 560px;
+
+    .text-link {
+        font-size: 13px;
+        color: $text-muted;
+    }
+}
+
+.site-footer__meta {
+    display: flex;
+    align-items: center;
+    gap: $space-20;
+    flex-wrap: wrap;
+}
+
+.site-footer__powered {
+    display: flex;
+    align-items: center;
+    gap: $space-10;
+}
+
+.site-footer__heroku {
+    display: inline-block;
+    line-height: 0;
+    @include focus-ring;
+
+    img {
+        display: block;
+        width: auto;
+        height: 20px;
+    }
+}
+
+// ---------------------------------------------------------------- Shared (pre-redesign)
+// Icon row used by the hero and About pages until they are redesigned.
 .socials-icons {
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 25px;
     list-style: none;
-}
-
-.page-links {
-    display: flex;
-    gap: 25px; // Matched navbar gap
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-    list-style: none;
-    margin: 15px;
-
-    a {
-        color: $dark-mode-white;
-        text-decoration: none;
-        position: relative; // Added for hover effect
-        padding-bottom: 5px; // Matched navbar padding
-
-        &::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: 0;
-            left: 50%;
-            background-color: $dark-mode-white;
-            transition: all 0.15s ease-in-out;
-            transform: translateX(-50%);
-        }
-
-        &:hover::after {
-            width: 100%;
-        }
-    }
-
-    .separator {
-        color: $dark-mode-white;
-    }
-
 }

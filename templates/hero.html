@@ -1,121 +1,96 @@
 {% load static %}
-<div class="hero">
-
-    <!-- Main Hero Section -->
-    <div class="hero-section1">
-
-        <div class="name-title-container">
-            <h1 class="name">
-                Adhenz Miranda
+<!-- Home hero (redesign step 2a) -->
+<section class="home-hero" aria-labelledby="home-hero-title">
+    <div class="home-hero__inner">
+        <div class="home-hero__text">
+            <h1 class="home-hero__title" id="home-hero-title">
+                <span class="home-hero__eyebrow">Adhenz Miranda &mdash; Creative Developer</span>
+                <span class="home-hero__statement">Creative <strong>developer</strong> &amp; <strong>content creator</strong> based in the UAE.</span>
             </h1>
-            <div class="line"></div>
-            <p class="personal-title">
-                Creative Developer
+            <p class="home-hero__intro">
+                Crafting immersive digital experiences through code, design and security.
+                Currently studying an MSc in Cybersecurity at Bath Spa University.
             </p>
-            <p class="subtext">
-                Crafting <span class="bld">immersive digital experiences</span> through code, design, and security.
-                <span class="bld-und">Creative
-                    Developer</span> blending <span class="bld">technical expertise with artistic vision</span>— ready
-                to
-                bring
-                your next project to life.
-            </p>
-            <a href="{% url 'about' %}" class="about-me-btn">
-                About Me
-            </a>
+            <div class="home-hero__actions">
+                <a href="{% url 'about' %}" class="btn btn--primary">About me</a>
+                <div class="home-hero__social">
+                    {% include "components/social_links.html" %}
+                </div>
+            </div>
+            <a href="#featured-projects" class="home-hero__scroll">&darr; Featured projects</a>
         </div>
 
-        <div class="pfp-links-container">
-            <div class="pfp-container">
-                <img class="card-float" src="{% static 'assets/images/hero/adhenz-miranda.webp' %}" width="554" height="573" alt="Adhenz Miranda">
-            </div>
-            <div class="socials-icons">
-                {% include "components/social_links.html" %}
-            </div>
+        <div class="home-hero__portrait">
+            <img class="home-hero__photo" src="{% static 'assets/images/hero/portrait-main.webp' %}" width="516" height="719" alt="Adhenz Miranda" fetchpriority="high">
         </div>
     </div>
+</section>
 
-    <!-- Technology Stack Section -->
-    <div class="hero-section2">
-        <div class="technology-stack">
-            <h2 class="tech-stack-title h2">
-                Technology Stack
-            </h2>
-            <div class="card-container">
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack1.png' %}" width="60" height="66" alt="">
-                        <h3 class="card-title h3">Creative Multimedia</h3>
-                        <img src="{% static 'assets/images/hero/creativemulti.png' %}" width="248" height="125" alt="Figma, Canva, Adobe Photoshop, Lightroom, Premiere Pro, After Effects, Audition and DaVinci Resolve">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack2.png' %}" width="56" height="33" alt="">
-                        <h3 class="card-title h3">Web & Application Development</h3>
-                        <img src="{% static 'assets/images/hero/webandapp.png' %}" width="246" height="131" alt="HTML5, Sass, JavaScript, Python, GitHub, Unity and Kotlin">
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-content">
-                        <img src="{% static 'assets/images/hero/techstack3.png' %}" width="61" height="61" alt="">
-                        <h3 class="card-title h3">Cybersecurity Specialization</h3>
-                        <img src="{% static 'assets/images/hero/cybersec.png' %}" width="252" height="120" alt="Cisco, ISC2, TryHackMe, Google and Autopsy">
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
+<!-- Technology stack (redesign step 2b) -->
+<section class="home-stack" aria-labelledby="home-stack-title">
+    <div class="home-stack__inner">
+        <header class="section-head">
+            <span class="section-head__num">01</span>
+            <h2 class="section-head__title" id="home-stack-title">Technology stack</h2>
+        </header>
+        <ul class="stack-rows">
+            <li class="stack-row">
+                <h3 class="stack-row__name">Creative multimedia</h3>
+                <ul class="stack-row__logos">
+                    <li><img src="{% static 'assets/tech-stack-used/figma.png' %}" width="67" height="100" alt="Figma" title="Figma" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/canva.png' %}" width="100" height="100" alt="Canva" title="Canva" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/photoshop.png' %}" width="100" height="100" alt="Adobe Photoshop" title="Adobe Photoshop" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/lightroom.png' %}" width="102" height="100" alt="Adobe Lightroom" title="Adobe Lightroom" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/premiere.png' %}" width="100" height="100" alt="Adobe Premiere Pro" title="Adobe Premiere Pro" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/aftereffects.png' %}" width="100" height="100" alt="Adobe After Effects" title="Adobe After Effects" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/audition.png' %}" width="100" height="100" alt="Adobe Audition" title="Adobe Audition" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/davinci.png' %}" width="100" height="100" alt="DaVinci Resolve" title="DaVinci Resolve" loading="lazy"></li>
+                </ul>
+            </li>
+            <li class="stack-row">
+                <h3 class="stack-row__name">Web &amp; application development</h3>
+                <ul class="stack-row__logos">
+                    <li><img src="{% static 'assets/tech-stack-used/html.png' %}" width="100" height="100" alt="HTML5" title="HTML5" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/scss.png' %}" width="100" height="100" alt="Sass" title="Sass" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/javascript.png' %}" width="100" height="100" alt="JavaScript" title="JavaScript" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/python.png' %}" width="100" height="100" alt="Python" title="Python" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/github.png' %}" width="100" height="100" alt="GitHub" title="GitHub" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/unity.png' %}" width="100" height="100" alt="Unity" title="Unity" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/kotlin.png' %}" width="100" height="100" alt="Kotlin" title="Kotlin" loading="lazy"></li>
+                </ul>
+            </li>
+            <li class="stack-row">
+                <h3 class="stack-row__name">Cybersecurity</h3>
+                <ul class="stack-row__logos">
+                    <li><img src="{% static 'assets/tech-stack-used/cisco.png' %}" width="100" height="100" alt="Cisco" title="Cisco" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/isc2.png' %}" width="56" height="21" alt="ISC2" title="ISC2" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/tryhackme.png' %}" width="145" height="90" alt="TryHackMe" title="TryHackMe" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/google.png' %}" width="96" height="31" alt="Google" title="Google" loading="lazy"></li>
+                    <li><img src="{% static 'assets/tech-stack-used/autopsy.png' %}" width="201" height="70" alt="Autopsy" title="Autopsy" loading="lazy"></li>
+                </ul>
+            </li>
+        </ul>
     </div>
+</section>
 
-    <!-- Featured Projects Section -->
-    <div class="hero-section3">
-        <h2 class="projects-title h2">
-            Featured Projects
-        </h2>
-
-        <div class="project-carousel">
+<!-- Featured projects (redesign step 2c) -->
+<section class="home-featured" id="featured-projects" aria-labelledby="home-featured-title">
+    <div class="home-featured__inner">
+        <header class="section-head">
+            <span class="section-head__num">02</span>
+            <h2 class="section-head__title" id="home-featured-title">Featured projects</h2>
+        </header>
+        {% if featured_projects %}
+        <ul class="project-grid project-grid--featured">
             {% for project in featured_projects %}
-            <div class="project">
-                <a href="{% url 'project_detail' project.id %}" class="project-link">
-                    {% if project.thumbnail_image %}
-                    <div class="project-thumbnail">
-                        <img src="{{ project.thumbnail_image.url }}" alt="{{ project.name }}">
-                    </div>
-                    {% else %}
-                    <div class="project-thumbnail placeholder">
-                        <span>No Image</span>
-                    </div>
-                    {% endif %}
-                    <h3>{{ project.name }}</h3>
-                </a>
-            </div>
-            {% empty %}
-            <div class="no-featured">No featured projects yet.</div>
+            <li>{% include "components/project_card.html" %}</li>
             {% endfor %}
-        </div>
-
-        <div class="arrows-container">
-            <img src="{% static 'assets/images/hero/arrow-left.png' %}" alt="Previous project" class="arrow a-left">
-            <img src="{% static 'assets/images/hero/arrow-right.png' %}" alt="Next project" class="arrow a-right">
-        </div>
-
-        <div class="mobile-carousel-indicators">
-            {% for project in featured_projects %}
-            <span class="carousel-dot{% if forloop.first %} active{% endif %}"></span>
-            {% endfor %}
-        </div>
+        </ul>
+        {% else %}
+        <p class="home-featured__empty">No featured projects yet.</p>
+        {% endif %}
+        <a class="home-featured__all" href="{% url 'projects_page' %}">View all projects <span aria-hidden="true">&rarr;</span></a>
     </div>
+</section>
 
-    <!-- Contact Me Section -->
-    <div class="hero-section4">
-        <h2 class="contact-title h2">
-            Contact
-        </h2>
-
-        <p>Want to get in touch? Feel free to do so!</p>
-
-        <a class="contact-btn" href="{% url 'contact' %}">Let's Connect!</a>
-    </div>
-</div>
+{% include "components/closing_cta.html" %}

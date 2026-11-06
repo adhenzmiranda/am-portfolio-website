@@ -1,4 +1,5 @@
 @use '../base/colors' as *;
+@use '../base/typography' as *;
 @use '../base/breakpoints' as *;
 @use "sass:color";
 
@@ -8,7 +9,7 @@
 // introduce a light mode or a different accent later.
 $cc-surface: rgba($dark-mode-white, 0.04);
 $cc-surface-hover: rgba($dark-mode-white, 0.07);
-$cc-border: rgba($dark-mode-white, 0.1);
+$cc-border: $white-10;
 $cc-text: $dark-mode-white;
 $cc-text-muted: rgba($dark-mode-white, 0.65);
 $cc-accent: $dark-mode-secondary-blue;
@@ -176,17 +177,17 @@ $cc-transition-speed: 0.3s;
         justify-content: center;
         padding: 1rem;
         text-align: center;
-        font-family: "Raleway", sans-serif;
+        font-family: $font-raleway;
         font-weight: 600;
         font-size: 1.1rem;
         color: $cc-text;
-        text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
+        text-shadow: 0 1px 6px rgba($black, 0.7);
         background: linear-gradient(rgba($dark-mode-dark-blue, 0.2), rgba($dark-mode-dark-blue, 0.68));
     }
 
     &__number {
         flex-shrink: 0;
-        font-family: "Raleway", sans-serif;
+        font-family: $font-raleway;
         font-weight: 700;
         font-size: 1.1rem;
         color: $cc-accent;
@@ -201,14 +202,14 @@ $cc-transition-speed: 0.3s;
     }
 
     &__title {
-        font-family: "Raleway", sans-serif;
+        font-family: $font-raleway;
         font-weight: 600;
         font-size: 1.1rem;
         color: $cc-text;
     }
 
     &__teaser {
-        font-family: "IBM Plex Sans", sans-serif;
+        font-family: $font-ibm;
         font-size: 0.9rem;
         color: $cc-text-muted;
     }
@@ -294,14 +295,14 @@ $cc-transition-speed: 0.3s;
             padding: 1rem;
 
             .content-card__media-number {
-                font-family: "Raleway", sans-serif;
+                font-family: $font-raleway;
                 font-weight: 700;
                 font-size: 1.5rem;
                 color: $cc-accent;
             }
 
             .content-card__media-title {
-                font-family: "Raleway", sans-serif;
+                font-family: $font-raleway;
                 font-weight: 600;
                 color: $cc-text;
             }
@@ -310,7 +311,7 @@ $cc-transition-speed: 0.3s;
 
     &__prose {
         color: $cc-text;
-        font-family: "IBM Plex Sans", sans-serif;
+        font-family: $font-ibm;
         line-height: 1.7;
 
         p {
@@ -379,7 +380,7 @@ $cc-transition-speed: 0.3s;
             position: relative;
             padding-left: 1.25rem;
             color: $cc-text;
-            font-family: "IBM Plex Sans", sans-serif;
+            font-family: $font-ibm;
             font-size: 0.95rem;
 
             &::before {
@@ -400,7 +401,7 @@ $cc-transition-speed: 0.3s;
 
         span {
             color: $cc-text-muted;
-            font-family: "IBM Plex Sans", sans-serif;
+            font-family: $font-ibm;
             font-size: 0.85rem;
             font-style: italic;
         }

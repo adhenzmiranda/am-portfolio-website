@@ -29,3 +29,36 @@
     @include hover-scale(1.04, -1px); // Custom scale and y-offset
     @include button-border-animation();
 }
+
+// ---------------------------------------------------------------- Redesign buttons
+// Square corners, flat, blue only for actions (see docs/REDESIGN_SPEC.md).
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: $space-10;
+    padding: 14px 28px;
+    font-family: $font-ibm;
+    font-size: 16px;
+    font-weight: $fw-semibold;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    border: 1px solid transparent;
+    border-radius: 0;
+    cursor: pointer;
+    transition:
+        background-color $duration-fast,
+        border-color $duration-fast,
+        color $duration-fast;
+    @include focus-ring;
+}
+
+.btn--primary {
+    background-color: $button-bg;
+    color: $text;
+
+    &:hover {
+        background-color: $button-bg-hover;
+    }
+}

@@ -58,8 +58,8 @@ def turnstile_passed(request):
         return False
 
 def home(request):
-    # Get featured projects for the hero section
-    featured_projects = Projects.objects.filter(featured=True)
+    # Featured projects for the home grid, newest first
+    featured_projects = Projects.objects.filter(featured=True).select_related('category').order_by('-year', '-created_at')
     return render(request, 'index.html', {
         "featured_projects": featured_projects,
         "json_ld": home_json_ld(),

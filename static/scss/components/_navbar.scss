@@ -1,81 +1,263 @@
-// Styles for the website's navigation bar.
+// Site header: slim navbar (logo left, links right) and the full-screen phone menu.
+// Behaviour (hide on scroll down, show on scroll up, menu toggle) lives in
+// static/js/components/navbar.js.
 @use '../base/colors' as *;
 @use '../base/breakpoints' as *;
 @use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
 
-.navbar {
-    position: relative;
+$header-z: 1006;
+$menu-z: 1005;
+
+// ---------------------------------------------------------------- Header bar
+
+.site-header {
+    position: sticky;
     top: 0;
-    left: 0;
+    z-index: $header-z;
     width: 100%;
-    padding: 0px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: transparent;
-    z-index: 1002;
-    flex-direction: column;
+    box-sizing: border-box;
+    border-bottom: 1px solid transparent;
+    transition:
+        transform $duration $ease-out,
+        background-color $duration $ease-out,
+        border-color $duration $ease-out;
 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        z-index: -1;
+    // Once the page has scrolled, give the bar a backing so links stay readable.
+    &.is-scrolled {
+        background-color: rgba($gradient-dark-blue, 0.72);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom-color: $hairline;
+    }
+
+    // Slid out of view while scrolling down.
+    &.is-hidden {
+        transform: translateY(-100%);
+    }
+
+    // Phone menu open: the bar sits on top of the menu, without its backing.
+    .menu-open & {
+        transform: none;
+        background-color: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        border-bottom-color: transparent;
     }
 }
 
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-20;
+    padding-top: $space-20;
+    padding-bottom: $space-20;
+    @include page-container; // held to the page column on very wide screens
+}
+
+.navbar-brand {
+    display: block;
+    line-height: 0;
+    @include focus-ring;
+}
+
 .navbar-logo {
-    width: 180px;
-    height: 75px;
-    margin: 25px;
+    display: block;
+    width: auto;
+    height: 52px;
+
+    @include tablet {
+        height: 44px;
+    }
+
+    @include mobile {
+        height: 36px;
+    }
 }
 
-.mobile-nav-btns {
+// ---------------------------------------------------------------- Desktop links
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: $space-40;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    @include tablet {
+        gap: $space-20 + $space-10;
+    }
+
+    @include mobile {
+        display: none;
+    }
+}
+
+.navbar .nav-link {
+    display: inline-block;
+    padding: $space-5 0;
+    font-family: $font-ibm;
+    font-size: 20px;
+    font-weight: $fw-regular;
+    line-height: 1.5;
+    letter-spacing: -0.005em;
+    color: $text;
+    @include underline-link(2px); // muted underline on hover, blue on the current page
+    @include focus-ring;
+
+    @include tablet {
+        font-size: 18px;
+    }
+}
+
+// ---------------------------------------------------------------- Menu button (phone)
+
+.toggle-nav-btn {
     display: none;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px; // keep the bars on the gutter line while the tap area stays 44px
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    @include focus-ring;
+
+    @include mobile {
+        display: block;
+    }
 }
 
-.nav-menu {
-    position: relative;
-    width: 100%;
+.toggle-nav-btn__bar {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background-color: $text;
+    transition: transform $duration $ease-out;
 
-    .navbar-links {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 75px;
-        list-style: none;
-        padding: 10px;
+    &:nth-child(1) {
+        top: 17px;
+    }
 
-        .nav-link {
-            text-decoration: none;
-            color: $dark-mode-white;
-            position: relative;
-            padding-bottom: 5px;
+    &:nth-child(2) {
+        top: 25px;
+    }
 
-            &::after {
-                content: '';
-                position: absolute;
-                width: 0;
-                height: 2px;
-                bottom: 0;
-                left: 50%;
-                background-color: $dark-mode-white;
-                transition: all 0.15s ease-in-out;
-                transform: translateX(-50%);
-            }
+    // Bars turn into an X while the menu is open.
+    .toggle-nav-btn[aria-expanded='true'] &:nth-child(1) {
+        transform: translateY(4px) rotate(45deg);
+    }
 
-            &:hover::after {
-                width: 100%;
-            }
+    .toggle-nav-btn[aria-expanded='true'] &:nth-child(2) {
+        transform: translateY(-4px) rotate(-45deg);
+    }
+}
 
-            &.active::after {
-                width: 100%;
-            }
-        }
+.toggle-nav-btn__label {
+    @include visually-hidden;
+}
+
+// ---------------------------------------------------------------- Phone menu
+
+body.menu-open {
+    overflow: hidden;
+}
+
+.mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: $menu-z;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding-top: 120px;
+    padding-bottom: $space-40;
+    background: linear-gradient(180deg, $gradient-dark-blue 0%, $gradient-black 100%);
+    opacity: 0;
+    transform: translateY(-12px);
+    transition:
+        opacity $duration $ease-out,
+        transform $duration $ease-out;
+    @include page-gutter;
+
+    &[hidden] {
+        display: none;
+    }
+
+    &.is-open {
+        opacity: 1;
+        transform: none;
+    }
+
+    // Never shown above the phone breakpoint, even if left open while resizing.
+    @media screen and (min-width: #{$mobile + 1}) {
+        display: none !important;
+    }
+}
+
+.mobile-menu__links {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid $hairline;
+
+    li {
+        border-bottom: 1px solid $hairline;
+    }
+}
+
+.mobile-menu__link {
+    display: flex;
+    align-items: baseline;
+    gap: $space-20;
+    padding: $space-20 0;
+    font-family: $font-montserrat;
+    font-weight: $fw-regular;
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: $text;
+    text-decoration: none;
+    font-size: 40px; // class selector outranks the global `a` sizes in base/typography
+    @include focus-ring;
+
+    &.is-active {
+        color: $accent;
+    }
+}
+
+.mobile-menu__num {
+    @include label;
+    flex: 0 0 auto;
+}
+
+.mobile-menu__social {
+    display: flex;
+    gap: $space-20;
+
+    .icon-img {
+        display: block;
+        line-height: 0;
+        @include focus-ring;
+    }
+
+    img {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-header,
+    .toggle-nav-btn__bar,
+    .mobile-menu {
+        transition: none;
     }
 }

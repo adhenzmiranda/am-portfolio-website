@@ -1,0 +1,19 @@
+{% load custom_filters %}{% comment %}
+Project card (Home featured grid, Projects page). Needs `project` in context.
+Image, then an uppercase label (category · year), the title, and a one-line
+summary taken from the start of the description.
+{% endcomment %}
+<a class="project-card" href="{% url 'project_detail' project.id %}">
+    <div class="project-card__media">
+        {% if project.thumbnail_image %}
+        <img class="project-card__img" src="{{ project.thumbnail_image.url }}" width="600" height="338" alt="" loading="lazy">
+        {% else %}
+        <div class="project-card__placeholder" aria-hidden="true">{{ project.name|first }}</div>
+        {% endif %}
+    </div>
+    <p class="project-card__label">
+        {% if project.category and project.category.name != "Other" %}{{ project.category.name }} &middot; {% endif %}{{ project.year }}
+    </p>
+    <h3 class="project-card__title">{{ project.name }}</h3>
+    <p class="project-card__desc">{{ project.description|one_liner }}</p>
+</a>

@@ -1,12 +1,9 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+
+{% block head %}
     <meta name="robots" content="noindex">
     <title>403 Forbidden</title>
-        <link rel="stylesheet" href="{% static 'css/main.css' %}">
-        <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
         <style>
             .error-container {
                 text-align: center;
@@ -41,14 +38,12 @@
                 background-size: 256px, 100% 100%;
             }
         </style>
-</head>
-<body class="home-page">
-    {% include 'navbar.html' %}
+{% endblock %}
+
+{% block content %}
         <div class="error-container">
             <div class="h1">403 - Forbidden</div>
             <p class="h2">You do not have permission to access this page.</p>
             <img src="https://http.cat/403.jpg" alt="403 Cat">
         </div>
-    {% include 'footer.html' %}
-</body>
-</html>
+{% endblock %}

@@ -1,1 +1,97 @@
-// Defines reusable SCSS mixins for styling.
+// Reusable mixins for the redesign. Mixins only: this file must never output CSS.
+@use 'breakpoints' as *;
+@use 'typography' as *;
+@use 'variable' as *;
+
+// Left and right page padding that matches the navbar and footer edges.
+@mixin page-gutter {
+    padding-left: $gutter-desktop;
+    padding-right: $gutter-desktop;
+
+    @include tablet {
+        padding-left: $gutter-tablet;
+        padding-right: $gutter-tablet;
+    }
+
+    @include mobile {
+        padding-left: $gutter-phone;
+        padding-right: $gutter-phone;
+    }
+}
+
+// Centred content column: capped at $page-max-width, with the page gutters inside.
+// Backgrounds stay full width; only the content inside is held to the column.
+@mixin page-container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: $page-max-width;
+    margin-left: auto;
+    margin-right: auto;
+    @include page-gutter;
+}
+
+// Text link whose underline slides in on hover (muted) and stays on when active (blue).
+@mixin underline-link($thickness: 1px) {
+    position: relative;
+    text-decoration: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: $thickness;
+        background-color: $text-muted;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform $duration $ease-out;
+    }
+
+    &:hover::after {
+        transform: scaleX(1);
+    }
+
+    &.is-active::after {
+        background-color: $accent;
+        transform: scaleX(1);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &::after {
+            transition: none;
+        }
+    }
+}
+
+// Small spaced-out uppercase label (categories, years, section numbers).
+@mixin label {
+    font-family: $font-ibm;
+    font-size: 12px;
+    font-weight: $fw-regular;
+    line-height: 1.3;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: $text-muted;
+}
+
+// Visible keyboard focus in the accent blue.
+@mixin focus-ring {
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: 4px;
+    }
+}
+
+// Hide visually but keep available to screen readers.
+@mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

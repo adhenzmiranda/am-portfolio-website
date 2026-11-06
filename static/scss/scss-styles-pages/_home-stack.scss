@@ -1,0 +1,115 @@
+// Home: technology stack (redesign step 2b).
+// Rows split by hairlines (the section is numbered, the rows are not); tool logos sit muted and monochrome,
+// and each one shows its real colours on hover.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+.home-stack {
+    width: 100%;
+}
+
+.home-stack__inner {
+    padding-bottom: $space-120;
+    @include page-container;
+
+    @include tablet {
+        padding-bottom: $space-60 + $space-20;
+    }
+
+    @include mobile {
+        padding-bottom: $space-60;
+    }
+}
+
+.stack-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid $hairline;
+}
+
+.stack-row {
+    display: grid;
+    grid-template-columns: $num-col minmax(0, 1fr) auto;
+    align-items: center;
+    gap: $space-20 0;
+    padding: $space-20 + $space-10 0;
+    border-bottom: 1px solid $hairline;
+
+    // Below desktop the logos drop under the name, lined up with it.
+    @include tablet {
+        grid-template-columns: $num-col-small minmax(0, 1fr);
+    }
+
+    @include mobile {
+        grid-template-columns: $num-col-small minmax(0, 1fr);
+        padding: $space-20 0;
+    }
+}
+
+.stack-row__name {
+    grid-column: 2; // first column stays empty so names line up under the section title
+    margin: 0;
+    font-family: $font-raleway;
+    font-size: 24px;
+    font-weight: $fw-medium;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
+    color: $text;
+
+    @include mobile {
+        font-size: 20px;
+    }
+}
+
+.stack-row__logos {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: $space-20 24px;
+    margin: 0 0 0 $space-40;
+    padding: 0;
+    list-style: none;
+
+    @include tablet {
+        grid-column: 2;
+        justify-content: flex-start;
+        margin-left: 0;
+    }
+
+    @include mobile {
+        grid-column: 2;
+        justify-content: flex-start;
+        gap: 16px 20px;
+        margin-left: 0;
+    }
+
+    img {
+        display: block;
+        width: auto;
+        height: 28px;
+        filter: grayscale(1) brightness(1.5);
+        opacity: 0.6;
+        transition:
+            filter $duration $ease-out,
+            opacity $duration $ease-out;
+
+        &:hover {
+            filter: none;
+            opacity: 1;
+        }
+
+        @include mobile {
+            height: 24px;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stack-row__logos img {
+        transition: none;
+    }
+}

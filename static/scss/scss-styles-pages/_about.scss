@@ -113,18 +113,18 @@ body.ios-blend-fallback .card-float {
             background-blend-mode: overlay;
             background-size: contain, 100% 100%;
             border-radius: 10px;
-            border: 1px solid rgba($dark-mode-white, 0.08);
+            border: 1px solid $white-08;
             box-shadow:
-                0 0 15px rgba($dark-mode-white, 0.05),
-                0 0 30px rgba($dark-mode-white, 0.03);
+                0 0 15px $white-05,
+                0 0 30px $white-03;
             transition: all 0.3s ease;
             gap: 1.5rem;
 
             &:hover {
-                border-color: rgba($dark-mode-white, 0.15);
+                border-color: $white-15;
                 box-shadow:
-                    0 0 20px rgba($dark-mode-white, 0.08),
-                    0 0 40px rgba($dark-mode-white, 0.05);
+                    0 0 20px $white-08,
+                    0 0 40px $white-05;
             }
 
             .card-content {
@@ -153,12 +153,12 @@ body.ios-blend-fallback .card-float {
                             height: 0.75em;
                             border-radius: 50%;
                             background: linear-gradient(135deg, $dark-mode-accent-blue, $dark-mode-secondary-blue);
-                            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+                            box-shadow: 0 2px 6px rgba($black, 0.12);
                             transform: translateY(-50%);
                         }
 
                         &:hover::before {
-                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+                            box-shadow: 0 4px 12px rgba($black, 0.24);
                             transform: scale(1.2) translateY(-50%);
                         }
                     }
@@ -229,19 +229,19 @@ body.ios-blend-fallback .card-float {
         background-blend-mode: overlay;
         background-size: 256px, 100% 100%;
         border-radius: 10px;
-        border: 1px solid rgba($dark-mode-white, 0.08);
+        border: 1px solid $white-08;
         border-left: 3px solid $dark-mode-secondary-blue;
         box-shadow:
-            0 0 15px rgba($dark-mode-white, 0.05),
-            0 0 30px rgba($dark-mode-white, 0.03);
+            0 0 15px $white-05,
+            0 0 30px $white-03;
         transition: all 0.3s ease;
 
         &:hover {
-            border-color: rgba($dark-mode-white, 0.15);
+            border-color: $white-15;
             border-left-color: $dark-mode-secondary-blue;
             box-shadow:
-                0 0 20px rgba($dark-mode-white, 0.08),
-                0 0 40px rgba($dark-mode-white, 0.05);
+                0 0 20px $white-08,
+                0 0 40px $white-05;
         }
 
         .experience-meta {
@@ -278,7 +278,7 @@ body.ios-blend-fallback .card-float {
                     height: 0.75em;
                     border-radius: 50%;
                     background: linear-gradient(135deg, $dark-mode-accent-blue, $dark-mode-secondary-blue);
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+                    box-shadow: 0 2px 6px rgba($black, 0.12);
                     transform: translateY(-50%);
                 }
             }
