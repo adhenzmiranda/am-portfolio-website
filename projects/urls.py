@@ -55,10 +55,15 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('llms.txt', views.llms_txt, name='llms_txt'),
     re_path(r'^(?P<key>[0-9a-fA-F]{8,128})\.txt$', views.indexnow_key, name='indexnow_key'),
-    # API endpoints
+]
+
+# API endpoints. Only these accept format suffixes (/api/projects.json): applying
+# format_suffix_patterns to every URL made "/.env" or "/about.json" reach page views
+# with an unexpected `format` argument and crash with a 500 instead of a 404.
+urlpatterns += format_suffix_patterns([
     path('api/projects/', views.projects_list),
     path('api/projects/<int:id>', views.projects_detail),
-]
+])
 
 # Serve static files during development
 if settings.DEBUG:
@@ -70,5 +75,3 @@ if settings.DEBUG:
     urlpatterns += [
         re_path(r'^preview-error/(?P<code>403|404|500)/$', lambda request, code: preview_error(request, int(code))),
     ]
-
-urlpatterns = format_suffix_patterns(urlpatterns)
