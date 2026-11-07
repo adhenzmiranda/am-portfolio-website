@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectCard, Category, Experience, Education
+from .direct_upload import DirectUploadVideoField, MAX_DIRECT_UPLOAD_MB, sign_video_upload
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
@@ -59,6 +60,17 @@ class ProjectPhotoInline(admin.TabularInline):
         return super().get_queryset(request).order_by('order')
 
 class ProjectVideoForm(forms.ModelForm):
+    # Uploads straight from the browser to Cloudinary (see projects/direct_upload.py),
+    # so saving never waits on a video transfer and can't hit Heroku's 30 s limit.
+    video = DirectUploadVideoField(
+        label='Video',
+        help_text=(
+            f'Uploads straight to Cloudinary as soon as you choose a file; wait for '
+            f'"Uploaded", then Save. Up to {MAX_DIRECT_UPLOAD_MB} MB per video (Cloudinary free plan). '
+            f'Larger videos: compress first, or upload from the local admin, which compresses automatically.'
+        ),
+    )
+
     class Meta:
         model = ProjectVideo
         fields = '__all__'
@@ -69,16 +81,6 @@ class ProjectVideoForm(forms.ModelForm):
             'order': forms.NumberInput(attrs={
                 'placeholder': '0'
             }),
-        }
-        help_texts = {
-            'video': '''
-                <strong>📹 Auto-Compression Enabled!</strong><br>
-                <strong>Max file size:</strong> 100MB (system will auto-compress larger files)<br>
-                <strong>Supported formats:</strong> MP4, MOV, AVI, WMV, MKV, WebM<br>
-                <strong>Auto-compression:</strong> Videos over 100MB will be automatically compressed to 720p before upload.<br>
-                <em>Upload any size video - the system will handle compression automatically!</em><br>
-                <a href="/static/docs/VIDEO_UPLOAD_GUIDE.md" target="_blank">📖 Full Video Upload Guide</a>
-            ''',
         }
     
     def __init__(self, *args, **kwargs):
@@ -121,8 +123,13 @@ class ProjectVideoForm(forms.ModelForm):
                         self._compression_error = str(e)
     
     def clean_video(self):
-        """Apply compression info to instance if compression happened in init."""
+        """Keep the current video when nothing new was uploaded; apply compression
+        info if a (local) posted file was compressed in __init__."""
         video = self.cleaned_data.get('video')
+        if video is None:
+            if self.instance.pk and self.instance.video:
+                return self.instance.video
+            raise forms.ValidationError('Choose a video and wait for it to finish uploading.')
         
         # Check if we had a compression error
         if hasattr(self, '_compression_error'):
@@ -228,6 +235,15 @@ class ProjectVideoAdmin(admin.ModelAdmin):
         return "No video"
     display_video.short_description = 'Video Preview'
     
+    def get_urls(self):
+        return [
+            path(
+                'sign-upload/',
+                self.admin_site.admin_view(sign_video_upload(self)),  # login + 2FA + CSRF
+                name='projects_projectvideo_sign_upload',
+            ),
+        ] + super().get_urls()
+
     def compression_info(self, obj):
         if obj.was_compressed:
             # Format the numbers first as strings, then use format_html

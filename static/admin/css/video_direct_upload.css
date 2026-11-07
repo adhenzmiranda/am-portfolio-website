@@ -1,0 +1,30 @@
+/* Admin video field: direct upload to Cloudinary (static/admin/js/video_direct_upload.js). */
+.direct-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 220px;
+}
+
+.direct-upload__current {
+    margin: 0;
+    font-size: 12px;
+}
+
+.direct-upload__bar {
+    width: 100%;
+    max-width: 320px;
+    height: 8px;
+}
+
+.direct-upload__status {
+    margin: 0;
+    max-width: 420px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.direct-upload__status[data-state='busy'] { color: #2f50e4; }
+.direct-upload__status[data-state='done'] { color: #2e7d32; font-weight: 600; }
+.direct-upload__status[data-state='info'] { color: #8a6d00; }
+.direct-upload__status[data-state='error'] { color: #c62828; font-weight: 600; }
