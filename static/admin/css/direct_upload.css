@@ -1,4 +1,4 @@
-/* Admin video field: direct upload to Cloudinary (static/admin/js/video_direct_upload.js). */
+/* Admin video / photo fields: direct upload to Cloudinary (static/admin/js/direct_upload.js). */
 .direct-upload {
     display: flex;
     flex-direction: column;

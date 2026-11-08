@@ -1,7 +1,7 @@
-// Admin video field: upload straight from the browser to Cloudinary.
+// Admin video / photo fields: upload straight from the browser to Cloudinary.
 // See projects/direct_upload.py for why (Heroku's 30-second request limit).
 //
-// 1. A file is chosen (or dropped in by the "Select Multiple Videos" batch button).
+// 1. A file is chosen (or dropped in by the "Select Multiple Videos/Photos" batch buttons).
 // 2. Ask the server for a short-lived upload signature (admin-only, POST + CSRF).
 // 3. Upload to Cloudinary with a progress bar.
 // 4. Put Cloudinary's signed reference in the hidden input; Save submits only that.
@@ -44,12 +44,11 @@
 
     function sendToCloudinary(sig, file, wrap) {
         return new Promise((resolve, reject) => {
+            // Exactly the parameters the server signed (folder, transformation, timestamp, signature).
             const body = new FormData();
-            body.append('file', file);
+            Object.entries(sig.params).forEach(([key, value]) => body.append(key, value));
             body.append('api_key', sig.api_key);
-            body.append('timestamp', sig.timestamp);
-            body.append('folder', sig.folder);
-            body.append('signature', sig.signature);
+            body.append('file', file);
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', sig.upload_url);
@@ -81,15 +80,18 @@
 
         const sizeMb = file.size / MB;
         const maxMb = Number(input.dataset.maxMb) || 100;
+        const noun = input.dataset.noun || 'file';
         if (sizeMb > maxMb) {
             if (input.dataset.allowServerUpload === 'true') {
-                // Local admin only: post the file normally so it is compressed on Save.
+                // Local admin only: post the file normally on Save.
                 input.setAttribute('name', input.dataset.fieldName);
-                setStatus(wrap, `${sizeMb.toFixed(0)} MB: over ${maxMb} MB, so it will be compressed and uploaded when you click Save.`, 'info');
+                setStatus(wrap, `${sizeMb.toFixed(0)} MB: over ${maxMb} MB, so ${input.dataset.localFallback}.`, 'info');
             } else {
                 input.value = '';
-                setStatus(wrap, `This video is ${sizeMb.toFixed(0)} MB. Cloudinary's free plan allows up to ${maxMb} MB per video. ` +
-                    'Compress it first (for example with HandBrake), or upload it from your local admin, which compresses it automatically.', 'error');
+                const advice = noun === 'video'
+                    ? 'Compress it first (for example with HandBrake), or upload it from your local admin, which compresses it automatically.'
+                    : 'Resize or export it smaller first (for example as a JPEG under 4000 px wide).';
+                setStatus(wrap, `This ${noun} is ${sizeMb.toFixed(0)} MB. Cloudinary's free plan allows up to ${maxMb} MB per ${noun}. ${advice}`, 'error');
             }
             return;
         }
@@ -123,7 +125,7 @@
         if (!uploading.size) return;
         event.preventDefault();
         event.stopImmediatePropagation();
-        window.alert(`Please wait: ${uploading.size} video${uploading.size === 1 ? ' is' : 's are'} still uploading.`);
+        window.alert(`Please wait: ${uploading.size} file${uploading.size === 1 ? ' is' : 's are'} still uploading.`);
     }, true);
 
     // Warn before leaving the page mid-upload.
