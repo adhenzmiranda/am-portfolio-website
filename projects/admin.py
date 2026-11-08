@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import Projects, ProjectPhoto, ProjectVideo, ProjectEmbed, ProjectCard, Category, Experience, Education
+from .direct_upload import DirectUploadField, DirectUploadFormMixin, MAX_DIRECT_UPLOAD_MB, UPLOAD_KINDS, sign_upload
 from django import forms
 from django.forms.models import BaseInlineFormSet
 from django.db import transaction
@@ -12,6 +13,26 @@ from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 from .markdown_import import parse_markdown_cards, serialize_cards_to_markdown
 
+class DirectUploadPhotoForm(DirectUploadFormMixin, forms.ModelForm):
+    # Uploads straight from the browser to Cloudinary (see projects/direct_upload.py),
+    # with the field's own resize settings, so saving never waits on photo transfers.
+    image = DirectUploadField(
+        'photo',
+        label='Image',
+        help_text=(
+            'Uploads straight to Cloudinary as soon as you choose a file; wait for "Uploaded", then Save. '
+            f'Up to {UPLOAD_KINDS["photo"]["max_mb"]} MB per photo (Cloudinary free plan).'
+        ),
+    )
+
+    class Meta:
+        model = ProjectPhoto
+        fields = '__all__'
+
+    def clean_image(self):
+        return self.keep_current_or_require('image', 'Choose a photo and wait for it to finish uploading.')
+
+
 class ProjectPhotoFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,6 +40,7 @@ class ProjectPhotoFormSet(BaseInlineFormSet):
 
 class ProjectPhotoInline(admin.TabularInline):
     model = ProjectPhoto
+    form = DirectUploadPhotoForm
     formset = ProjectPhotoFormSet
     extra = 0  # No empty forms - use batch upload button instead
     fields = ('thumbnail_preview', 'image', 'caption', 'order', 'markdown_snippet')
@@ -58,7 +80,19 @@ class ProjectPhotoInline(admin.TabularInline):
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('order')
 
-class ProjectVideoForm(forms.ModelForm):
+class ProjectVideoForm(DirectUploadFormMixin, forms.ModelForm):
+    # Uploads straight from the browser to Cloudinary (see projects/direct_upload.py),
+    # so saving never waits on a video transfer and can't hit Heroku's 30 s limit.
+    video = DirectUploadField(
+        'video',
+        label='Video',
+        help_text=(
+            f'Uploads straight to Cloudinary as soon as you choose a file; wait for '
+            f'"Uploaded", then Save. Up to {MAX_DIRECT_UPLOAD_MB} MB per video (Cloudinary free plan). '
+            f'Larger videos: compress first, or upload from the local admin, which compresses automatically.'
+        ),
+    )
+
     class Meta:
         model = ProjectVideo
         fields = '__all__'
@@ -69,16 +103,6 @@ class ProjectVideoForm(forms.ModelForm):
             'order': forms.NumberInput(attrs={
                 'placeholder': '0'
             }),
-        }
-        help_texts = {
-            'video': '''
-                <strong>📹 Auto-Compression Enabled!</strong><br>
-                <strong>Max file size:</strong> 100MB (system will auto-compress larger files)<br>
-                <strong>Supported formats:</strong> MP4, MOV, AVI, WMV, MKV, WebM<br>
-                <strong>Auto-compression:</strong> Videos over 100MB will be automatically compressed to 720p before upload.<br>
-                <em>Upload any size video - the system will handle compression automatically!</em><br>
-                <a href="/static/docs/VIDEO_UPLOAD_GUIDE.md" target="_blank">📖 Full Video Upload Guide</a>
-            ''',
         }
     
     def __init__(self, *args, **kwargs):
@@ -121,8 +145,9 @@ class ProjectVideoForm(forms.ModelForm):
                         self._compression_error = str(e)
     
     def clean_video(self):
-        """Apply compression info to instance if compression happened in init."""
-        video = self.cleaned_data.get('video')
+        """Keep the current video when nothing new was uploaded; apply compression
+        info if a (local) posted file was compressed in __init__."""
+        video = self.keep_current_or_require('video', 'Choose a video and wait for it to finish uploading.')
         
         # Check if we had a compression error
         if hasattr(self, '_compression_error'):
@@ -162,8 +187,8 @@ class ProjectVideoInline(admin.TabularInline):
     def get_queryset(self, request):
         return super().get_queryset(request).order_by('order')
 
-class ProjectPhotoForm(forms.ModelForm):
-    class Meta:
+class ProjectPhotoForm(DirectUploadPhotoForm):
+    class Meta(DirectUploadPhotoForm.Meta):
         model = ProjectPhoto
         fields = '__all__'
         widgets = {
@@ -201,6 +226,15 @@ class ProjectPhotoAdmin(admin.ModelAdmin):
     list_filter = ('project',)
     search_fields = ('caption', 'project__name')
     form = ProjectPhotoForm
+
+    def get_urls(self):
+        return [
+            path(
+                'sign-upload/',
+                self.admin_site.admin_view(sign_upload(self, 'photo')),  # login + 2FA + CSRF
+                name='projects_projectphoto_sign_upload',
+            ),
+        ] + super().get_urls()
     
     def display_image(self, obj):
         if obj.image:
@@ -228,6 +262,15 @@ class ProjectVideoAdmin(admin.ModelAdmin):
         return "No video"
     display_video.short_description = 'Video Preview'
     
+    def get_urls(self):
+        return [
+            path(
+                'sign-upload/',
+                self.admin_site.admin_view(sign_upload(self, 'video')),  # login + 2FA + CSRF
+                name='projects_projectvideo_sign_upload',
+            ),
+        ] + super().get_urls()
+
     def compression_info(self, obj):
         if obj.was_compressed:
             # Format the numbers first as strings, then use format_html

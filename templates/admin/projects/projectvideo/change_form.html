@@ -149,7 +149,8 @@
 <script>
 (function() {
     const form = document.querySelector('form');
-    const videoField = document.querySelector('input[name="video"]');
+    // The visible file input (the direct-upload widget's hidden input holds name="video").
+    const videoField = document.querySelector('input[type="file"]#id_video');
     const progressModal = document.getElementById('progressModal');
     const progressMessage = document.getElementById('progressMessage');
     const progressDetail = document.getElementById('progressDetail');
