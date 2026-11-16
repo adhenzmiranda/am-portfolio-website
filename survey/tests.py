@@ -108,6 +108,25 @@ class PageTests(SurveyTestCase):
         self.assertEqual(res.context['config']['mode'], 'preview')
         self.assertIn('risky', res.context['config']['prompts'][0])
 
+    def test_review_link_opens_a_draft_without_login(self):
+        from .views import review_key
+        Survey.objects.filter(pk=self.survey.pk).update(status=Survey.DRAFT)
+        res = self.client.get(self.url('page') + '?review=' + review_key(self.survey))
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.context['config']['mode'], 'preview')   # nothing is saved in preview
+        self.assertEqual(res['X-Robots-Tag'], 'noindex, nofollow')
+
+    def test_wrong_review_key_gets_nothing(self):
+        Survey.objects.filter(pk=self.survey.pk).update(status=Survey.DRAFT)
+        self.assertEqual(self.client.get(self.url('page') + '?review=0123456789abcdef01234567').status_code, 404)
+        self.assertEqual(self.client.get(self.url('page') + '?review=').status_code, 404)
+
+    def test_review_link_changes_with_a_new_version(self):
+        from .views import review_key
+        before = review_key(self.survey)
+        self.survey.version += 1
+        self.assertNotEqual(review_key(self.survey), before)
+
     def test_preview_flag_ignored_for_the_public(self):
         res = self.client.get(self.url('page') + '?preview=1')
         self.assertEqual(res.context['config']['mode'], 'live')

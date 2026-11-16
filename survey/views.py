@@ -8,7 +8,9 @@ from django.middleware.csrf import get_token
 from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
 from django.urls import reverse
+from django.conf import settings
 from django.utils import timezone
+from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
@@ -24,6 +26,22 @@ logger = logging.getLogger(__name__)
 
 # Generous, because a whole classroom on campus Wi-Fi shares one IP address.
 RATE = '300/h'
+
+
+def review_key(survey):
+    """The secret part of the review link (e.g. for a supervisor): try the survey with no
+    login, nothing saved. Derived from SECRET_KEY, so it can't be guessed, and it changes
+    when the key is rotated or the survey is duplicated as a new version."""
+    return salted_hmac('survey-review-link', f'{survey.pk}:{survey.version}').hexdigest()[:24]
+
+
+def review_url(survey):
+    return f'{settings.SITE_URL}/{survey.slug}/?review={review_key(survey)}'
+
+
+def has_review_key(request, survey):
+    given = request.GET.get('review', '')
+    return bool(given) and constant_time_compare(given, review_key(survey))
 
 
 def can_preview(request):
@@ -145,7 +163,8 @@ def _no_index(response):
 
 def survey_page(request, slug):
     survey = get_object_or_404(Survey, slug=slug)
-    preview = 'preview' in request.GET and can_preview(request)
+    # Preview: you (logged in) with ?preview=1, or anyone holding the review link.
+    preview = ('preview' in request.GET and can_preview(request)) or has_review_key(request, survey)
     if not preview:
         if survey.status == Survey.DRAFT:
             raise Http404
