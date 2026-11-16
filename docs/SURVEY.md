@@ -134,8 +134,8 @@ All prompt screenshots and chat bubbles can't be highlighted, copied, dragged or
 
 ## Methods wording
 
-- "Participants were randomly assigned to one of three conditions using balanced allocation."
-- Prompt order was randomised per participant for both rounds, with matched prompts never shown consecutively.
+- "Participants were assigned to one of three conditions using balanced allocation (assignment to the least-filled condition, with ties broken at random using a cryptographically secure generator)."
+- "The order of the eight prompts was independently randomised for each participant and for each round (Fisher-Yates shuffle with a cryptographically secure generator), with matched prompts never presented consecutively."
 - No names, emails, student IDs, IP addresses or device details were collected. IP addresses are held briefly in memory for rate limiting only and are never stored.
 - Data is stored in a Neon Postgres database hosted on AWS `us-east-2` (United States).
 

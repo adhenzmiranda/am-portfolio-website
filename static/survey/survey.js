@@ -48,10 +48,23 @@
   var session = storage('sessionStorage');
   var local = storage('localStorage');
 
+  // A random whole number from 0 to n - 1, from the browser's cryptographically secure
+  // generator. Draws that would favour some numbers are thrown away and redrawn, so every
+  // value is exactly equally likely.
+  function randomInt(n) {
+    var c = window.crypto;
+    if (!c || !c.getRandomValues) { return Math.floor(Math.random() * n); }   // very old browsers only
+    var limit = Math.floor(4294967296 / n) * n;
+    var buf = new Uint32Array(1);
+    do { c.getRandomValues(buf); } while (buf[0] >= limit);
+    return buf[0] % n;
+  }
+
+  // Fisher-Yates shuffle: every order equally likely.
   function shuffle(a) {
     a = a.slice();
     for (var i = a.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
+      var j = randomInt(i + 1);
       var t = a[i]; a[i] = a[j]; a[j] = t;
     }
     return a;
@@ -311,7 +324,7 @@
     if (S.token || (PREVIEW && S.condition)) { go(0); return; }
     if (PREVIEW) {
       var keys = Object.keys(CONDITIONS);
-      S.condition = hashCondition() || keys[Math.floor(Math.random() * keys.length)];
+      S.condition = hashCondition() || keys[randomInt(keys.length)];
       S.startedAt = Date.now();
       go(0);
       return;
