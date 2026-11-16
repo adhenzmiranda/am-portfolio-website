@@ -81,7 +81,7 @@ It's a **3 × 2 mixed design**:
 
 | Variable | Levels | How it's set | CSV column |
 | --- | --- | --- | --- |
-| **Message format** | Short-form video · Infographic · Text post | Balanced random allocation by the server | `condition` (`video`, `infographic`, `text`) |
+| **Message format** | Short-form video · Infographic · Text post | Balanced random allocation by the server | `media_group` (`video`, `infographic`, `text`) |
 
 ### Dependent variables (what you measure)
 
@@ -99,10 +99,11 @@ It's a **3 × 2 mixed design**:
 
 | Measure | What it tells you | CSV column |
 | --- | --- | --- |
-| Time on the media page | Exposure, for every format | `message_seconds` |
+| Time on the media page | Exposure, for every format | `media_seconds` |
 | Video watched / finished | Did the video group actually watch? | `video_watched_seconds`, `video_finished` |
 | Content loaded | Exclude people whose media didn't load | `content_loaded` |
-| Total time | Speeding through | `total_seconds` |
+| Total time | Speeding through | `total_minutes` |
+| When they took part | UAE local time (exact UTC copies at the end of each row) | `started_uae`, `completed_uae` |
 | Prompt orders shown | Check for order effects | `before_order`, `after_order` |
 | Recruitment source | Where people came from (QR tag, shared link) | `source` |
 
@@ -127,7 +128,7 @@ It's a **3 × 2 mixed design**:
 
 ### Possible confounds (name them in the limitations)
 
-- **Exposure time differs:** the video runs a fixed 51 s, while reading is self-paced (check `message_seconds`).
+- **Exposure time differs:** the video runs a fixed 51 s, while reading is self-paced (check `media_seconds`).
 - **Video extras:** only the video has music and an opening example of someone typing a fake ID.
 - **Repetition:** the same prompts twice may push "after" scores up for everyone.
 - **No control group:** there's no "no message" group.

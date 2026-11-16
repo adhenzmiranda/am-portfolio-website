@@ -97,7 +97,7 @@ The contacts aren't in the code (the repo is public), so enter them once on the 
    import pandas as pd
    df = pd.read_csv('survey_responses_msc-survey_2027-01-15.csv', encoding='utf-8-sig')
    main = df[(df.batch == 'main') & (df.completed == 1)]
-   main.groupby('condition').score_change.describe()
+   main.groupby('media_group').score_change.describe()
    ```
 3. Keep CSV files out of the repo. `survey_responses_*.csv` is gitignored.
 
@@ -114,23 +114,30 @@ All prompt screenshots and chat bubbles can't be highlighted, copied, dragged or
 
 ## CSV columns
 
-| Column | Meaning |
-| --- | --- |
-| `participant_id`, `token` | Row id and the random id of the response (not linked to a person) |
-| `survey`, `survey_version`, `batch`, `source` | Which survey and version, pilot or main, and the recruitment tag |
-| `condition` | Media group: `video`, `infographic` or `text` |
-| `started_at`, `completed_at`, `completed` | UTC times; `completed` is 1 or 0 |
-| `age`, `gender`, `university`, ... | One column per question, named by its code. Checkbox answers are joined with `; `. |
-| `<code>_passed` | Attention-check questions only: 1 passed, 0 failed |
-| `before_p1` ... `before_p8` | Choice per prompt: `send`, `change` or `dont_send` |
-| `before_p1_correct` ... | 1 if correct. Risky prompts: `change` or `dont_send`. Safe prompts: `send`. |
-| `after_...` | The same for the second round |
-| `before_score`, `after_score`, `score_change` | Out of 8. `score_change` is the main outcome. |
-| `mean_engagement`, `mean_self_efficacy`, ... | Mean of the scale questions in each construct |
-| `message_seconds` | Time on the media page (all groups) |
-| `video_watched_seconds`, `video_finished` | Video group only |
-| `total_seconds` | Consent to submit |
-| `before_order`, `after_order` | Prompt numbers in the order shown |
+One row per person who ticked consent. The columns follow the order people go through the survey, left to right:
+
+| # | Columns | Meaning |
+| --- | --- | --- |
+| 1 | `response_id` | Row number (not linked to a person) |
+| | `completed` | 1 finished, 0 dropped out (their answers are blank) |
+| | `started_uae`, `completed_uae` | UAE time (UTC+4), `YYYY-MM-DD HH:MM:SS`; Excel and Sheets read these as dates |
+| | `total_minutes` | Consent to submit |
+| 2 | `batch`, `source`, `media_group`, `survey_version` | Pilot or main, recruitment tag (e.g. `qr-rak-poster`, `shared`), the group (`video`, `infographic`, `text`), survey version |
+| 3 | `age`, `gender`, `university`, ... | About you: one column per question, named by its code. Checkbox answers are joined with `; `. Attention checks add `<code>_passed` (1/0). |
+| 4 | `before_score` | "Before" score out of 8 |
+| | `before_p1` ... `before_p8` | Choice per prompt: `send`, `change` or `dont_send` |
+| | `before_p1_correct` ... | 1 if correct. Risky prompts: `change` or `dont_send`. Safe prompts: `send`. |
+| | `before_order` | Prompt numbers in the order shown |
+| 5 | `media_seconds` | Time on the media page (all groups) |
+| | `video_watched_seconds`, `video_finished` | Video group only |
+| | `content_loaded` | The quick check after the media |
+| 6 | `after_score`, `score_change` | "After" score out of 8, and after minus before (**the main outcome**) |
+| | `after_p1` ... `after_order` | The same detail as the "before" round |
+| 7 | `rating_1_engagement` ... `rating_8_intention` | The 8 ratings, 1 to 5 |
+| | `mean_engagement`, `mean_self_efficacy`, `mean_response_efficacy`, `mean_intention` | Mean of each pair of ratings |
+| 8 | `started_utc`, `completed_utc`, `token` | Exact UTC timestamps and the random response id, for checking only |
+
+Questions you add in the editor appear where their page sits in the survey.
 
 ## Methods wording
 

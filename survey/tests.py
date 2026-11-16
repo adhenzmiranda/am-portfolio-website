@@ -353,6 +353,31 @@ class ExportTests(SurveyTestCase):
         self.assertEqual(row['mean_engagement'], 4.0)
         self.assertEqual(row['completed'], 1)
 
+    def test_columns_follow_the_survey(self):
+        header = SurveyExport(self.survey).header()
+        self.assertEqual(header[:9], ['response_id', 'completed', 'started_uae', 'completed_uae', 'total_minutes',
+                                      'batch', 'source', 'media_group', 'survey_version'])
+        journey = ['age', 'before_score', 'before_p1', 'before_order', 'media_seconds', 'content_loaded',
+                   'after_score', 'score_change', 'after_order', 'rating_1_engagement', 'mean_engagement', 'started_utc']
+        self.assertEqual([header.index(c) for c in journey], sorted(header.index(c) for c in journey))
+        self.assertEqual(header[-1], 'token')
+        self.assertEqual([c for c in header if c.startswith('mean_')],
+                         ['mean_engagement', 'mean_self_efficacy', 'mean_response_efficacy', 'mean_intention'])
+
+    def test_times_in_uae(self):
+        from datetime import datetime, timezone as dt_tz
+        token = self.start()['token']
+        self.post_json('submit', self.valid_payload(token))
+        start = datetime(2026, 11, 16, 10, 0, 0, tzinfo=dt_tz.utc)
+        Participant.objects.filter(token=token).update(started_at=start, completed_at=start + timedelta(minutes=12))
+        export = SurveyExport(self.survey)
+        row = dict(zip(export.header(), export.row(Participant.objects.get(token=token))))
+        self.assertEqual(row['started_uae'], '2026-11-16 14:00:00')   # UTC+4
+        self.assertEqual(row['completed_uae'], '2026-11-16 14:12:00')
+        self.assertEqual(row['started_utc'], '2026-11-16T10:00:00+00:00')
+        self.assertEqual(row['total_minutes'], 10.0)   # 600 seconds reported by the browser
+        self.assertEqual(row['media_group'], Participant.objects.get(token=token).condition.key)
+
     def test_attention_check_column(self):
         q = Question.objects.get(section__survey=self.survey, code='chatbot_use')
         q.attention_answer = 'Weekly'
