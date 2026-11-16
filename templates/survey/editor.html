@@ -40,15 +40,6 @@
             <p class="ed-note" id="ed-loading">Loading the editor&hellip;</p>
             <noscript><p>The editor needs JavaScript.</p></noscript>
         </main>
-        <aside class="ed-preview" aria-label="Live preview">
-            <div class="ed-preview__bar">
-                <span class="ed-preview__label">Live preview</span>
-                <button type="button" class="ed-link" id="ed-preview-reload">Reload</button>
-                <button type="button" class="ed-link" id="ed-preview-restart">Start over</button>
-            </div>
-            <div class="ed-phone"><iframe id="ed-frame" title="Live preview of the survey"></iframe></div>
-            <p class="ed-hint">Updates after each save. Nothing you do here is recorded.</p>
-        </aside>
     </div>
 
     <script src="{% static 'survey/editor.js' %}" defer></script>

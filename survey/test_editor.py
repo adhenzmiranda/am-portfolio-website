@@ -59,10 +59,10 @@ class AccessTests(EditorTestCase):
         self.assertTrue(state['problems'])
         self.assertIn('questionKinds', state['choices'])
 
-    def test_preview_can_be_framed_by_the_editor(self):
+    def test_survey_pages_cannot_be_framed(self):
         with mock.patch('survey.views.can_preview', return_value=True):
             res = self.client.get('/msc-survey/?preview=1')
-        self.assertEqual(res['X-Frame-Options'], 'SAMEORIGIN')
+        self.assertEqual(res['X-Frame-Options'], 'DENY')
 
 
 class UpdateTests(EditorTestCase):

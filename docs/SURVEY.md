@@ -17,7 +17,7 @@ The survey lives at **adhenzmiranda.com/msc-survey/**. It works like a Google Fo
 How it behaves:
 - **Saving:** every change saves itself a moment after you stop typing. The top bar shows **Saving… / Saved**, or the reason in red if something isn't allowed.
 - **Reordering:** drag pages and questions by the ⠿ handle on a laptop, or use the ↑ ↓ arrows (the only option on phones).
-- **Live preview:** on a wide screen it sits beside the editor and reloads after each save. On a phone, use the **Preview** button.
+- **Preview:** the **Preview** button at the top opens the survey in a new tab. Refresh that tab to see your latest changes. There's no preview pane inside the editor: reloading one after every save kept stealing focus while you typed.
 - **Lock:** once the survey has responses, the editor shows a banner and turns the content read-only. Status, batch, contacts and the closed and thank-you pages stay editable.
 
 The Django admin still works as a backup. Both edit the same data.
