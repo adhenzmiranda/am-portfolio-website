@@ -7,8 +7,11 @@
 @use '../base/mixins' as *;
 
 $field-border: rgba($dark-mode-white, 0.4);
-$card-bg: rgba($gradient-black, 0.55);
+$card-bg: #10142e;                          // card surface: lighter than the page, so cards stand apart
+$ed-line: rgba($dark-mode-white, 0.16);     // card borders
+$ed-soft: rgba($dark-mode-white, 0.78);     // secondary text that stays easy to read
 $ok: #7fd6a4;
+$warn: #f2b33d;
 
 .editor-page {
     font-family: $font-ibm;
@@ -208,37 +211,21 @@ $ok: #7fd6a4;
 
 // ---------------------------------------------------------------- Cards
 
-.ed-card,
-.ed-q {
+.ed-card {
     position: relative;
     margin-bottom: $space-20;
-    padding: $space-20;
-    border: 1px solid $hairline;
+    padding: $space-20 24px;
+    border: 1px solid $ed-line;
     border-left: 3px solid $button-bg;
     background-color: $card-bg;
 
     @include mobile {
-        padding: $space-20 14px;
-    }
-
-    &.is-dragging {
-        opacity: 0.5;
-        border-style: dashed;
+        padding: $space-20 16px;
     }
 }
 
 .ed-card--fixed {
-    border-left-color: $hairline;
-}
-
-.ed-q {
-    margin: $space-20 0 0;
-    border-left-color: $accent;
-    background-color: $white-03;
-}
-
-.ed-questions {
-    min-height: 24px; // somewhere to drop a question on an empty page
+    border-left-color: $ed-line;
 }
 
 .ed-card__head {
@@ -305,20 +292,6 @@ $ok: #7fd6a4;
     &:disabled {
         opacity: 0.3;
         cursor: default;
-    }
-}
-
-.ed-drag {
-    padding: 6px 4px;
-    color: $text-muted;
-    font-size: 14px;
-    letter-spacing: -3px;
-    cursor: grab;
-    user-select: none;
-
-    // Touch screens move things with the arrows instead.
-    @media (pointer: coarse) {
-        display: none;
     }
 }
 
@@ -470,24 +443,6 @@ textarea.ed-input {
     }
 }
 
-.ed-q__row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 220px;
-    gap: 0 $space-20;
-
-    @media screen and (max-width: 700px) {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-.ed-q__foot {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: $space-10;
-    padding-top: $space-10;
-    border-top: 1px solid $hairline;
-}
-
 .ed-more {
     margin-top: $space-10;
 
@@ -507,15 +462,15 @@ textarea.ed-input {
 .ed-option {
     display: flex;
     align-items: center;
-    gap: $space-10;
-    margin-bottom: 6px;
+    gap: 12px;
+    margin-bottom: 2px;
 }
 
 .ed-option__mark {
     flex: none;
     width: 1.5em;
     text-align: center;
-    color: $text-muted;
+    color: $ed-soft;
 }
 
 // Switch
@@ -757,4 +712,421 @@ textarea.ed-input {
 .editor-page .ed-ok {
     margin: 0;
     color: $ok;
+}
+
+// ---------------------------------------------------------------- Readability
+// Secondary text in the editor is brighter than the site's muted grey, so labels,
+// hints and previews stay easy to read on the dark cards.
+.editor-page {
+    .ed-label,
+    .ed-kicker,
+    .ed-hint,
+    .ed-note,
+    .ed-chip,
+    .ed-save,
+    .ed-icon,
+    .ed-top__eyebrow,
+    .ed-preview__label,
+    .ed-upload__status,
+    .ed-upload__empty,
+    .ed-more summary,
+    .ed-checklist li,
+    .ed-option__mark {
+        color: $ed-soft;
+    }
+
+    .ed-icon:hover:not(:disabled),
+    .ed-more summary:hover {
+        color: $text;
+    }
+
+    .ed-icon:disabled {
+        opacity: 0.35;
+    }
+
+    .ed-input::placeholder,
+    .ed-line::placeholder {
+        color: rgba($dark-mode-white, 0.5);
+    }
+}
+
+// ---------------------------------------------------------------- Pages tab: Google Forms-style cards
+
+.ed-page {
+    margin-bottom: $space-40;
+
+    &.is-dragging {
+        opacity: 0.5;
+    }
+}
+
+// The coloured tab above each page, like a Google Forms section.
+.ed-page__tab {
+    display: inline-flex;
+    align-items: baseline;
+    gap: $space-10;
+    padding: 6px 14px;
+    background-color: $button-bg;
+    color: $text;
+    font-size: 13px;
+    font-weight: $fw-semibold;
+    letter-spacing: 0.02em;
+}
+
+.ed-page__kind {
+    font-weight: $fw-regular;
+    opacity: 0.85;
+}
+
+.ed-pagecard {
+    padding: 8px 24px 20px;
+    background-color: $card-bg;
+    border: 1px solid $ed-line;
+    border-top: 6px solid $button-bg;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+
+    @include mobile {
+        padding: 8px 16px 18px;
+    }
+
+    .ed-field {
+        margin-top: 12px;
+    }
+}
+
+.ed-pagecard__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 36px;
+
+    .ed-handle {
+        width: auto;
+        padding: 6px 0;
+        text-align: left;
+    }
+}
+
+// Question cards: separate cards with a gap, like Google Forms.
+.ed-qlist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 12px; // somewhere to drop a question on an empty page
+    margin-top: 12px;
+}
+
+.ed-qcard {
+    position: relative;
+    padding: 4px 24px 20px;
+    background-color: $card-bg;
+    border: 1px solid $ed-line;
+    cursor: pointer;
+    transition: border-color $duration-fast, box-shadow $duration-fast;
+
+    @include mobile {
+        padding: 4px 16px 18px;
+    }
+
+    &:hover {
+        border-color: rgba($dark-mode-white, 0.32);
+    }
+
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: 2px;
+    }
+
+    // The card being edited: blue edge and a lift, like Google Forms.
+    &.is-active {
+        padding-bottom: 10px;
+        border-color: rgba($dark-mode-white, 0.24);
+        box-shadow: inset 5px 0 0 $accent, 0 12px 30px rgba(0, 0, 0, 0.4);
+        cursor: default;
+    }
+
+    &.is-dragging {
+        opacity: 0.5;
+        border-style: dashed;
+    }
+
+    .ed-field {
+        margin-top: 10px;
+    }
+}
+
+// The ⠿ grip, centred at the top of a card. Touch screens use the arrows instead.
+.ed-handle {
+    display: block;
+    width: 100%;
+    padding: 6px 0 4px;
+    color: rgba($dark-mode-white, 0.45);
+    font-size: 11px;
+    letter-spacing: 1px;
+    line-height: 1;
+    text-align: center;
+    cursor: grab;
+    user-select: none;
+
+    &:hover {
+        color: $text;
+    }
+
+    @media (pointer: coarse) {
+        visibility: hidden;
+    }
+}
+
+// Closed card preview
+.editor-page .ed-qcard__q {
+    margin: 6px 0 0;
+    font-family: $font-ibm;
+    font-size: 17px;
+    line-height: 1.45;
+    color: $text;
+}
+
+.ed-req {
+    color: $error;
+}
+
+.editor-page .ed-qcard__help {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: $ed-soft;
+}
+
+.ed-preview-opts {
+    display: grid;
+    gap: 8px;
+    margin: 14px 0 0;
+
+    li {
+        display: flex;
+        gap: 12px;
+        font-size: 15px;
+        color: $ed-soft;
+    }
+}
+
+.ed-preview-more {
+    font-style: italic;
+}
+
+.ed-preview-scale {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.ed-preview-scale__n {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba($dark-mode-white, 0.3);
+    font-size: 14px;
+    color: $ed-soft;
+}
+
+.ed-preview-scale__end {
+    font-size: 13px;
+    color: $ed-soft;
+}
+
+.editor-page .ed-preview-line {
+    width: min(320px, 100%);
+    margin: 14px 0 0;
+    padding-bottom: 6px;
+    border-bottom: 1px dotted rgba($dark-mode-white, 0.4);
+    font-size: 14px;
+    color: rgba($dark-mode-white, 0.6);
+
+    &--long {
+        width: 100%;
+    }
+}
+
+.ed-qcard__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.ed-chip--warn {
+    border-color: $warn;
+
+    .editor-page & {
+        color: $warn;
+    }
+}
+
+// Open card
+.ed-qcard__main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 240px;
+    align-items: end;
+    gap: 0 16px;
+
+    @media screen and (max-width: 700px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// Google Forms-style field: filled, underlined, blue underline when typing.
+.ed-line {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    background-color: rgba($dark-mode-white, 0.05);
+    border: 0;
+    border-bottom: 1px solid rgba($dark-mode-white, 0.4);
+    border-radius: 0;
+    font-family: $font-ibm;
+    font-size: 16px;
+    line-height: 1.5;
+    color: $text;
+    transition: background-color $duration-fast, border-color $duration-fast;
+
+    &:hover:not(:disabled) {
+        background-color: rgba($dark-mode-white, 0.07);
+    }
+
+    &:focus {
+        outline: none;
+        padding-bottom: 9px;
+        background-color: rgba($dark-mode-white, 0.08);
+        border-bottom: 2px solid $accent;
+    }
+
+    &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+}
+
+textarea.ed-line {
+    resize: none;
+    overflow: hidden;
+}
+
+.ed-line--title {
+    font-family: $font-montserrat;
+    font-size: 26px;
+    line-height: 1.25;
+
+    @include mobile {
+        font-size: 22px;
+    }
+}
+
+.ed-line--q {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 17px;
+
+    &:focus {
+        padding-bottom: 13px;
+    }
+}
+
+.ed-qcard__answer {
+    margin-top: 12px;
+}
+
+// Options inside the open card: plain lines until hovered or focused.
+.ed-options .ed-line {
+    background-color: transparent;
+    border-bottom-color: transparent;
+
+    &:hover:not(:disabled) {
+        border-bottom-color: rgba($dark-mode-white, 0.3);
+    }
+}
+
+.ed-option--add .ed-link {
+    padding-left: 12px; // lines up with the option text above
+    color: $ed-soft;
+    text-decoration: none;
+
+    &:hover {
+        color: $text;
+        text-decoration: underline;
+    }
+}
+
+// Bottom toolbar of the open card
+.ed-qcard__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 18px;
+    padding-top: 10px;
+    border-top: 1px solid $ed-line;
+
+    .ed-field--inline {
+        margin: 0 4px;
+    }
+}
+
+.ed-divider {
+    width: 1px;
+    height: 28px;
+    margin: 0 8px;
+    background-color: $ed-line;
+}
+
+.ed-done {
+    margin-left: 8px;
+    font-weight: $fw-semibold;
+}
+
+.ed-qcard__more {
+    margin-top: 4px;
+}
+
+// "+ Add question": a dashed card at the end of each page
+.ed-addq {
+    width: 100%;
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px dashed rgba($dark-mode-white, 0.3);
+    background: transparent;
+    color: $ed-soft;
+    font-family: $font-ibm;
+    font-size: 15px;
+    font-weight: $fw-semibold;
+    cursor: pointer;
+    @include focus-ring;
+
+    span {
+        margin-right: 6px;
+        font-size: 18px;
+    }
+
+    &:hover:not(:disabled) {
+        border-color: $accent;
+        background-color: rgba($dark-mode-white, 0.03);
+        color: $text;
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.ed-addpage {
+    margin: 0 0 $space-40;
+    padding: 16px 20px;
+    border: 1px dashed rgba($dark-mode-white, 0.25);
+
+    .ed-add {
+        margin: 6px 0 0;
+    }
 }

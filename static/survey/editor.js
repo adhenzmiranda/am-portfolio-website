@@ -228,15 +228,19 @@
   }
 
   // Text, number or multi-line field that saves itself.
+  // opts.line: Google Forms style (underlined, the label is the placeholder and the screen-reader name).
   function input(model, item, field, opts) {
     opts = opts || {};
+    var cls = opts.line ? 'ed-line' + (opts.lineClass ? ' ' + opts.lineClass : '') : 'ed-input' + (opts.big ? ' ed-input--big' : '');
     var el = opts.rows
-      ? h('textarea', { class: 'ed-input', rows: opts.rows })
-      : h('input', { class: 'ed-input' + (opts.big ? ' ed-input--big' : ''), type: opts.type || 'text',
-                     inputmode: opts.number ? 'numeric' : null });
+      ? h('textarea', { class: cls, rows: opts.rows })
+      : h('input', { class: cls, type: opts.type || 'text', inputmode: opts.number ? 'numeric' : null });
     el.id = nextId();
     el.value = item[field] === null || item[field] === undefined ? '' : item[field];
-    if (opts.placeholder) { el.placeholder = opts.placeholder; }
+    if (opts.line) {
+      el.setAttribute('aria-label', opts.label);
+      el.placeholder = opts.placeholder || opts.label;
+    } else if (opts.placeholder) { el.placeholder = opts.placeholder; }
     if (opts.maxlength) { el.maxLength = opts.maxlength; }
     el.disabled = isLocked(model, field);
     el.addEventListener(opts.onChangeOnly ? 'change' : 'input', function () {
@@ -248,12 +252,12 @@
       queueSave(model, item.id, field, value, { now: !!opts.onChangeOnly });
     });
     if (opts.rows) { requestAnimationFrame(function () { grow(el); }); }
-    return wrap(model, item.id, field, opts.label, el, opts.hint);
+    return wrap(model, item.id, field, opts.line ? null : opts.label, el, opts.hint);
   }
 
   function select(model, item, field, choices, opts) {
     opts = opts || {};
-    var el = h('select', { class: 'ed-input ed-select' });
+    var el = h('select', { class: 'ed-input ed-select', 'aria-label': opts.aria || null });
     el.id = nextId();
     choices.forEach(function (c) { el.appendChild(h('option', { value: c[0], text: c[1], selected: item[field] === c[0] })); });
     el.disabled = isLocked(model, field);
@@ -432,18 +436,23 @@
 
   // ------------------------------------------------------------ reordering
 
-  function moveTools(kind, list, index, sectionId) {
+  // The ⠿ grip: drag with a mouse (hidden on touch screens, which use the arrows).
+  function dragHandle(kind) {
+    return h('span', { class: 'ed-handle', 'aria-hidden': 'true', title: 'Drag to move', 'data-handle': kind,
+                       draggable: ST.locked ? null : 'true', text: '⠇⠇⠇' });
+  }
+
+  function arrows(kind, list, index, sectionId) {
     var ids = list.map(function (x) { return x.id; });
     function move(delta) {
       var j = index + delta;
       var t = ids[index]; ids[index] = ids[j]; ids[j] = t;
       act('reorder/', kind === 'section' ? { kind: 'section', ids: ids } : { kind: 'question', section: sectionId, ids: ids });
     }
+    var noun = kind === 'section' ? 'page' : 'question';
     return [
-      h('span', { class: 'ed-drag', 'aria-hidden': 'true', title: 'Drag to move', text: '⠇⠇', 'data-handle': kind,
-                  draggable: ST.locked ? null : 'true' }),
-      iconButton('↑', 'Move up', function () { move(-1); }, ST.locked || index === 0),
-      iconButton('↓', 'Move down', function () { move(1); }, ST.locked || index === list.length - 1)
+      iconButton('↑', 'Move ' + noun + ' up', function () { move(-1); }, ST.locked || index === 0),
+      iconButton('↓', 'Move ' + noun + ' down', function () { move(1); }, ST.locked || index === list.length - 1)
     ];
   }
 
@@ -489,12 +498,69 @@
                                        : { kind: 'question', section: Number(list.dataset.section), ids: ids });
   });
 
-  // ------------------------------------------------------------ Pages tab
+  // ------------------------------------------------------------ Pages tab (Google Forms-style cards)
+
+  // One question card is open for editing at a time; the others show a preview.
+  var activeQuestion = null;
+
+  function findQuestion(id) {
+    for (var i = 0; i < ST.sections.length; i++) {
+      var qs = ST.sections[i].questions;
+      for (var j = 0; j < qs.length; j++) {
+        if (qs[j].id === id) { return { q: qs[j], j: j, section: ST.sections[i] }; }
+      }
+    }
+    return null;
+  }
+
+  // Redraw one question card in place (open or closed) without redrawing the page.
+  function redrawQuestion(id, focus) {
+    var found = findQuestion(id);
+    var el = main.querySelector('.ed-qcard[data-id="' + id + '"]');
+    if (!found || !el) { return; }
+    var fresh = questionCard(found.q, found.j, found.section);
+    el.replaceWith(fresh);
+    if (focus) {
+      var first = fresh.querySelector('.ed-line');
+      if (first) { first.focus({ preventScroll: true }); }
+      fresh.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }
+
+  function openQuestion(id) {
+    if (activeQuestion === id) { return; }
+    var previous = activeQuestion;
+    activeQuestion = id;
+    // Save the card being closed first, so its preview shows the latest text.
+    (previous ? flush('question:' + previous) : Promise.resolve()).then(function () {
+      if (previous) { redrawQuestion(previous); }
+      redrawQuestion(id, true);
+    });
+  }
+
+  function closeQuestion() {
+    var previous = activeQuestion;
+    if (!previous) { return; }
+    activeQuestion = null;
+    flush('question:' + previous).then(function () {
+      redrawQuestion(previous);
+      var card = main.querySelector('.ed-qcard[data-id="' + previous + '"]');
+      if (card) { card.focus({ preventScroll: true }); }
+    });
+  }
+
+  function infoCard(kicker, title, text, buttonText, tabName) {
+    return h('section', { class: 'ed-card ed-card--fixed' },
+      h('span', { class: 'ed-kicker', text: kicker }),
+      h('h2', { class: 'ed-card__title', text: title }),
+      note(text),
+      button(buttonText, function () { switchTab(tabName); }));
+  }
 
   function pagesTab() {
     var n = ST.sections.length;
-    var list = h('div', { class: 'ed-list' });
-    ST.sections.forEach(function (s, i) { list.appendChild(sectionCard(s, i, n)); });
+    var list = h('div', { class: 'ed-pages' });
+    ST.sections.forEach(function (s, i) { list.appendChild(pageBlock(s, i, n)); });
     enableDrag(list, 'section');
     var kinds = ST.sections.map(function (s) { return s.kind; });
     var addKind = h('select', { class: 'ed-input ed-select', 'aria-label': 'Type of page to add', disabled: ST.locked });
@@ -504,73 +570,133 @@
                                         disabled: once && kinds.indexOf(c[0]) !== -1 }));
     });
     return [
-      h('section', { class: 'ed-card ed-card--fixed' },
-        h('span', { class: 'ed-kicker', text: 'Start' }),
-        h('h2', { class: 'ed-card__title', text: 'Consent page' }),
-        note('Information, contacts and tick boxes. Every participant sees it first.'),
-        button('Edit in Settings', function () { switchTab('settings'); })),
+      infoCard('Start', 'Consent page', 'Information, contacts and tick boxes. Every participant sees it first.', 'Edit in Settings', 'settings'),
       list,
-      h('div', { class: 'ed-add' }, addKind,
-        button('+ Add page', function () {
-          act('section/new/', { kind: addKind.value }).then(function (data) {
-            if (data && data.item) { focusNew('[data-drag="section"][data-id="' + data.item.id + '"]'); }
-          });
-        }, { class: 'btn btn--primary ed-btn', disabled: ST.locked })),
-      h('section', { class: 'ed-card ed-card--fixed' },
-        h('span', { class: 'ed-kicker', text: 'End' }),
-        h('h2', { class: 'ed-card__title', text: 'Thank-you page' }),
-        note('Shown after submitting, with your logo, share buttons and the site’s navbar and footer.'),
-        button('Edit in Settings', function () { switchTab('settings'); }))
+      h('div', { class: 'ed-addpage' },
+        h('span', { class: 'ed-label', text: 'Add a page' }),
+        h('div', { class: 'ed-add' }, addKind,
+          button('+ Add page', function () {
+            act('section/new/', { kind: addKind.value }).then(function (data) {
+              if (data && data.item) { focusNew('.ed-page[data-id="' + data.item.id + '"]'); }
+            });
+          }, { class: 'btn btn--primary ed-btn', disabled: ST.locked }))),
+      infoCard('End', 'Thank-you page', 'Shown after submitting, with your logo, share buttons and the site’s navbar and footer.', 'Edit in Settings', 'settings')
     ];
   }
 
-  function sectionCard(s, i, n) {
-    var card = h('section', { class: 'ed-card ed-section', 'data-drag': 'section', 'data-id': s.id },
-      h('div', { class: 'ed-card__head' },
-        h('div', { class: 'ed-card__meta' },
-          h('span', { class: 'ed-kicker', text: 'Page ' + (i + 1) + ' of ' + n }),
-          h('span', { class: 'ed-chip', text: label(CH.sectionKinds, s.kind) })),
-        h('div', { class: 'ed-tools' }, moveTools('section', ST.sections, i),
+  // A page: a header card (like a Google Forms section), then its question cards.
+  function pageBlock(s, i, n) {
+    var header = h('section', { class: 'ed-pagecard' },
+      h('div', { class: 'ed-pagecard__top' },
+        dragHandle('section'),
+        h('div', { class: 'ed-tools' }, arrows('section', ST.sections, i),
           iconButton('✕', 'Delete page', function () {
             act('section/' + s.id + '/delete/', {}, { confirm: 'Delete the page "' + s.title + '"' +
               (s.questions.length ? ' and its ' + s.questions.length + ' question(s)' : '') + '?' });
           }, ST.locked))),
-      input('section', s, 'title', { label: 'Page title', big: true, maxlength: 200 }),
-      input('section', s, 'description', { label: 'Description (optional)', rows: 2,
-        hint: 'Shown under the title. Markdown works: **bold**, - bullet points.' }),
-      input('section', s, 'button_label', { label: 'Button text', maxlength: 60,
-        placeholder: i === n - 1 ? 'Submit answers' : 'Next' }));
+      input('section', s, 'title', { line: true, lineClass: 'ed-line--title', label: 'Page title', maxlength: 200 }),
+      input('section', s, 'description', { line: true, rows: 1, label: 'Page description (optional)',
+        hint: 'Markdown works: **bold**, - bullet points.' }),
+      h('details', { class: 'ed-more' }, h('summary', { text: 'Page settings' }),
+        input('section', s, 'button_label', { label: 'Button text', maxlength: 60,
+          placeholder: i === n - 1 ? 'Submit answers' : 'Next', hint: 'Leave blank for the default shown.' })));
 
-    if (s.kind === 'questions') {
-      var qlist = h('div', { class: 'ed-questions', 'data-section': s.id });
-      s.questions.forEach(function (q, j) { qlist.appendChild(questionCard(q, j, s)); });
-      enableDrag(qlist, 'question');
-      card.appendChild(qlist);
-      card.appendChild(h('div', { class: 'ed-add' }, button('+ Add question', function () {
-        act('question/new/', { section: s.id, kind: 'choice' }).then(function (data) {
-          if (data && data.item) { focusNew('[data-drag="question"][data-id="' + data.item.id + '"]'); }
-        });
-      }, { class: 'btn btn--primary ed-btn', disabled: ST.locked })));
-    } else if (s.kind === 'task_before' || s.kind === 'task_after') {
-      card.appendChild(h('div', { class: 'ed-info' },
+    if (s.kind === 'task_before' || s.kind === 'task_after') {
+      header.appendChild(h('div', { class: 'ed-info' },
         note('Shows all ' + ST.prompts.length + ' prompts in a new random order for each person' +
-             (s.kind === 'task_after' ? ' (a different order from the first round).' : '.')),
+             (s.kind === 'task_after' ? ' (different from the first round).' : '.')),
         button('Edit prompts', function () { switchTab('prompts'); })));
     } else if (s.kind === 'media') {
       var active = ST.conditions.filter(function (c) { return c.active; }).length;
-      card.appendChild(h('div', { class: 'ed-info' },
+      header.appendChild(h('div', { class: 'ed-info' },
         note('Each person sees one of the ' + active + ' active media groups, picked so the groups stay even. Back is turned off from here on.'),
         button('Edit media', function () { switchTab('media'); })));
+    }
+
+    var block = h('div', { class: 'ed-page', 'data-drag': 'section', 'data-id': s.id },
+      h('div', { class: 'ed-page__tab' },
+        h('span', { text: 'Page ' + (i + 1) + ' of ' + n }),
+        h('span', { class: 'ed-page__kind', text: label(CH.sectionKinds, s.kind) })),
+      header);
+
+    if (s.kind === 'questions') {
+      var qlist = h('div', { class: 'ed-qlist', 'data-section': s.id });
+      s.questions.forEach(function (q, j) { qlist.appendChild(questionCard(q, j, s)); });
+      enableDrag(qlist, 'question');
+      block.appendChild(qlist);
+      block.appendChild(h('button', { type: 'button', class: 'ed-addq', disabled: ST.locked, onclick: function () {
+        act('question/new/', { section: s.id, kind: 'choice' }).then(function (data) {
+          if (data && data.item) { activeQuestion = null; openQuestion(data.item.id); }
+        });
+      } }, h('span', { 'aria-hidden': 'true', text: '+' }), ' Add question'));
+    }
+    return block;
+  }
+
+  function questionCard(q, j, section) {
+    return activeQuestion === q.id && !ST.locked ? questionEditor(q, j, section) : questionPreview(q, j);
+  }
+
+  // Closed card: what participants will see, at a glance. Click to edit.
+  function questionPreview(q, j) {
+    var card = h('article', { class: 'ed-qcard', 'data-drag': 'question', 'data-id': q.id, tabindex: '0',
+                              role: ST.locked ? null : 'button',
+                              'aria-label': (ST.locked ? 'Question ' : 'Edit question ') + (j + 1) + ': ' + (q.text || 'Untitled question') },
+      dragHandle('question'),
+      h('p', { class: 'ed-qcard__q' },
+        h('span', { text: q.text || 'Untitled question' }),
+        q.required ? h('span', { class: 'ed-req', title: 'Required', text: ' *' }) : null),
+      q.help_text ? h('p', { class: 'ed-qcard__help', text: q.help_text }) : null,
+      answerPreview(q),
+      h('div', { class: 'ed-qcard__chips' },
+        h('span', { class: 'ed-chip', text: label(CH.questionKinds, q.kind) }),
+        q.construct ? h('span', { class: 'ed-chip', text: 'Construct: ' + q.construct }) : null,
+        q.attention_answer ? h('span', { class: 'ed-chip ed-chip--warn', text: 'Attention check' }) : null));
+    if (!ST.locked) {
+      card.addEventListener('click', function (e) {
+        if (!e.target.closest('[data-handle]')) { openQuestion(q.id); }
+      });
+      card.addEventListener('keydown', function (e) {
+        if (e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openQuestion(q.id); }
+      });
     }
     return card;
   }
 
-  function questionCard(q, j, section) {
-    var optionKinds = CH.optionKinds;
+  function optionsOf(q) {
+    return (q.options || '').split('\n').map(function (o) { return o.trim(); }).filter(Boolean);
+  }
+
+  function answerPreview(q) {
+    var opts = optionsOf(q);
+    if (q.kind === 'choice' || q.kind === 'checkboxes' || q.kind === 'dropdown') {
+      var shown = opts.slice(0, 6);
+      var list = h('ul', { class: 'ed-preview-opts' }, shown.map(function (o, i) {
+        var mark = q.kind === 'checkboxes' ? '☐' : q.kind === 'dropdown' ? (i + 1) + '.' : '○';
+        return h('li', {}, h('span', { class: 'ed-option__mark', 'aria-hidden': 'true', text: mark }), h('span', { text: o }));
+      }));
+      if (opts.length > shown.length) { list.appendChild(h('li', { class: 'ed-preview-more', text: '+ ' + (opts.length - shown.length) + ' more' })); }
+      if (!opts.length) { list.appendChild(h('li', { class: 'ed-preview-more', text: 'No options yet' })); }
+      return list;
+    }
+    if (q.kind === 'scale') {
+      return h('div', { class: 'ed-preview-scale' },
+        h('span', { class: 'ed-preview-scale__end', text: q.scale_low_label }),
+        [1, 2, 3, 4, 5].map(function (n) { return h('span', { class: 'ed-preview-scale__n', text: n }); }),
+        h('span', { class: 'ed-preview-scale__end', text: q.scale_high_label }));
+    }
+    var text = q.kind === 'long_text' ? 'Long answer text' : q.kind === 'number'
+      ? 'Number' + (q.min_value !== null && q.max_value !== null ? ' (' + q.min_value + ' to ' + q.max_value + ')' : '')
+      : 'Short answer text';
+    return h('p', { class: 'ed-preview-line' + (q.kind === 'long_text' ? ' ed-preview-line--long' : ''), text: text });
+  }
+
+  // Open card: edit everything in place, with a toolbar at the bottom.
+  function questionEditor(q, j, section) {
     var others = ST.sections.filter(function (s) { return s.kind === 'questions'; });
-    var move = h('select', { class: 'ed-input ed-select', disabled: ST.locked });
+    var move = h('select', { class: 'ed-input ed-select' });
     move.id = nextId();
-    others.forEach(function (s, idx) {
+    others.forEach(function (s) {
       move.appendChild(h('option', { value: String(s.id), text: 'Page ' + (ST.sections.indexOf(s) + 1) + ': ' + s.title,
                                      selected: s.id === section.id }));
     });
@@ -580,76 +706,90 @@
       act('reorder/', { kind: 'question', section: target.id, ids: ids });
     });
 
-    var details = h('details', { class: 'ed-more' }, h('summary', { text: 'More settings' }),
+    var more = h('details', { class: 'ed-more ed-qcard__more' }, h('summary', { text: 'More settings' }),
       input('question', q, 'code', { label: 'Column name in the CSV', maxlength: 40,
         hint: 'Letters, numbers, - and _ only. Unique in this survey.' }),
-      q.kind === 'scale' ? input('question', q, 'construct', { label: 'Construct (hidden)', maxlength: 40,
+      q.kind === 'scale' ? input('question', q, 'construct', { label: 'Construct (hidden from participants)', maxlength: 40,
         hint: 'Groups scale questions for analysis, e.g. engagement. The CSV gets a mean per construct.' }) : null,
       input('question', q, 'attention_answer', { label: 'Attention check answer', maxlength: 200,
         hint: 'Only for attention checks: the answer a careful reader gives. The CSV marks pass or fail.' }),
       wrap('question', q.id, 'section', 'Move to page', move));
 
-    return h('article', { class: 'ed-q', 'data-drag': 'question', 'data-id': q.id },
-      h('div', { class: 'ed-card__head' },
-        h('span', { class: 'ed-kicker', text: 'Question ' + (j + 1) }),
-        h('div', { class: 'ed-tools' }, moveTools('question', section.questions, j, section.id),
+    var card = h('article', { class: 'ed-qcard is-active', 'data-drag': 'question', 'data-id': q.id },
+      dragHandle('question'),
+      h('div', { class: 'ed-qcard__main' },
+        input('question', q, 'text', { line: true, lineClass: 'ed-line--q', label: 'Question', maxlength: 300 }),
+        select('question', q, 'kind', CH.questionKinds, { aria: 'Question type', rerender: true })),
+      input('question', q, 'help_text', { line: true, label: 'Description (optional)', maxlength: 300 }),
+      h('div', { class: 'ed-qcard__answer' },
+        CH.optionKinds.indexOf(q.kind) !== -1 ? optionsEditor(q) : null,
+        q.kind === 'number' ? h('div', { class: 'ed-grid3' },
+          input('question', q, 'min_value', { label: 'Lowest allowed', type: 'number', number: true }),
+          input('question', q, 'max_value', { label: 'Highest allowed', type: 'number', number: true }),
+          input('question', q, 'range_message', { label: 'Message if out of range', maxlength: 200 })) : null,
+        q.kind === 'scale' ? h('div', { class: 'ed-grid2' },
+          input('question', q, 'scale_low_label', { label: 'Label for 1', maxlength: 60 }),
+          input('question', q, 'scale_high_label', { label: 'Label for 5', maxlength: 60 })) : null,
+        q.kind === 'short_text' || q.kind === 'long_text'
+          ? h('p', { class: 'ed-preview-line' + (q.kind === 'long_text' ? ' ed-preview-line--long' : ''),
+                     text: q.kind === 'long_text' ? 'Long answer text' : 'Short answer text' }) : null),
+      h('div', { class: 'ed-qcard__bar' },
+        h('div', { class: 'ed-tools' }, arrows('question', section.questions, j, section.id)),
+        h('div', { class: 'ed-tools' },
           iconButton('⧉', 'Duplicate question', function () {
-            act('question/' + q.id + '/duplicate/', {});
-          }, ST.locked),
+            act('question/' + q.id + '/duplicate/', {}).then(function (data) {
+              if (data && data.item) { activeQuestion = null; openQuestion(data.item.id); }
+            });
+          }),
           iconButton('✕', 'Delete question', function () {
-            act('question/' + q.id + '/delete/', {}, { confirm: 'Delete the question "' + q.text + '"?' });
-          }, ST.locked))),
-      h('div', { class: 'ed-q__row' },
-        input('question', q, 'text', { label: 'Question', maxlength: 300 }),
-        select('question', q, 'kind', CH.questionKinds, { label: 'Type', rerender: true })),
-      input('question', q, 'help_text', { label: 'Help text (optional)', maxlength: 300 }),
-      optionKinds.indexOf(q.kind) !== -1 ? optionsEditor(q) : null,
-      q.kind === 'number' ? h('div', { class: 'ed-grid3' },
-        input('question', q, 'min_value', { label: 'Lowest allowed', type: 'number', number: true }),
-        input('question', q, 'max_value', { label: 'Highest allowed', type: 'number', number: true }),
-        input('question', q, 'range_message', { label: 'Message if out of range', maxlength: 200 })) : null,
-      q.kind === 'scale' ? h('div', { class: 'ed-grid2' },
-        input('question', q, 'scale_low_label', { label: 'Label for 1', maxlength: 60 }),
-        input('question', q, 'scale_high_label', { label: 'Label for 5', maxlength: 60 })) : null,
-      h('div', { class: 'ed-q__foot' }, toggle('question', q, 'required', 'Required')),
-      details);
+            act('question/' + q.id + '/delete/', {}, { confirm: 'Delete the question "' + (q.text || 'Untitled question') + '"?' });
+          }),
+          h('span', { class: 'ed-divider', 'aria-hidden': 'true' }),
+          toggle('question', q, 'required', 'Required', { rerender: false }),
+          button('Done', closeQuestion, { class: 'ed-link ed-done' }))),
+      more);
+    card.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { e.preventDefault(); closeQuestion(); }
+    });
+    return card;
   }
 
-  // One input per option, like Google Forms. Saved as one option per line.
+  // One line per option, like Google Forms. Saved as one option per line; Enter adds the next.
   function optionsEditor(q) {
     var lines = (q.options || '').split('\n');
     if (!lines.length) { lines = ['']; }
     var box = h('div', { class: 'ed-field ed-options', 'data-key': 'question:' + q.id + ':options' });
-    var locked = isLocked('question', 'options');
     function save() {
       q.options = lines.join('\n');
       queueSave('question', q.id, 'options', q.options);
     }
+    function mark(i) {
+      return h('span', { class: 'ed-option__mark', 'aria-hidden': 'true',
+                         text: q.kind === 'checkboxes' ? '☐' : q.kind === 'dropdown' ? (i + 1) + '.' : '○' });
+    }
     function draw(focusIndex) {
       while (box.firstChild) { box.removeChild(box.firstChild); }
-      box.appendChild(h('span', { class: 'ed-label', text: 'Options' }));
       lines.forEach(function (text, i) {
-        var el = h('input', { class: 'ed-input', type: 'text', value: text, 'aria-label': 'Option ' + (i + 1), disabled: locked });
+        var el = h('input', { class: 'ed-line', type: 'text', value: text, 'aria-label': 'Option ' + (i + 1), placeholder: 'Option ' + (i + 1) });
         el.addEventListener('input', function () { lines[i] = el.value; save(); });
         el.addEventListener('keydown', function (e) {
           if (e.key === 'Enter') { e.preventDefault(); lines.splice(i + 1, 0, ''); save(); draw(i + 1); }
         });
-        box.appendChild(h('div', { class: 'ed-option' },
-          h('span', { class: 'ed-option__mark', 'aria-hidden': 'true', text: q.kind === 'checkboxes' ? '☐' : q.kind === 'dropdown' ? (i + 1) + '.' : '○' }),
-          el,
+        box.appendChild(h('div', { class: 'ed-option' }, mark(i), el,
           iconButton('✕', 'Remove option ' + (i + 1), function () {
             lines.splice(i, 1);
             if (!lines.length) { lines.push(''); }
             save();
             draw();
-          }, locked || lines.length === 1)));
+          }, lines.length === 1)));
         if (focusIndex === i) { requestAnimationFrame(function () { el.focus(); }); }
       });
-      box.appendChild(button('+ Add option', function () {
-        lines.push('Option ' + (lines.length + 1));
-        save();
-        draw(lines.length - 1);
-      }, { class: 'ed-link', disabled: locked }));
+      box.appendChild(h('div', { class: 'ed-option ed-option--add' }, mark(lines.length),
+        button('Add option', function () {
+          lines.push('Option ' + (lines.length + 1));
+          save();
+          draw(lines.length - 1);
+        }, { class: 'ed-link' })));
       box.appendChild(h('p', { class: 'ed-err', role: 'alert' }));
     }
     draw();
