@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Think Before You Prompt: Sample Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Montserrat:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --ink:#172033; --muted:#5B6576; --line:#D9DEE7;
+  --accent:#3346C8; --accent-ink:#FFFFFF; --bubble:#E6EAF2; --flag:#B45309; --ok:#1F7A5C;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#11161F; --surface:#1A2130; --ink:#E7EBF2; --muted:#9AA4B5; --line:#2C3547;
+    --accent:#8C9BFF; --accent-ink:#0E1320; --bubble:#232C3D; --flag:#F2B33D; --ok:#5CC9A1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11161F; --surface:#1A2130; --ink:#E7EBF2; --muted:#9AA4B5; --line:#2C3547;
+  --accent:#8C9BFF; --accent-ink:#0E1320; --bubble:#232C3D; --flag:#F2B33D; --ok:#5CC9A1; color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-inner{max-width:640px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.top-title{font-weight:700;font-size:15px;white-space:nowrap}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.step-count{font-size:14px;color:var(--muted);white-space:nowrap}
+main{max-width:640px;margin:0 auto;padding:28px 20px 48px}
+h1{font-size:30px;line-height:1.15;margin:0 0 12px}
+h2{font-size:23px;line-height:1.25;margin:0 0 8px}
+h3{font-size:18px;margin:22px 0 6px}
+p{margin:0 0 14px}
+.lede{color:var(--muted);margin-bottom:24px}
+.note{font-size:15px;color:var(--muted);border-left:3px solid var(--line);padding-left:12px;margin:20px 0}
+.info-sheet{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 20px 12px;margin-bottom:22px}
+.info-sheet ul{margin:0 0 12px;padding-left:20px}
+.info-sheet li{margin-bottom:6px}
+.check{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;cursor:pointer}
+.check input{width:22px;height:22px;margin-top:2px;accent-color:var(--accent);flex:none}
+fieldset{border:0;margin:0 0 22px;padding:0}
+legend,label.q{display:block;font-weight:700;margin-bottom:8px;padding:0}
+input[type=number],input[type=text],select{width:100%;font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px}
+input:focus-visible,select:focus-visible,button:focus-visible,.chip input:focus-visible+span,.scale input:focus-visible+span{outline:3px solid var(--accent);outline-offset:2px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input,.scale input{position:absolute;opacity:0;width:1px;height:1px}
+.chip span{display:inline-block;padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);cursor:pointer;font-size:16px}
+.chip input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.prompt{margin:0 0 26px}
+.bubble-row{display:flex;justify-content:flex-end;margin-bottom:10px}
+.bubble{background:var(--bubble);border-radius:20px 20px 6px 20px;padding:12px 16px;max-width:88%;font-size:16.5px}
+.prompt .choices{justify-content:flex-end}
+.att{margin-bottom:8px}
+.mock{background:#fff;color:#1a1a1a;border:1px solid #d8dce3;border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.35;max-width:260px}
+.mock .mt{font-weight:700;font-size:12px;margin-bottom:6px;color:#334}
+.mock .row{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid #eceef2;padding:3px 0}
+.mock .row span{color:#667}
+.mock .row b{min-width:96px;text-align:right}
+.mock .row b:empty{border-bottom:1px dotted #99a;height:1em}
+.mslide{background:#f3f5fb}.mslide ul{margin:0;padding-left:16px}.mslide .pg{text-align:right;color:#889;font-size:11px}
+.mchat p{margin:0 0 5px;background:#eaf5ec;border-radius:8px;padding:5px 7px}.mchat p b{display:block;font-size:11px;color:#2a6f3a}
+.mbank .err{margin-top:6px;color:#b42318;font-weight:700}
+.ctx{margin-bottom:10px}
+.ctx-l{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.mmem ul{margin:0 0 4px;padding-left:16px}.mmem li{margin-bottom:2px}.mmem .pg{color:#889;font-size:11px}
+.item{margin-bottom:22px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.scale label{position:relative}
+.scale span{display:block;text-align:center;padding:10px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font-weight:700}
+.scale input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:4px}
+.actions{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+button{font:inherit;cursor:pointer;border-radius:12px;padding:12px 20px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+button:disabled{opacity:.45;cursor:not-allowed}
+.error{color:var(--flag);font-weight:700;margin-top:12px;min-height:1.5em}
+
+/* ---------- social media mocks: fixed "phone app" look in both themes ---------- */
+.phone{width:min(340px,100%);margin:8px auto 14px;background:#fff;color:#111;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.08),0 12px 30px rgba(10,20,40,.14);font-family:"Montserrat",system-ui,sans-serif}
+.ph-head{display:flex;align-items:center;gap:10px;padding:10px 12px}
+.av{width:34px;height:34px;border-radius:50%;flex:none;background:conic-gradient(#ffcd3c,#ff5c8a,#7a5cff,#2f9bff,#ffcd3c);padding:2px}
+.av i{display:block;width:100%;height:100%;border-radius:50%;background:#0f2a6b;border:2px solid #fff;position:relative}
+.av i::after{content:"";position:absolute;inset:7px 8px 9px;border:2.5px solid #ffd43b;border-radius:3px 3px 6px 6px}
+.ph-name{font-weight:800;font-size:13.5px;line-height:1.2}
+.ph-sub{font-size:11.5px;color:#666;font-weight:600}
+.ph-more{margin-left:auto;font-weight:900;letter-spacing:1px;color:#333}
+.ph-icons{display:flex;gap:16px;padding:10px 12px 4px}
+.ph-icons svg{width:24px;height:24px;fill:none;stroke:#111;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ph-icons .save{margin-left:auto}
+.ph-cap{padding:2px 12px 14px;font-size:13px;line-height:1.45;font-weight:600}
+.ph-cap b{font-weight:800}
+.ph-cap .tag{color:#1d4fb8}
+.ph-time{display:block;color:#888;font-size:11px;margin-top:4px;font-weight:600}
+
+/* infographic poster (4:5) */
+.poster{background:#2546F0;background-image:radial-gradient(circle at 85% 8%,#4d6bff 0 18%,transparent 19%),linear-gradient(#2546F0,#1b35c4);color:#fff;padding:20px 18px 14px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.poster .sticker{align-self:flex-start;background:#FFD43B;color:#111;font-weight:800;font-size:11px;padding:4px 9px;border-radius:999px;transform:rotate(-3deg);margin-bottom:10px}
+.poster h4{font-family:"Montserrat",sans-serif;font-weight:900;font-size:26px;line-height:1.02;margin:0 0 6px;letter-spacing:-.5px}
+.poster .hook{font-size:11.5px;font-weight:600;opacity:.9;margin:0 0 10px;line-height:1.35}
+.poster ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;flex:1}
+.poster li{background:#fff;color:#111;border-radius:12px;padding:6px 9px 6px 34px;position:relative;font-size:10.5px;line-height:1.3;font-weight:600}
+.poster li b{display:block;font-weight:800;font-size:11.5px}
+.poster li::before{content:attr(data-n);position:absolute;left:8px;top:7px;width:19px;height:19px;border-radius:50%;background:#FFD43B;color:#111;font-weight:900;font-size:11px;display:grid;place-items:center}
+.poster .foot{font-size:10px;font-weight:700;opacity:.85;margin-top:8px;display:flex;justify-content:space-between}
+
+/* reel (9:16) */
+.reel{position:relative;width:min(320px,100%);aspect-ratio:9/16;margin:8px auto 12px;border-radius:22px;overflow:hidden;color:#fff;font-family:"Montserrat",sans-serif;background:#0d1220;box-shadow:0 12px 30px rgba(10,20,40,.2)}
+.reel .scene{position:absolute;inset:0;background:radial-gradient(120% 70% at 30% 20%,#33406b 0,#151b2e 55%,#090c14 100%)}
+.reel .scene::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.65))}
+.reel .segs{position:absolute;top:10px;left:10px;right:10px;display:flex;gap:3px;z-index:3}
+.reel .segs i{flex:1;height:2.5px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+.reel .segs i b{display:block;height:100%;width:0;background:#fff}
+.reel .segs i.done b{width:100%}
+.reel .segs i.now b{animation:fill var(--dur) linear forwards}
+@keyframes fill{to{width:100%}}
+.reel .stage{position:absolute;left:16px;right:58px;top:13%;bottom:30%;display:flex;flex-direction:column;justify-content:center;z-index:2}
+.cap{font-weight:900;font-size:24px;line-height:1.15;text-shadow:0 2px 0 #000,0 0 6px rgba(0,0,0,.7);-webkit-text-stroke:.6px #000}
+.cap .w{opacity:0;display:inline-block;transform:translateY(6px);transition:opacity .18s,transform .18s}
+.cap .w.on{opacity:1;transform:none}
+.cap .w.hl{color:#FFE14D}
+.sub{font-weight:700;font-size:14px;line-height:1.35;margin-top:12px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.chatmock{background:#fff;color:#222;border-radius:14px;padding:10px;font-family:"Atkinson Hyperlegible",sans-serif;font-size:12.5px;box-shadow:0 8px 20px rgba(0,0,0,.4);margin-bottom:14px}
+.chatmock .lbl{font-size:10.5px;color:#888;margin-bottom:6px;font-family:"Montserrat",sans-serif;font-weight:700}
+.chatmock .field{border:1px solid #ddd;border-radius:10px;padding:8px 10px;min-height:52px}
+.caret{display:inline-block;width:1.5px;height:1em;background:#222;vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.rail{position:absolute;right:8px;bottom:22%;display:flex;flex-direction:column;gap:16px;align-items:center;z-index:3}
+.rail svg{width:28px;height:28px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+.reel .meta{position:absolute;left:12px;right:56px;bottom:14px;z-index:3;font-size:12px;font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.reel .meta .who{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;margin-bottom:6px}
+.reel .meta .who .av{width:28px;height:28px}
+.follow{border:1.5px solid #fff;border-radius:7px;padding:1px 8px;font-size:11px;font-weight:800}
+.audio{display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;opacity:.95}
+.audio svg{width:13px;height:13px;fill:#fff}
+.reel .tap{position:absolute;inset:0;z-index:4;background:transparent;border:0;border-radius:0;padding:0}
+.reel .paused{position:absolute;inset:0;display:none;place-items:center;z-index:3;font-size:13px;font-weight:800}
+.reel.is-paused .paused{display:grid}
+.reel-controls{display:flex;justify-content:center;gap:10px}
+
+/* text post */
+.tp{padding:14px 14px 10px}
+.tp .ph-head{padding:0 0 8px}
+.tp .ph-sub{font-weight:600}
+.tp-body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14.5px;line-height:1.45;color:#0f1419}
+.tp-body p{margin:0 0 10px}
+.tp-row{display:flex;justify-content:space-between;padding:8px 4px 2px;border-top:1px solid #eee;margin-top:6px}
+.tp-row svg{width:19px;height:19px;fill:none;stroke:#536471;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* researcher panel */
+.panel{background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:18px;margin-top:26px}
+.panel h3{margin:0 0 10px;font-size:18px}
+.stat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.stat b.good{color:var(--ok)}
+.links a{color:var(--accent);margin-right:16px}
+@media (prefers-reduced-motion: reduce){.bar span{transition:none}.reel .segs i.now b{animation:none;width:100%}.cap .w{transition:none}.caret{animation:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-inner">
+  <span class="top-title">Think Before You Prompt</span>
+  <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+  <span class="step-count" id="stepcount"></span>
+</div></header>
+<main id="app" aria-live="polite"></main>
+
+<script>
+(function(){
+/* ---------- one script, three formats: the content is identical in all of them ---------- */
+const HOOK="You’d never post your Emirates ID on your story. So why paste it into ChatGPT?";
+const THREAT="What you type into a chatbot can be stored, and by default it can be used to train future models.";
+const TIPS=[
+  ["Keep IDs and passwords out","Never paste ID numbers, passwords or bank details into a chatbot."],
+  ["Leave other people out","Don’t share classmates’ names, phone numbers or grades."],
+  ["Swap in placeholders","Need help with a form? Write “my ID is 784-XXXX” instead of the real number."],
+  ["Use Temporary Chat","For anything personal, use Temporary Chat. OpenAI says these chats aren’t used for training and are deleted after 30 days."],
+  ["Turn off training once","Go to Settings, then Data Controls, and turn off “Improve the model for everyone”."],
+  ["Check what it remembers","Chatbots can remember details from past chats. Go to Settings, then Personalization, then Memory, delete anything personal, and don’t ask it to use what it knows about you."]
+];
+const HANDLE="campuscybertips";
+const PROMPTS=[
+  {t:"I have a visa application form, can you recreate this layout so I can fill it in?",img:"formFilled",risky:true},
+  {t:"Turn these lecture slides into a 5-question revision quiz.",img:"slide",risky:false},
+  {t:"Can you summarise this group chat so I know what I missed?",img:"chat",risky:true},
+  {t:"My Emirates ID is 784-XXXX-XXXXXXX-X. Which fields on a visa form usually ask for it?",risky:false},
+  {t:"Why does my banking app keep showing this error?",img:"bank",risky:true},
+  {t:"I have a visa application form, can you recreate this layout so I can fill it in?",img:"formBlank",risky:false},
+  {t:"Based on everything you remember about me, which airline is safest for someone like me to fly to Manila?",ctx:"memory",risky:true},
+  {t:"Which airlines have the best safety record on flights from Dubai to Manila?",ctx:"memory",risky:false}
+];
+/* placeholder screenshots: swap these for your own images, all details fictional */
+const IMGS={
+  formFilled:'<div class="mock"><div class="mt">Visa application form</div><div class="row"><span>Full name</span><b>Ahmed Khalid Rahman</b></div><div class="row"><span>Passport no.</span><b>P8364215</b></div><div class="row"><span>Emirates ID</span><b>784-1999-4567890-1</b></div><div class="row"><span>Date of birth</span><b>12/03/2004</b></div><div class="row"><span>Mobile</span><b>050 123 4567</b></div></div>',
+  formBlank:'<div class="mock"><div class="mt">Visa application form</div><div class="row"><span>Full name</span><b></b></div><div class="row"><span>Passport no.</span><b></b></div><div class="row"><span>Emirates ID</span><b></b></div><div class="row"><span>Date of birth</span><b></b></div><div class="row"><span>Mobile</span><b></b></div></div>',
+  slide:'<div class="mock mslide"><div class="mt">Lecture 4: Network security basics</div><ul><li>Firewalls and what they block</li><li>TCP vs UDP</li><li>Common attacks: phishing, DDoS</li></ul><div class="pg">4 / 22</div></div>',
+  chat:'<div class="mock mchat"><div class="mt">Group project (5 members)</div><p><b>Sara Al Mansoori</b>my number is 050 987 6543 if anyone needs it</p><p><b>Omar Haddad</b>grades are out, I got 68 in the midterm</p><p><b>Lina</b>meeting moved to Thursday, room B214</p></div>',
+  bank:'<div class="mock mbank"><div class="mt">Your bank</div><div class="row"><span>Account no.</span><b>0123 4567 8901 23</b></div><div class="row"><span>Balance</span><b>AED 3,250.40</b></div><div class="err">Error 403: session expired. Please log in again.</div></div>',
+  memory:'<div class="mock mmem"><div class="mt">Saved memories</div><ul><li>Studies cybersecurity at university</li><li>Prefers short, simple answers</li><li>Passport number P8364215, expires 2029</li><li>Plays football on weekends</li><li>Mentioned their ethnicity and religion in an earlier chat</li><li>Is vegetarian</li><li>Lives in Al Nahda, Sharjah</li></ul><div class="pg">Memory is on</div></div>'
+};
+const SEND=["Send as is","Change it first","Wouldn’t send"];
+const LIKERT=[
+  "The message held my attention.",
+  "I enjoyed the way the message was presented.",
+  "I know how to follow this advice.",
+  "I could do these steps without help.",
+  "Following this advice would protect my information.",
+  "These steps would make a real difference to my privacy.",
+  "I plan to follow this advice next time I use an AI chatbot.",
+  "I will check my ChatGPT settings this week."
+];
+const FORMATS={video:"Short-form video",infographic:"Infographic",text:"Text post"};
+const EMIRATES=["Abu Dhabi","Dubai","Sharjah","Ajman","Umm Al Quwain","Ras Al Khaimah","Fujairah"];
+const STEPS=["consent","about","before","message","check","after","thoughts","done"];
+const app=document.getElementById("app");
+let S;
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+/* random order for each student, but the two matching visa forms (items 0 and 5) never sit next to each other */
+function spread(){let o;do{o=shuffle(PROMPTS.map((_,i)=>i))}while(Math.abs(o.indexOf(0)-o.indexOf(5))<2||Math.abs(o.indexOf(6)-o.indexOf(7))<2);return o}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function reset(){
+  const h=(location.hash||"").slice(1), keys=Object.keys(FORMATS);
+  S={step:0,declined:false,format:keys.includes(h)?h:keys[Math.floor(Math.random()*3)],forced:keys.includes(h),
+     about:{},before:{},after:{},loaded:null,likert:{},beforeOrder:spread(),afterOrder:spread()};
+}
+function progress(){
+  const n=STEPS.length-1;
+  document.getElementById("bar").style.width=(S.declined?0:Math.min(S.step,n)/n*100)+"%";
+  document.getElementById("stepcount").textContent=(S.step===0||S.step===n||S.declined)?"":`Part ${S.step} of ${n-1}`;
+}
+function actions(nextLabel,back){
+  return `<p class="error" id="err" role="alert"></p><div class="actions">${back?'<button type="button" id="back">Back</button>':""}<button type="button" class="primary" id="next">${nextLabel}</button></div>`;
+}
+function chips(name,opts,cur){
+  return `<div class="choices">${opts.map(o=>`<label class="chip"><input type="radio" name="${name}" value="${esc(o)}" ${cur===o?"checked":""}><span>${esc(o)}</span></label>`).join("")}</div>`;
+}
+function promptTask(key,order){
+  return order.map(i=>`<div class="prompt" role="group" aria-label="Message ${i+1}">
+    ${PROMPTS[i].ctx?`<div class="ctx"><span class="ctx-l">What this chatbot already remembers about you</span>${IMGS[PROMPTS[i].ctx]}</div>`:""}
+    <div class="bubble-row"><div class="bubble">${PROMPTS[i].img?`<div class="att">${IMGS[PROMPTS[i].img]}</div>`:""}${esc(PROMPTS[i].t)}</div></div>
+    ${chips(key+"_"+i,SEND,S[key][i])}</div>`).join("");
+}
+
+/* ---------- generic social UI icons (no platform logos) ---------- */
+const I={
+  heart:'<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-9.2-8.6C1.3 8.4 3 5 6.4 5c2 0 3.3 1.1 4.1 2.3h1C12.3 6.1 13.6 5 15.6 5 19 5 20.7 8.4 19.2 11.4 17 15.6 12 20 12 20z"/></svg>',
+  comment:'<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 0 1-11.8 7L4 20l1.1-4A8 8 0 1 1 20 12z"/></svg>',
+  share:'<svg viewBox="0 0 24 24"><path d="M21 4 10 14M21 4l-7 17-4-7-7-4z"/></svg>',
+  save:'<svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-5-6 5z"/></svg>',
+  repost:'<svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3M17 17H6l3 3"/></svg>',
+  views:'<svg viewBox="0 0 24 24"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></svg>',
+  note:'<svg viewBox="0 0 24 24"><path d="M9 18a3 3 0 1 1-2-2.8V4l11-2v12a3 3 0 1 1-2-2.8V5.5L9 6.8z"/></svg>'
+};
+const avatar='<span class="av"><i></i></span>';
+
+function postFrame(inner,captionHTML,sub){
+  return `<div class="phone" aria-label="Social media post">
+    <div class="ph-head">${avatar}<div><div class="ph-name">${HANDLE}</div><div class="ph-sub">${sub}</div></div><span class="ph-more" aria-hidden="true">…</span></div>
+    ${inner}
+    <div class="ph-icons" aria-hidden="true">${I.heart}${I.comment}${I.share}<span class="save">${I.save}</span></div>
+    <div class="ph-cap">${captionHTML}<span class="ph-time">2 hours ago</span></div>
+  </div>`;
+}
+function infographicHTML(){
+  const poster=`<div class="poster" role="img" aria-label="Infographic: Before you hit send. ${esc(HOOK)} ${TIPS.map(t=>esc(t[0]+". "+t[1])).join(" ")}">
+    <span class="sticker">Save this for later</span>
+    <h4>Before you<br>hit send</h4>
+    <p class="hook">${esc(HOOK)} ${esc(THREAT)}</p>
+    <ol>${TIPS.map((t,i)=>`<li data-n="${i+1}"><b>${esc(t[0])}</b>${esc(t[1])}</li>`).join("")}</ol>
+    <div class="foot"><span>@${HANDLE}</span><span>UAE students</span></div>
+  </div>`;
+  return postFrame(poster,`<b>${HANDLE}</b> Screenshot this before your next assignment 📌 <span class="tag">#cybersecurity #uaestudents #chatgpt</span>`,"Ras Al Khaimah, UAE");
+}
+function textHTML(){
+  return `<div class="phone"><div class="tp">
+    <div class="ph-head">${avatar}<div><div class="ph-name">Campus Cyber Tips</div><div class="ph-sub">@${HANDLE}, 2h</div></div><span class="ph-more" aria-hidden="true">…</span></div>
+    <div class="tp-body">
+      <p>${esc(HOOK)}</p>
+      <p>${esc(THREAT)}</p>
+      ${TIPS.map((t,i)=>`<p>${i+1}. ${esc(t[1])}</p>`).join("")}
+    </div>
+    <div class="tp-row" aria-hidden="true">${I.comment}${I.repost}${I.heart}${I.views}${I.save}</div>
+  </div></div>`;
+}
+function reelHTML(){
+  return `<div class="reel" id="reel" aria-label="Short-form video">
+      <div class="scene"></div>
+      <div class="segs" id="segs"></div>
+      <div class="stage" id="stage"></div>
+      <div class="rail" aria-hidden="true">${I.heart}${I.comment}${I.share}${I.save}</div>
+      <div class="meta"><div class="who">${avatar}<span>${HANDLE}</span><span class="follow">Follow</span></div>
+        stop feeding it your ID 🪪 #cybersecurity #uaestudents
+        <div class="audio">${I.note}<span>Original audio</span></div></div>
+      <div class="paused">Paused, tap to play</div>
+      <button class="tap" id="tap" aria-label="Pause or play"></button>
+    </div>
+    <div class="reel-controls"><button type="button" id="replay">Replay</button></div>
+    <p class="note">Placeholder for your filmed reel. It plays the same script with burned-in captions, the way the real one will.</p>`;
+}
+function messageHTML(){return S.format==="infographic"?infographicHTML():S.format==="text"?textHTML():reelHTML()}
+
+/* ---------- reel player ---------- */
+let R=null;
+function capHTML(text,hl){
+  return text.split(" ").map(w=>`<span class="w${hl&&hl.includes(w.replace(/[^\w’'-]/g,""))?" hl":""}">${esc(w)}</span>`).join(" ");
+}
+const FRAMES=[
+  {kind:"cap",text:HOOK,hl:["Emirates","ID","ChatGPT"],ms:4200},
+  {kind:"chat",typed:"Here’s my Emirates ID 784-1999-4567890-1, fill in my visa form",sub:THREAT,ms:6000},
+  ...TIPS.map((t,i)=>({kind:"cap",text:t[0],sub:t[1],hl:t[0].split(" ").slice(-1),ms:4200}))
+];
+function stopReel(){if(R){R.timers.forEach(clearTimeout);R=null}}
+function playReel(){
+  stopReel();
+  const reel=document.getElementById("reel"); if(!reel) return;
+  reel.classList.remove("is-paused");
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const segs=document.getElementById("segs"), stage=document.getElementById("stage");
+  segs.innerHTML=FRAMES.map(()=>"<i><b></b></i>").join("");
+  R={k:0,timers:[],paused:false};
+  const show=()=>{
+    if(!R) return;
+    const f=FRAMES[R.k];
+    reel.style.setProperty("--dur",f.ms+"ms");
+    [...segs.children].forEach((s,i)=>s.className=i<R.k?"done":i===R.k?"now":"");
+    if(f.kind==="cap"){
+      stage.innerHTML=`<div class="cap">${capHTML(f.text,f.hl)}</div>${f.sub?`<div class="sub" style="opacity:0" id="sub">${esc(f.sub)}</div>`:""}`;
+      const ws=[...stage.querySelectorAll(".w")];
+      ws.forEach((w,i)=>R.timers.push(setTimeout(()=>w.classList.add("on"),reduce?0:i*170)));
+      const sub=document.getElementById("sub"); if(sub) R.timers.push(setTimeout(()=>sub.style.opacity=1,reduce?0:ws.length*170+250));
+    } else {
+      stage.innerHTML=`<div class="chatmock"><div class="lbl">Message the chatbot</div><div class="field"><span id="typed"></span><span class="caret"></span></div></div><div class="sub" id="sub" style="opacity:0">${esc(f.sub)}</div>`;
+      const el=document.getElementById("typed"); const txt=f.typed;
+      if(reduce){el.textContent=txt;document.getElementById("sub").style.opacity=1;}
+      else{for(let c=1;c<=txt.length;c++)R.timers.push(setTimeout(()=>{el.textContent=txt.slice(0,c)},c*45));
+        R.timers.push(setTimeout(()=>{const s=document.getElementById("sub");if(s)s.style.opacity=1},txt.length*45+300));}
+    }
+    if(R.k<FRAMES.length-1){R.timers.push(setTimeout(()=>{R.k++;show()},f.ms));}
+  };
+  show();
+  document.getElementById("tap").onclick=()=>{
+    if(!R){playReel();return;}
+    if(R.paused){R.paused=false;reel.classList.remove("is-paused");R.timers.forEach(clearTimeout);R.timers=[];show();}
+    else{R.paused=true;reel.classList.add("is-paused");R.timers.forEach(clearTimeout);R.timers=[];
+      const now=segs.querySelector(".now b"); if(now){const w=getComputedStyle(now).width;now.style.animation="none";now.style.width=w;}}
+  };
+}
+
+/* ---------- screens ---------- */
+function render(){
+  progress();
+  const st=STEPS[S.step]; let h="";
+  if(S.declined){
+    h=`<h1>No problem</h1><p class="lede">You chose not to take part, so nothing has been recorded. You can close this page.</p>
+       <div class="actions"><button type="button" id="again">Back to the start</button></div>`;
+  } else if(st==="consent"){
+    h=`<h1>Think before you prompt</h1>
+    <p class="lede">A short survey for university students in the UAE about using AI chatbots like ChatGPT. It takes about 10 minutes.</p>
+    <div class="info-sheet">
+      <h3>About this study</h3>
+      <p>This research is part of an MSc Cybersecurity dissertation by Adhenz Miranda at Bath Spa University Academic Center RAK. It looks at which kinds of social media content help students protect their personal information when using AI chatbots.</p>
+      <h3>What you’ll do</h3>
+      <p>Decide whether you’d send some example chatbot messages, look at one short piece of content, then answer a few quick questions about it.</p>
+      <h3>Your rights</h3>
+      <ul>
+        <li>Taking part is voluntary. You can stop at any time without giving a reason.</li>
+        <li>The survey is anonymous. It does not ask for your name, email or student ID.</li>
+        <li>Answers are stored securely, used only for this dissertation, and reported as group results.</li>
+        <li>Because answers are anonymous, they can’t be withdrawn once submitted.</li>
+      </ul>
+      <p>Questions about the study: [researcher email]. Questions about your rights: [supervisor or ethics contact].</p>
+    </div>
+    <label class="check"><input type="checkbox" id="c18"><span>I am 18 or older and a current university student in the UAE.</span></label>
+    <label class="check"><input type="checkbox" id="cagree"><span>I have read the information above and agree to take part.</span></label>
+    <p class="note">Sample version for supervisor review. Nothing entered here is saved or sent anywhere.</p>
+    <p class="error" id="err" role="alert"></p>
+    <div class="actions"><button type="button" id="decline">I don’t want to take part</button><button type="button" class="primary" id="next" disabled>I agree, start the survey</button></div>`;
+  } else if(st==="about"){
+    const a=S.about;
+    h=`<h2>About you</h2><p class="lede">A few quick details so results can be compared across universities.</p>
+    <fieldset><label class="q" for="age">Age</label><input id="age" type="number" inputmode="numeric" min="18" max="80" value="${esc(a.age||"")}"></fieldset>
+    <fieldset><legend>Gender</legend>${chips("gender",["Male","Female","Prefer not to say"],a.gender)}</fieldset>
+    <fieldset><label class="q" for="uni">Which university do you go to?</label><input id="uni" type="text" autocomplete="off" value="${esc(a.uni||"")}"></fieldset>
+    <fieldset><label class="q" for="emirate">Which emirate is it in?</label><select id="emirate"><option value="">Choose an emirate</option>${EMIRATES.map(e=>`<option ${a.emirate===e?"selected":""}>${e}</option>`).join("")}</select></fieldset>
+    <fieldset><legend>What do you study?</legend>${chips("field",["Science, IT or Engineering","Business","Humanities or Arts","Other"],a.field)}</fieldset>
+    <fieldset><legend>How often do you use AI chatbots like ChatGPT?</legend>${chips("freq",["Never","Monthly","Weekly","Daily"],a.freq)}</fieldset>
+    ${actions("Next",true)}`;
+  } else if(st==="before"||st==="after"){
+    const order=st==="before"?S.beforeOrder:S.afterOrder;
+    h=`<h2>Would you send this?</h2><p class="lede">${st==="before"?"Imagine you’re sending each of these to ChatGPT, including any screenshot attached. Pick what you’d do.":"Here are the same messages again, in a different order. Pick what you’d do now."}</p>
+    ${promptTask(st,order)}${actions("Next",true)}`;
+  } else if(st==="message"){
+    h=`<h2>Take a look at this</h2><p class="lede">Imagine it came up while you were scrolling. ${S.format==="video"?"Tap the video to pause.":""}</p>${messageHTML()}${actions("I’ve seen it",true)}`;
+  } else if(st==="check"){
+    h=`<h2>Quick check</h2><fieldset><legend>Did the content load and play properly for you?</legend>${chips("loaded",["Yes","No"],S.loaded)}</fieldset>${actions("Next",true)}`;
+  } else if(st==="thoughts"){
+    h=`<h2>What did you think?</h2><p class="lede">1 means strongly disagree, 5 means strongly agree.</p>
+    ${LIKERT.map((q,i)=>`<fieldset class="item"><legend>${esc(q)}</legend><div class="scale">${[1,2,3,4,5].map(n=>`<label><input type="radio" name="lk${i}" value="${n}" ${S.likert[i]==n?"checked":""}><span>${n}</span></label>`).join("")}</div><div class="ends"><span>Strongly disagree</span><span>Strongly agree</span></div></fieldset>`).join("")}
+    ${actions("Submit answers",true)}`;
+  } else if(st==="done"){
+    const caught=k=>PROMPTS.reduce((n,p,i)=>n+(p.risky&&S[k][i]&&S[k][i]!==SEND[0]?1:0),0);
+    const NR=PROMPTS.filter(p=>p.risky).length, NS=PROMPTS.length-NR;
+    const cleared=k=>PROMPTS.reduce((n,p,i)=>n+(!p.risky&&S[k][i]===SEND[0]?1:0),0);
+    const b=caught("before")+cleared("before"),a=caught("after")+cleared("after"),d=a-b;
+    const avg=ix=>(ix.reduce((x,i)=>x+ +S.likert[i],0)/ix.length).toFixed(1);
+    h=`<h1>Thanks, you’re done</h1><p class="lede">Your answers help work out which kind of content best helps students protect their information.</p>
+    <section class="panel" aria-label="Researcher view">
+      <h3>Researcher view (students won’t see this)</h3>
+      <div class="stat"><span>Format shown</span><b>${FORMATS[S.format]}${S.forced?" (chosen by link)":" (random)"}</b></div>
+      <div class="stat"><span>Risky prompts caught (before, after)</span><b>${caught("before")} of ${NR}, ${caught("after")} of ${NR}</b></div>
+      <div class="stat"><span>Safe prompts let through (before, after)</span><b>${cleared("before")} of ${NS}, ${cleared("after")} of ${NS}</b></div>
+      <div class="stat"><span>Accuracy score (before, after)</span><b>${b} of ${PROMPTS.length}, ${a} of ${PROMPTS.length}</b></div>
+      <div class="stat"><span>Change (main outcome)</span><b class="${d>0?"good":""}">${d>0?"+":""}${d}</b></div>
+      <div class="stat"><span>Engagement average</span><b>${avg([0,1])}</b></div>
+      <div class="stat"><span>Self-efficacy average</span><b>${avg([2,3])}</b></div>
+      <div class="stat"><span>Response efficacy average</span><b>${avg([4,5])}</b></div>
+      <div class="stat"><span>Intention average</span><b>${avg([6,7])}</b></div>
+      <div class="stat"><span>Content loaded properly</span><b>${S.loaded}</b></div>
+      <p class="note">Preview a specific format: <span class="links"><a href="#video">Video</a><a href="#infographic">Infographic</a><a href="#text">Text post</a></span></p>
+      <div class="actions"><button type="button" class="primary" id="again">Take it again</button></div>
+    </section>`;
+  }
+  app.innerHTML=h; window.scrollTo(0,0);
+  if(st==="message"&&S.format==="video"&&!S.declined){playReel();document.getElementById("replay").onclick=playReel;}
+  const $=id=>document.getElementById(id);
+  if(st==="consent"&&!S.declined){
+    const upd=()=>{$("next").disabled=!($("c18").checked&&$("cagree").checked)};
+    $("c18").onchange=upd;$("cagree").onchange=upd;
+    $("decline").onclick=()=>{S.declined=true;render();};
+  }
+  if($("next")) $("next").onclick=()=>{const e=validate(st);if(e){$("err").textContent=e;return;}stopReel();S.step++;render();};
+  if($("back")) $("back").onclick=()=>{collect(st);stopReel();S.step--;render();};
+  if($("again")) $("again").onclick=()=>{history.replaceState(null,"",location.pathname+location.search);reset();render();};
+}
+function val(name){const el=app.querySelector(`input[name="${name}"]:checked`);return el?el.value:undefined}
+function collect(st){
+  if(st==="about"){S.about={age:app.querySelector("#age").value,gender:val("gender"),uni:app.querySelector("#uni").value.trim(),emirate:app.querySelector("#emirate").value,field:val("field"),freq:val("freq")};}
+  if(st==="before"||st==="after"){PROMPTS.forEach((_,i)=>{const v=val(st+"_"+i);if(v)S[st][i]=v;});}
+  if(st==="check"){S.loaded=val("loaded")||S.loaded;}
+  if(st==="thoughts"){LIKERT.forEach((_,i)=>{const v=val("lk"+i);if(v)S.likert[i]=v;});}
+}
+function validate(st){
+  collect(st);
+  if(st==="about"){const a=S.about;if(!a.age||!a.gender||!a.uni||!a.emirate||!a.field||!a.freq)return "Answer every question on this page to continue.";if(+a.age<18)return "This survey is for students aged 18 or older.";}
+  if(st==="before"||st==="after"){if(Object.keys(S[st]).length<PROMPTS.length)return `Choose an option for all ${PROMPTS.length} messages to continue.`;}
+  if(st==="check"&&!S.loaded)return "Choose Yes or No to continue.";
+  if(st==="thoughts"&&Object.keys(S.likert).length<LIKERT.length)return "Rate all 8 statements to submit.";
+  return "";
+}
+window.addEventListener("hashchange",()=>{stopReel();reset();render();});
+reset();render();
+})();
+</script>
+</body>
+</html>

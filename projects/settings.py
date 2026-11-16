@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
     'projects',
+    'survey',
     'markdownify',
     'django_otp',
     'django_otp.plugins.otp_totp',
@@ -319,6 +320,12 @@ LOGGING = {
         },
         # The site's own code (e.g. contact form email failures)
         'projects': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        # Dissertation survey (rejected submissions, misconfiguration)
+        'survey': {
             'handlers': ['console'],
             'level': 'WARNING',
             'propagate': False,
