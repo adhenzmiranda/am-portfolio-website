@@ -205,30 +205,31 @@ def _free(survey, model, base):
 
 # ---------------------------------------------------------------- views
 
+CHOICES = {
+    'status': Survey.STATUS_CHOICES,
+    'sectionKinds': Section.KIND_CHOICES,
+    'questionKinds': Question.KIND_CHOICES,
+    'optionKinds': sorted(Question.OPTION_KINDS),
+    'conditionKinds': Condition.KIND_CHOICES,
+    'mocks': BUILTIN_MOCKS,
+    'lockedFields': list(LOCKED_SURVEY_FIELDS),
+    'maxImageMb': MAX_IMAGE_MB,
+}
+
+
 @editor_required(api=False)
 @require_GET
 def editor_page(request, survey):
-    config = {
-        'csrfToken': get_token(request),
-        'state': state(survey),
-        'choices': {
-            'status': Survey.STATUS_CHOICES,
-            'sectionKinds': Section.KIND_CHOICES,
-            'questionKinds': Question.KIND_CHOICES,
-            'optionKinds': sorted(Question.OPTION_KINDS),
-            'conditionKinds': Condition.KIND_CHOICES,
-            'mocks': BUILTIN_MOCKS,
-            'lockedFields': list(LOCKED_SURVEY_FIELDS),
-            'maxImageMb': MAX_IMAGE_MB,
-        },
-    }
-    return render(request, 'survey/editor.html', {'survey': survey, 'config': config})
+    # The page is only a shell: editor.js loads everything from api_state, so no
+    # data is read back out of the page. get_token() sets the CSRF cookie the API calls use.
+    get_token(request)
+    return render(request, 'survey/editor.html', {'survey': survey})
 
 
 @editor_required()
 @require_GET
 def api_state(request, survey):
-    return JsonResponse(state(survey))
+    return JsonResponse({**state(survey), 'choices': CHOICES})
 
 
 @editor_required()

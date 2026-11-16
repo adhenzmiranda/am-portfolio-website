@@ -9,9 +9,11 @@
 (function () {
   'use strict';
 
-  var CFG = JSON.parse(document.getElementById('editor-config').textContent);
-  var CH = CFG.choices;
-  var ST = CFG.state;
+  // Everything is loaded from the API (see start-up at the bottom); nothing is read
+  // back out of the page. /<address>/edit/ -> /<address>/edit/api/
+  var API = location.pathname.replace(/\/edit\/?$/, '/edit/api/');
+  var CH = null;           // choices for dropdowns, from the server
+  var ST = null;           // the survey, from the server
   var main = document.getElementById('ed-main');
   var saveEl = document.getElementById('ed-save');
   var frame = document.getElementById('ed-frame');
@@ -57,16 +59,21 @@
 
   // ------------------------------------------------------------ server
 
+  function csrfToken() {
+    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
   function api(path, options) {
     options = options || {};
-    var init = { method: options.method || 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': CFG.csrfToken } };
+    var init = { method: options.method || 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrfToken() } };
     if (options.form) {
       init.body = options.form;
     } else if (init.method !== 'GET') {
       init.headers['Content-Type'] = 'application/json';
       init.body = JSON.stringify(options.body || {});
     }
-    return fetch(ST.links.api + path, init).then(function (res) {
+    return fetch(API + path, init).then(function (res) {
       return res.json().catch(function () { return {}; }).then(function (data) {
         return { ok: res.ok, status: res.status, data: data };
       });
@@ -175,8 +182,17 @@
 
   function refresh() {
     return api('state/', { method: 'GET' }).then(function (res) {
-      if (res.ok) { ST = res.data; render(); }
-      else { setSave('error', res.data.error || 'Couldn’t load the latest version.'); }
+      if (res.ok) {
+        ST = res.data;
+        CH = res.data.choices;
+        render();
+        return;
+      }
+      setSave('error', res.data.error || 'Couldn’t load the latest version.');
+      if (!ST) {
+        while (main.firstChild) { main.removeChild(main.firstChild); }
+        main.appendChild(h('p', { class: 'ed-banner', text: 'The editor couldn’t load. ' + (res.data.error || 'Check your connection and reload the page.') }));
+      }
     });
   }
 
@@ -727,15 +743,15 @@
 
   function resultsTab() {
     var p = ST.progress;
-    var tag = h('input', { class: 'ed-input', type: 'text', placeholder: 'optional tag, e.g. rak-poster', maxlength: 60 });
+    // A plain form: the browser sends ?src=...&format=..., and the server cleans the tag.
+    var tag = h('input', { class: 'ed-input', type: 'text', name: 'src', placeholder: 'optional tag, e.g. rak-poster',
+                           maxlength: 60, pattern: '[A-Za-z0-9_-]*' });
     tag.id = nextId();
-    function qr(format) {
-      var value = tag.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
-      return ST.links.qr + '?format=' + format + (value ? '&src=' + encodeURIComponent(value) : '');
-    }
-    var png = h('a', { class: 'btn btn--ghost ed-btn', href: qr('png'), text: 'Download QR (PNG)' });
-    var svg = h('a', { class: 'btn btn--ghost ed-btn', href: qr('svg'), text: 'SVG' });
-    tag.addEventListener('input', function () { png.href = qr('png'); svg.href = qr('svg'); });
+    var qrForm = h('form', { method: 'get', action: ST.links.qr },
+      wrap('qr', 0, 'src', 'QR code tag', tag, 'A tag adds ?src=tag to the link, so the CSV’s source column shows where each person came from.'),
+      h('div', { class: 'ed-add' },
+        h('button', { type: 'submit', name: 'format', value: 'png', class: 'btn btn--ghost ed-btn', text: 'Download QR (PNG)' }),
+        h('button', { type: 'submit', name: 'format', value: 'svg', class: 'btn btn--ghost ed-btn', text: 'SVG' })));
     var copied = h('span', { class: 'ed-upload__status', role: 'status' });
 
     var table = h('table', { class: 'ed-table' },
@@ -766,8 +782,7 @@
           (navigator.clipboard ? navigator.clipboard.writeText(ST.links.public) : Promise.reject())
             .then(function () { copied.textContent = 'Copied.'; }, function () { copied.textContent = ST.links.public; });
         }), copied),
-        wrap('qr', 0, 'src', 'QR code tag', tag, 'A tag adds ?src=tag to the link, so the CSV’s source column shows where each person came from.'),
-        h('div', { class: 'ed-add' }, png, svg))
+        qrForm)
     ];
   }
 
@@ -901,6 +916,5 @@
     if (Object.keys(queue).length || inFlight) { e.preventDefault(); e.returnValue = ''; }
   });
 
-  render();
-  loadPreview();
+  refresh().then(function () { if (ST) { loadPreview(); } });
 })();

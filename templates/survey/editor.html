@@ -37,6 +37,7 @@
 
     <div class="ed-layout">
         <main class="ed-main" id="ed-main" tabindex="-1">
+            <p class="ed-note" id="ed-loading">Loading the editor&hellip;</p>
             <noscript><p>The editor needs JavaScript.</p></noscript>
         </main>
         <aside class="ed-preview" aria-label="Live preview">
@@ -50,7 +51,6 @@
         </aside>
     </div>
 
-    {{ config|json_script:"editor-config" }}
     <script src="{% static 'survey/editor.js' %}" defer></script>
 </body>
 </html>

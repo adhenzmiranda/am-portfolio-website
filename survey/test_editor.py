@@ -51,10 +51,13 @@ class AccessTests(EditorTestCase):
         res = self.client.get('/msc-survey/edit/')
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res['X-Robots-Tag'], 'noindex, nofollow')
-        state = res.context['config']['state']
+        self.assertIn('csrftoken', res.cookies)          # the API calls send it back
+        self.assertNotContains(res, 'application/json')  # a shell: the data comes from the API
+        state = self.client.get('/msc-survey/edit/api/state/').json()
         self.assertEqual(len(state['sections']), 6)
         self.assertEqual(len(state['prompts']), 8)
         self.assertTrue(state['problems'])
+        self.assertIn('questionKinds', state['choices'])
 
     def test_preview_can_be_framed_by_the_editor(self):
         with mock.patch('survey.views.can_preview', return_value=True):
