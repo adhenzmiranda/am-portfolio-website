@@ -163,23 +163,29 @@ class DirectUploadFormMixin:
         return value
 
 
+def signed_upload_params(kind):
+    """A short-lived signature for one browser upload of `kind`, with exactly the
+    parameters the model field would upload with (folder, transformation)."""
+    field = _model_field(kind)
+    params = cloudinary.utils.build_upload_params(**field.options)
+    signed = cloudinary.utils.sign_request(params, {})  # adds api_key + signature, drops empty values
+    api_key = signed.pop('api_key')
+    return {
+        'params': signed,
+        'api_key': api_key,
+        'upload_url': cloudinary.utils.cloudinary_api_url('upload', resource_type=field.resource_type),
+    }
+
+
 def sign_upload(model_admin, kind):
     """Build the view that signs one direct upload of `kind` (admin-only, POST)."""
-    field = _model_field(kind)
+    _model_field(kind)  # fail early on an unknown kind
 
     def view(request):
         if request.method != 'POST':
             return HttpResponseNotAllowed(['POST'])
         if not (model_admin.has_add_permission(request) or model_admin.has_change_permission(request)):
             raise PermissionDenied
-        # Exactly the parameters the model field would upload with (folder, transformation).
-        params = cloudinary.utils.build_upload_params(**field.options)
-        signed = cloudinary.utils.sign_request(params, {})  # adds api_key + signature, drops empty values
-        api_key = signed.pop('api_key')
-        return JsonResponse({
-            'params': signed,
-            'api_key': api_key,
-            'upload_url': cloudinary.utils.cloudinary_api_url('upload', resource_type=field.resource_type),
-        })
+        return JsonResponse(signed_upload_params(kind))
 
     return view
