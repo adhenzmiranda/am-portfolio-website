@@ -170,15 +170,12 @@ def survey_page(request, slug):
             raise Http404
         if survey.status == Survey.CLOSED:
             return _no_index(render(request, 'survey/closed.html', {'survey': survey}))
-    response = _no_index(render(request, 'survey/survey.html', {
+    return _no_index(render(request, 'survey/survey.html', {
         'survey': survey,
         'preview': preview,
         'config': page_config(request, survey, preview),
         'rich': rich_text(survey, survey.sections.all()),
     }))
-    if preview:
-        response['X-Frame-Options'] = 'SAMEORIGIN'   # the editor shows the preview in a frame
-    return response
 
 
 def _json_error(code, status):

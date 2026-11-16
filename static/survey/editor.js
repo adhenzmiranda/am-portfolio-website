@@ -16,8 +16,6 @@
   var ST = null;           // the survey, from the server
   var main = document.getElementById('ed-main');
   var saveEl = document.getElementById('ed-save');
-  var frame = document.getElementById('ed-frame');
-  var WIDE = window.matchMedia('(min-width: 1200px)');
   var tab = readTab();
   var queue = {};          // pending field saves, keyed "model:id"
   var inFlight = 0;
@@ -117,7 +115,6 @@
         if (res.data.redirect) { location.replace(res.data.redirect); return; }
         if (entry.rerender) { render(); }
         if (!Object.keys(queue).length && !inFlight) { setSave('ok', 'Saved'); }
-        reloadPreviewSoon();
       } else {
         var errors = res.data.errors || {};
         var show = function () {
@@ -174,7 +171,6 @@
       if (res.data.redirect) { location.replace(res.data.redirect); return null; }
       return refresh().then(function () {
         setSave('ok', 'Saved');
-        reloadPreviewSoon();
         return res.data;
       });
     });
@@ -342,14 +338,13 @@
         applySaved(res.data, model);
         setSave('ok', 'Saved');
         render();
-        reloadPreviewSoon();
       });
     });
     var remove = item[field] && !locked ? button('Remove', function () {
       var form = new FormData();
       form.append('clear', '1');
       api(model + '/' + item.id + '/upload/' + field + '/', { form: form }).then(function (res) {
-        if (res.ok) { applySaved(res.data, model); render(); reloadPreviewSoon(); }
+        if (res.ok) { applySaved(res.data, model); render(); }
       });
     }, { class: 'ed-link' }) : null;
     return h('div', { class: 'ed-field ed-upload' },
@@ -417,7 +412,6 @@
         applySaved(res.data, 'condition');
         setSave('ok', 'Saved');
         render();
-        reloadPreviewSoon();
       }).catch(function (err) {
         bar.hidden = true;
         file.value = '';
@@ -1040,29 +1034,6 @@
     window.scrollTo(0, scroll);
   }
 
-  // ------------------------------------------------------------ live preview
-
-  var previewTimer = null;
-  function loadPreview() {
-    if (WIDE.matches && !frame.getAttribute('src')) { frame.src = ST.links.preview; }
-  }
-  function reloadPreviewSoon() {
-    clearTimeout(previewTimer);
-    previewTimer = setTimeout(function () {
-      if (!frame.getAttribute('src')) { return; }
-      try { frame.contentWindow.location.reload(); } catch (e) { frame.src = ST.links.preview; }
-    }, 900);
-  }
-  document.getElementById('ed-preview-reload').addEventListener('click', reloadPreviewSoon);
-  document.getElementById('ed-preview-restart').addEventListener('click', function () {
-    try {
-      var store = frame.contentWindow.sessionStorage;
-      Object.keys(store).filter(function (k) { return k.indexOf('survey:') === 0; }).forEach(function (k) { store.removeItem(k); });
-    } catch (e) { /* not loaded yet */ }
-    reloadPreviewSoon();
-  });
-  WIDE.addEventListener('change', loadPreview);
-
   document.querySelectorAll('.ed-tab').forEach(function (b) {
     b.addEventListener('click', function () { switchTab(b.dataset.tab); });
   });
@@ -1071,5 +1042,5 @@
     if (Object.keys(queue).length || inFlight) { e.preventDefault(); e.returnValue = ''; }
   });
 
-  refresh().then(function () { if (ST) { loadPreview(); } });
+  refresh();
 })();
