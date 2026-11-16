@@ -9,13 +9,12 @@ from django.db.models import Count, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import path, reverse
-from django.utils import timezone
 from django.utils.html import format_html, format_html_join
 
 from projects.direct_upload import DirectUploadField, sign_upload
 
 from .export import SurveyExport
-from .logic import RECENT_START
+from .logic import progress
 from .models import Condition, Participant, Prompt, Question, Section, Survey
 
 # Fields participants see while answering. Frozen once a survey has responses.
@@ -163,7 +162,8 @@ class SurveyAdmin(admin.ModelAdmin):
         return format_html(
             '{lock}'
             '<p>Public link: <a href="{live}" target="_blank" rel="noopener">{live}</a></p>'
-            '<p><a class="button" href="/{slug}/?preview=1" target="_blank" rel="noopener">Preview (nothing is saved)</a></p>'
+            '<p><a class="button" href="/{slug}/edit/" style="background:#2436BC;color:#fff">Open the editor</a> '
+            '<a class="button" href="/{slug}/?preview=1" target="_blank" rel="noopener">Preview (nothing is saved)</a></p>'
             '<p>QR code for '
             '<input type="text" id="qr-src" placeholder="optional tag, e.g. rak-poster" style="width:16em" '
             'pattern="[a-z0-9_-]*">: '
@@ -189,21 +189,14 @@ class SurveyAdmin(admin.ModelAdmin):
     def progress(self, obj):
         if not obj.pk:
             return '-'
-        cutoff = timezone.now() - RECENT_START
-        rows = (obj.participants.filter(batch=obj.batch).values('condition__name').annotate(
-            completed=Count('id', filter=Q(completed_at__isnull=False)),
-            active=Count('id', filter=Q(completed_at__isnull=True, started_at__gte=cutoff)),
-            dropped=Count('id', filter=Q(completed_at__isnull=True, started_at__lt=cutoff)),
-        ).order_by('condition__name'))
-        total = sum(r['completed'] for r in rows)
+        p = progress(obj)
         table = format_html_join('', '<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>',
-                                 ((r['condition__name'], r['completed'], r['active'], r['dropped']) for r in rows))
-        pct = round(100 * total / obj.target_responses) if obj.target_responses else 0
+                                 ((g['name'], g['completed'], g['active'], g['dropped']) for g in p['groups']))
         return format_html(
             '<p><strong>{total}</strong> of {target} completed ({pct}%) in batch "{batch}".</p>'
             '<table><thead><tr><th>Group</th><th>Completed</th><th>In progress</th><th>Dropped out</th></tr></thead>'
             '<tbody>{table}</tbody></table>',
-            total=total, target=obj.target_responses, pct=pct, batch=obj.batch,
+            total=p['completed'], target=p['target'], pct=p['percent'], batch=p['batch'],
             table=table or format_html('<tr><td colspan="4">No responses yet.</td></tr>'),
         )
 

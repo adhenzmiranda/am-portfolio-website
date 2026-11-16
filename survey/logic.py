@@ -52,6 +52,28 @@ def pick_condition(survey, batch, now=None):
     return _rng.choice([c for c in conditions if counts.get(c.pk, 0) == fewest])
 
 
+def progress(survey, now=None):
+    """Counts for the current batch, per media group: completed, in progress (started in
+    the last 60 minutes) and dropped out (started earlier, never finished)."""
+    now = now or timezone.now()
+    cutoff = now - RECENT_START
+    rows = list(survey.participants.filter(batch=survey.batch).values('condition__name').annotate(
+        completed=Count('id', filter=Q(completed_at__isnull=False)),
+        active=Count('id', filter=Q(completed_at__isnull=True, started_at__gte=cutoff)),
+        dropped=Count('id', filter=Q(completed_at__isnull=True, started_at__lt=cutoff)),
+    ).order_by('condition__name'))
+    total = sum(r['completed'] for r in rows)
+    target = survey.target_responses
+    return {
+        'batch': survey.batch,
+        'target': target,
+        'completed': total,
+        'percent': round(100 * total / target) if target else 0,
+        'groups': [{'name': r['condition__name'], 'completed': r['completed'], 'active': r['active'],
+                    'dropped': r['dropped']} for r in rows],
+    }
+
+
 def construct_means(questions, answers):
     """{construct: mean} over answered scale questions that have a construct."""
     groups = {}

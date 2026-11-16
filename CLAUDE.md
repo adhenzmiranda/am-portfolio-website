@@ -96,4 +96,9 @@ This needs `heroku login` first. Images still load from Cloudinary. `backups/` i
 ## Docs and current work
 
 - `docs/`: security notes (`SECURITY_DOCUMENTATION.md`, `SECURITY_ROUTINE_CHECKLIST.md`, `NIST_SECURITY_REPORT.md`), `REDESIGN_SPEC.md`, `EMBED_IMPLEMENTATION.md`, `DATABASE_LOCK_PREVENTION.md`.
-- **Dissertation survey (in progress):** `SURVEY_HANDOVER.md` describes a new `survey` app at `/survey/`, built on a `survey-app` branch from the clickable demo `docs/survey_demo.html`. Its prompts, script and rating statements are locked for the dissertation, so don't reword them. It ships in demo mode. Live mode needs ethics approval first.
+- **Dissertation survey:** the `survey` app at `/msc-survey/` (Draft until ethics approval). **Read `docs/SURVEY.md` first**; `SURVEY_HANDOVER.md` is the original brief.
+  - Content lives in the database, not the code. It's edited in the Google Forms-style editor at `/msc-survey/edit/` (staff with 2FA) or in the Django admin.
+  - `survey/seed.py` only loads the starting version.
+  - The approved prompts, script and rating statements are locked for the dissertation, so don't reword them.
+  - The server enforces: locking once responses exist, the "Ready to open?" checklist, balanced assignment and server-side scoring. Keep those rules in `survey/models.py`, `logic.py` and `editor.py`, not only in the browser.
+  - Front ends build HTML with escaping or DOM methods only. CodeQL flags anything else.

@@ -31,6 +31,8 @@ BUILTIN_MOCKS = [
     ('chat', 'Group chat'),
     ('bank', 'Banking app error'),
     ('memory', 'Chatbot saved memories'),
+    ('cvRedacted', 'CV with contact details blacked out (safe)'),
+    ('uniEmail', 'Email to a lecturer, ID and phone in the signature (risky)'),
 ]
 
 
@@ -55,7 +57,7 @@ class Survey(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(
         'Address', max_length=60, unique=True, validators=[validate_slug_not_reserved],
-        help_text='The survey lives at adhenzmiranda.com/<address>/. Keep it short for QR codes, e.g. msc-survey.',
+        help_text='The survey lives at adhenzmiranda.com/[address]/. Keep it short for QR codes, e.g. msc-survey.',
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=DRAFT)
     version = models.PositiveIntegerField(default=1, help_text='Saved on every response. Duplicating a survey makes the next version.')

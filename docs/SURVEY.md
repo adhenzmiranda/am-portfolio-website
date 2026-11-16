@@ -1,6 +1,26 @@
 # Dissertation survey: setup and go-live guide
 
-The survey lives at **adhenzmiranda.com/msc-survey/** and is built in the admin, like a Google Form with the experiment built in. Code: the `survey` app.
+The survey lives at **adhenzmiranda.com/msc-survey/**. It works like a Google Form with the experiment built in. Code: the `survey` app.
+
+## The editor
+
+**adhenzmiranda.com/msc-survey/edit/** works on your laptop or phone. It needs your admin login with 2FA; anyone else is sent to the login page. The admin's survey page has an **Open the editor** button too.
+
+| Tab | What it's for |
+| --- | --- |
+| **Pages** | Each page as a card: title, description, button text, and its questions (type, options, required, number range, scale labels; **More settings** has the CSV column name, construct, attention check and moving to another page). Add pages and questions, duplicate and delete questions. |
+| **Prompts** | The "Would you send this?" messages: number, answer key (Safe / Risky), pair letter, screenshot upload or built-in mock-up, optional context. |
+| **Media** | The random groups: upload the reel (straight to Cloudinary, up to 100 MB) or the infographic, type the text post, set captions, turn groups on or off. |
+| **Results** | Progress per group against your target, CSV downloads, the public link and QR codes. |
+| **Settings** | Status (Draft / Open / Closed) with the **Before it can open** checklist, address, batch, target, ethics reference, consent page, thank-you page, closed page, and **Duplicate as a new version**. |
+
+How it behaves:
+- **Saving:** every change saves itself a moment after you stop typing. The top bar shows **Saving… / Saved**, or the reason in red if something isn't allowed.
+- **Reordering:** drag pages and questions by the ⠿ handle on a laptop, or use the ↑ ↓ arrows (the only option on phones).
+- **Live preview:** on a wide screen it sits beside the editor and reloads after each save. On a phone, use the **Preview** button.
+- **Lock:** once the survey has responses, the editor shows a banner and turns the content read-only. Status, batch, contacts and the closed and thank-you pages stay editable.
+
+The Django admin still works as a backup. Both edit the same data.
 
 ## How it works
 
@@ -35,12 +55,12 @@ The survey won't open until the admin's **Ready to open?** list is empty. It nee
 ### 1. Run it locally
 
 1. `npm run dev`, then log in at http://127.0.0.1:8000/admin-dev/ (make a one-time code with `.venv\Scripts\python manage.py addstatictoken admin`).
-2. Open **Dissertation survey > Surveys > Think Before You Prompt**.
-3. Click **Preview (nothing is saved)**. Add `#video`, `#infographic` or `#text` to the preview link to see a specific group. The preview ends with a researcher view showing the scores.
+2. Open the editor at http://127.0.0.1:8000/msc-survey/edit/.
+3. Click **Preview**. Add `#video`, `#infographic` or `#text` to the preview link to see a specific group. The preview ends with a researcher view showing the scores.
 
 ### 2. Add your media
 
-1. In the survey's **Conditions** (media groups):
+1. In the editor's **Media** tab (or the admin's media groups):
    - **Short-form video:** upload the reel. Vertical 9:16 mp4, burned-in captions, up to 100 MB. Optionally add a still image to show while it loads.
    - **Infographic:** upload the image (1080 x 1350) and fill in **Alt text** with the full script.
    - **Text post:** already filled in from the script. Edit it if needed.
@@ -80,6 +100,17 @@ The contacts aren't in the code (the repo is public), so enter them once on the 
    main.groupby('condition').score_change.describe()
    ```
 3. Keep CSV files out of the repo. `survey_responses_*.csv` is gitignored.
+
+## Optional trickier prompts (check with your supervisor first)
+
+Two built-in screenshots are ready if you want prompts 2 and 5 to make people think harder. To swap one, open the **Prompts** tab, change the message and the answer key, and pick the built-in screenshot. It works while the survey has no responses.
+
+| Prompt | Message | Built-in screenshot | Answer key | Why it's tricky |
+| --- | --- | --- | --- | --- |
+| 2 | Can you rewrite my CV so it sounds more professional? | CV with contact details blacked out | **Safe** | Looks personal, but the details are already removed. It catches over-caution, like prompt 4. |
+| 5 | Can you make this email to my lecturer sound more formal? | Email to a lecturer, ID and phone in the signature | **Risky** | The request is innocent. The leak is the small signature (name, student ID, mobile) and the illness (health data). |
+
+All prompt screenshots and chat bubbles can't be highlighted, copied, dragged or long-pressed, so they behave like real screenshots.
 
 ## CSV columns
 

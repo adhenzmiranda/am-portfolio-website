@@ -203,7 +203,11 @@
     slide: '<div class="mock mslide"><div class="mt">Lecture 4: Network security basics</div><ul><li>Firewalls and what they block</li><li>TCP vs UDP</li><li>Common attacks: phishing, DDoS</li></ul><div class="pg">4 / 22</div></div>',
     chat: '<div class="mock mchat"><div class="mt">Group project (5 members)</div><p><b>Sara Al Mansoori</b>my number is 050 987 6543 if anyone needs it</p><p><b>Omar Haddad</b>grades are out, I got 68 in the midterm</p><p><b>Lina</b>meeting moved to Thursday, room B214</p></div>',
     bank: '<div class="mock mbank"><div class="mt">Your bank</div><div class="row"><span>Account no.</span><b>0123 4567 8901 23</b></div><div class="row"><span>Balance</span><b>AED 3,250.40</b></div><div class="err">Error 403: session expired. Please log in again.</div></div>',
-    memory: '<div class="mock mmem"><div class="mt">Saved memories</div><ul><li>Studies cybersecurity at university</li><li>Prefers short, simple answers</li><li>Passport number P8364215, expires 2029</li><li>Plays football on weekends</li><li>Mentioned their ethnicity and religion in an earlier chat</li><li>Is vegetarian</li><li>Lives in Al Nahda, Sharjah</li></ul><div class="pg">Memory is on</div></div>'
+    memory: '<div class="mock mmem"><div class="mt">Saved memories</div><ul><li>Studies cybersecurity at university</li><li>Prefers short, simple answers</li><li>Passport number P8364215, expires 2029</li><li>Plays football on weekends</li><li>Mentioned their ethnicity and religion in an earlier chat</li><li>Is vegetarian</li><li>Lives in Al Nahda, Sharjah</li></ul><div class="pg">Memory is on</div></div>',
+    // Safe: the contact details are already blacked out.
+    cvRedacted: '<div class="mock mcv"><div class="mt">CV_final.pdf</div><div class="row"><span>Name</span><i class="redact"></i></div><div class="row"><span>Phone</span><i class="redact"></i></div><div class="row"><span>Email</span><i class="redact redact--long"></i></div><div class="sec">Experience</div><p><b>Marketing intern</b>, events company, 2025<br>helped with social media and organising events</p><div class="sec">Skills</div><p>Canva, Excel, Arabic and English</p></div>',
+    // Risky, but quietly: the request is innocent; the signature (and the illness) are the leak.
+    uniEmail: '<div class="mock memail"><div class="mt">Draft: Extension request</div><div class="hdr"><span>To:</span> Dr Khalid (course leader)</div><p>hi doctor, i was sick last week with a bad fever so i couldnt finish the report, can i have 3 more days pls</p><div class="sig">Mariam Al Suwaidi<br>Student ID 202312345 &middot; Mob 050 456 7812</div></div>'
   };
 
   // ------------------------------------------------------------ top bar and site chrome
@@ -333,10 +337,18 @@
 
   // ------------------------------------------------------------ questions
 
+  function optionRow(type, name, value, text, checked) {
+    return '<label class="opt"><input type="' + type + '" name="' + esc(name) + '" value="' + esc(value) + '"' +
+      (checked ? ' checked' : '') + '><span class="opt__mark" aria-hidden="true"></span>' +
+      '<span class="opt__text">' + esc(text) + '</span></label>';
+  }
+
   function questionHTML(q) {
     var id = esc('q-' + q.code);
     var value = S.answers[q.code];
-    var optional = q.required ? '' : ' <span class="sq__optional">(optional)</span>';
+    var optional = q.required
+      ? '<span class="sq__req" aria-hidden="true"> *</span><span class="prompt__legend"> (required)</span>'
+      : ' <span class="sq__optional">(optional)</span>';
     var help = q.help ? '<p class="sq__help" id="' + id + '-help">' + esc(q.help) + '</p>' : '';
     var describedBy = (q.help ? id + '-help ' : '') + id + '-err';
     var err = '<p class="sq__error" id="' + id + '-err"></p>';
@@ -367,11 +379,11 @@
           '><span>' + esc(n) + '</span></label>';
       }).join('') + '</div><div class="scale__ends" aria-hidden="true"><span>1 ' + esc(q.low) + '</span><span>5 ' + esc(q.high) + '</span></div>';
     } else {
+      // Full-width answer rows with a radio circle or checkbox square, like Google Forms.
       var type = q.kind === 'checkboxes' ? 'checkbox' : 'radio';
-      inputs = '<div class="chips">' + q.options.map(function (o) {
+      inputs = '<div class="opts">' + q.options.map(function (o) {
         var on = type === 'checkbox' ? (Array.isArray(value) && value.indexOf(o) !== -1) : value === o;
-        return '<label class="chip"><input type="' + type + '" name="' + id + '" value="' + esc(o) + '"' + (on ? ' checked' : '') +
-          '><span>' + esc(o) + '</span></label>';
+        return optionRow(type, id, o, o, on);
       }).join('') + '</div>';
     }
     var scaleHint = q.kind === 'scale' ? '<span class="prompt__legend"> (1 ' + esc(q.low) + ', 5 ' + esc(q.high) + ')</span>' : '';
@@ -426,18 +438,20 @@
     var ctx = '';
     if (p.contextImage || p.contextMock) {
       ctx = '<div class="prompt__ctx"><span class="prompt__ctx-label">' + esc(p.contextLabel) + '</span>' +
-        (p.contextImage ? '<img class="prompt__shot" src="' + esc(p.contextImage) + '" alt="' + esc(p.contextLabel) + '" loading="lazy">' : (MOCKS[p.contextMock] || '')) +
+        (p.contextImage ? '<img class="prompt__shot" src="' + esc(p.contextImage) + '" alt="' + esc(p.contextLabel) + '" loading="lazy" draggable="false">' : (MOCKS[p.contextMock] || '')) +
         '</div>';
     }
     var attachment = p.screenshot
-      ? '<img class="prompt__shot" src="' + esc(p.screenshot) + '" alt="Attached screenshot" loading="lazy">'
+      ? '<img class="prompt__shot" src="' + esc(p.screenshot) + '" alt="Attached screenshot" loading="lazy" draggable="false">'
       : (MOCKS[p.mock] || '');
-    return '<fieldset class="prompt" data-prompt="' + esc(p.n) + '"><legend class="prompt__legend">Message ' + esc(position) + ' of ' + esc(C.prompts.length) + '</legend>' +
+    var count = 'Message ' + esc(position) + ' of ' + esc(C.prompts.length);
+    return '<fieldset class="prompt" data-prompt="' + esc(p.n) + '"><legend class="prompt__legend">' + count + '</legend>' +
+      '<p class="prompt__count" aria-hidden="true">' + count + '</p>' +
       ctx +
       '<div class="prompt__row"><div class="bubble">' + (attachment ? '<div class="bubble__att">' + attachment + '</div>' : '') + esc(p.text) + '</div></div>' +
-      '<div class="chips">' + C.sendChoices.map(function (choice) {
-        return '<label class="chip"><input type="radio" name="' + esc(phase + '-' + p.n) + '" value="' + esc(choice[0]) + '"' +
-          (current === choice[0] ? ' checked' : '') + '><span>' + esc(choice[1]) + '</span></label>';
+      '<p class="prompt__ask" aria-hidden="true">Would you send this?</p>' +
+      '<div class="opts opts--row">' + C.sendChoices.map(function (choice) {
+        return optionRow('radio', phase + '-' + p.n, choice[0], choice[1], current === choice[0]);
       }).join('') + '</div></fieldset>';
   }
 
@@ -563,9 +577,14 @@
     var label = s.button || (i === LAST_INDEX ? 'Submit answers' : 'Next');
     // Back only before the random media: the "before" answers can't change after seeing it.
     var back = MEDIA_INDEX === -1 || i < MEDIA_INDEX;
-    return '<h1 class="survey__title">' + esc(s.title) + '</h1>' +
+    var anyRequired = s.kind === 'questions' && s.questions.some(function (q) { return q.required; });
+    // Page header card (like a Google Forms section header), then one card per question or prompt.
+    return '<header class="survey-pagehead">' +
+      '<h1 class="survey__title">' + esc(s.title) + '</h1>' +
       richSlot('section-' + i, 'survey__lede survey__prose') +
-      body + actionsHTML(label, { back: back });
+      (anyRequired ? '<p class="survey-pagehead__req"><span aria-hidden="true">*</span> Required</p>' : '') +
+      '</header>' +
+      '<div class="survey-cards">' + body + '</div>' + actionsHTML(label, { back: back });
   }
 
   function collect() {

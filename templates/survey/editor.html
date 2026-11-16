@@ -1,0 +1,56 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Edit: {{ survey.title }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700&family=Raleway:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
+</head>
+
+<body class="home-page survey-page editor-page">
+    <header class="ed-top">
+        <div class="ed-top__inner">
+            <a class="ed-top__brand" href="/" title="adhenzmiranda.com">
+                <img src="{% static 'assets/images/navbar/PortfolioLogo.svg' %}" width="500" height="188" alt="adhenzmiranda.com">
+            </a>
+            <div class="ed-top__title">
+                <span class="ed-top__eyebrow">Survey editor</span>
+                <span class="ed-top__name" id="ed-title">{{ survey.title }}</span>
+            </div>
+            <span class="ed-status" id="ed-status"></span>
+            <span class="ed-save" id="ed-save" role="status" aria-live="polite">Saved</span>
+            <a class="btn btn--ghost ed-top__btn" id="ed-preview-link" href="/{{ survey.slug }}/?preview=1" target="_blank" rel="noopener">Preview <span aria-hidden="true">&nearr;</span></a>
+        </div>
+        <nav class="ed-tabs" aria-label="Editor sections">
+            <button type="button" class="ed-tab" data-tab="pages">Pages</button>
+            <button type="button" class="ed-tab" data-tab="prompts">Prompts</button>
+            <button type="button" class="ed-tab" data-tab="media">Media</button>
+            <button type="button" class="ed-tab" data-tab="results">Results</button>
+            <button type="button" class="ed-tab" data-tab="settings">Settings</button>
+        </nav>
+    </header>
+
+    <div class="ed-layout">
+        <main class="ed-main" id="ed-main" tabindex="-1">
+            <p class="ed-note" id="ed-loading">Loading the editor&hellip;</p>
+            <noscript><p>The editor needs JavaScript.</p></noscript>
+        </main>
+        <aside class="ed-preview" aria-label="Live preview">
+            <div class="ed-preview__bar">
+                <span class="ed-preview__label">Live preview</span>
+                <button type="button" class="ed-link" id="ed-preview-reload">Reload</button>
+                <button type="button" class="ed-link" id="ed-preview-restart">Start over</button>
+            </div>
+            <div class="ed-phone"><iframe id="ed-frame" title="Live preview of the survey"></iframe></div>
+            <p class="ed-hint">Updates after each save. Nothing you do here is recorded.</p>
+        </aside>
+    </div>
+
+    <script src="{% static 'survey/editor.js' %}" defer></script>
+</body>
+</html>
