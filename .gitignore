@@ -99,3 +99,6 @@ static/assets/files/Adhenz Miranda - *.pdf
 
 # Local backups of the live site (scripts/backup_live_site.py)
 backups/
+
+# Survey response exports (participant data: never commit)
+survey_responses_*.csv

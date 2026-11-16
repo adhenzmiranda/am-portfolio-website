@@ -1,0 +1,1092 @@
+// Dissertation survey (/msc-survey/ and any other survey built in the admin).
+// A standalone, phone-first page in the site's look: dark background, IBM Plex
+// Sans text, Montserrat titles, Raleway sub-heads, square blue buttons and the
+// contact form's field style. The navbar and footer only show on the thank-you page.
+// The mock screenshots and social posts keep fixed "app" colours on purpose.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+$survey-width: 720px;
+$field-border: rgba($dark-mode-white, 0.4); // ~3.3:1 against the background (WCAG 1.4.11)
+
+// ---------------------------------------------------------------- Page frame
+
+.survey-page {
+    justify-content: flex-start;
+}
+
+// Layout-transparent wrappers, so the sticky navbar and full-width footer behave as on other pages.
+.survey-chrome:not([hidden]) {
+    display: contents;
+}
+
+.survey-top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    width: 100%;
+    background-color: rgba($gradient-dark-blue, 0.92);
+    border-bottom: 1px solid $hairline;
+    backdrop-filter: blur(8px);
+    padding-top: env(safe-area-inset-top, 0px);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.survey-top__inner {
+    display: flex;
+    align-items: center;
+    gap: $space-20;
+    max-width: $survey-width;
+    margin: 0 auto;
+    padding: 14px $gutter-phone;
+}
+
+.survey-top__title {
+    @include label;
+    color: $text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 45%;
+}
+
+.survey-top__badge {
+    margin-left: $space-5;
+    padding: 2px 6px;
+    border: 1px solid $accent;
+    color: $text;
+}
+
+.survey-top__bar {
+    flex: 1;
+    height: 3px;
+    background-color: $white-15;
+    overflow: hidden;
+
+    span {
+        display: block;
+        height: 100%;
+        width: 0;
+        background-color: $accent;
+        transition: width $duration $ease-out;
+    }
+}
+
+.survey-top__count {
+    @include label;
+    white-space: nowrap;
+}
+
+.survey {
+    width: 100%;
+    max-width: $survey-width;
+    margin: 0 auto;
+    padding: $space-40 $gutter-phone $space-120;
+    font-family: $font-ibm;
+    color: $text;
+    outline: none;
+
+    @include mobile {
+        padding-top: $space-20 + $space-10;
+        padding-bottom: $space-60 + $space-20;
+    }
+}
+
+// ---------------------------------------------------------------- Type
+
+.survey__eyebrow {
+    display: block;
+    margin-bottom: $space-20;
+    @include label;
+}
+
+.survey__title {
+    margin: 0 0 $space-20;
+    font-family: $font-montserrat;
+    font-size: 44px;
+    font-weight: $fw-regular;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    color: $text;
+
+    @include mobile {
+        font-size: 32px;
+    }
+}
+
+.survey__lede,
+.survey .survey__lede {
+    margin: 0 0 $space-40;
+    font-size: 18px;
+    line-height: 1.5;
+    color: $text-muted;
+
+    @include mobile {
+        font-size: 16px;
+        margin-bottom: $space-20 + $space-10;
+    }
+}
+
+// Markdown from the admin (consent text, page descriptions, thank-you message)
+.survey__prose {
+    margin-bottom: $space-40;
+
+    p,
+    li {
+        font-family: $font-ibm;
+        font-size: 17px;
+        line-height: 1.6;
+        color: $text-muted;
+    }
+
+    p {
+        margin: 0 0 $space-20;
+    }
+
+    h3 {
+        margin: $space-40 0 $space-10;
+        font-size: 20px;
+        color: $text;
+    }
+
+    ul {
+        margin: 0 0 $space-20;
+        padding-left: 1.2em;
+        list-style: disc;
+    }
+
+    li {
+        margin-bottom: $space-10;
+    }
+
+    a {
+        font-size: inherit;
+        color: $text;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    strong {
+        color: $text;
+    }
+}
+
+.survey__note {
+    margin: $space-20 0;
+    padding-left: $space-20 - $space-5;
+    border-left: 2px solid $hairline;
+    font-size: 15px;
+    line-height: 1.5;
+    color: $text-muted;
+}
+
+.survey__contacts {
+    margin: 0 0 $space-40;
+    padding: $space-20;
+    border: 1px solid $hairline;
+    background-color: $white-03;
+
+    p {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.6;
+        color: $text-muted;
+    }
+
+    p + p {
+        margin-top: $space-10;
+    }
+
+    a {
+        font-size: inherit;
+        color: $text;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        word-break: break-word;
+    }
+}
+
+// ---------------------------------------------------------------- Questions
+
+.sq {
+    margin: 0;
+    padding: $space-20 + $space-10 0;
+    border: 0;
+    border-top: 1px solid $hairline;
+    min-width: 0;
+
+    &:last-of-type {
+        border-bottom: 1px solid $hairline;
+    }
+}
+
+.sq__label {
+    display: block;
+    float: left; // lets a <legend> sit inside the padding like a <label>
+    width: 100%;
+    margin: 0 0 $space-10;
+    padding: 0;
+    font-family: $font-raleway;
+    font-size: 20px;
+    font-weight: $fw-medium;
+    line-height: 1.35;
+    color: $text;
+
+    + * {
+        clear: both;
+    }
+
+    @include mobile {
+        font-size: 18px;
+    }
+}
+
+.sq__optional {
+    font-family: $font-ibm;
+    font-size: 14px;
+    color: $text-muted;
+}
+
+.survey .sq__help {
+    clear: both;
+    margin: 0 0 $space-10;
+    font-size: 15px;
+    color: $text-muted;
+}
+
+.sq__body {
+    clear: both;
+}
+
+.sq__input {
+    display: block;
+    width: 100%;
+    padding: 14px 16px;
+    background-color: $white-05;
+    border: 1px solid $field-border;
+    border-radius: 0;
+    font-family: $font-ibm;
+    font-size: 18px;
+    line-height: 1.5;
+    color: $text;
+    appearance: none;
+    transition: border-color $duration-fast, background-color $duration-fast, box-shadow $duration-fast;
+
+    &:hover {
+        border-color: rgba($dark-mode-white, 0.6);
+    }
+
+    &:focus {
+        outline: none;
+        border-color: $accent;
+        background-color: $white-08;
+        box-shadow: 0 0 0 1px $accent;
+    }
+
+    &[aria-invalid='true'] {
+        border-color: $error;
+    }
+
+    @include mobile {
+        font-size: 16px; // stops iOS zooming in on focus
+    }
+}
+
+textarea.sq__input {
+    min-height: 140px;
+    resize: vertical;
+}
+
+select.sq__input {
+    padding-right: 44px;
+    background-image: linear-gradient(45deg, transparent 50%, $text 50%), linear-gradient(135deg, $text 50%, transparent 50%);
+    background-position: calc(100% - 22px) 52%, calc(100% - 16px) 52%;
+    background-size: 6px 6px;
+    background-repeat: no-repeat;
+
+    option {
+        color: #111;
+        background-color: #fff;
+    }
+}
+
+input[type='number'].sq__input {
+    max-width: 10em;
+    -moz-appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+}
+
+.sq__error,
+.survey .sq__error {
+    margin: $space-10 0 0;
+    font-size: 15px;
+    color: $error;
+
+    &:empty {
+        display: none;
+    }
+}
+
+// Choice chips (radio and checkbox)
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-10;
+}
+
+.chip {
+    position: relative;
+
+    input {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 46px;
+        padding: 10px 16px;
+        border: 1px solid $field-border;
+        background-color: $white-03;
+        font-family: $font-ibm;
+        font-size: 16px;
+        line-height: 1.3;
+        color: $text;
+        cursor: pointer;
+        transition: background-color $duration-fast, border-color $duration-fast;
+    }
+
+    input[type='checkbox'] + span::before {
+        content: '';
+        width: 14px;
+        height: 14px;
+        border: 1px solid currentColor;
+        flex: none;
+    }
+
+    &:hover span {
+        border-color: rgba($dark-mode-white, 0.7);
+    }
+
+    input:checked + span {
+        background-color: $button-bg;
+        border-color: $button-bg;
+    }
+
+    input[type='checkbox']:checked + span::before {
+        background: $text;
+        box-shadow: inset 0 0 0 2px $button-bg;
+    }
+
+    input:focus-visible + span {
+        outline: 2px solid $accent;
+        outline-offset: 3px;
+    }
+}
+
+.sq[data-invalid] .chip span {
+    border-color: rgba($error, 0.7);
+}
+
+// 1 to 5 scale
+.scale {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: $space-10;
+
+    .chip span {
+        justify-content: center;
+        width: 100%;
+        font-weight: $fw-semibold;
+    }
+}
+
+.scale__ends {
+    display: flex;
+    justify-content: space-between;
+    gap: $space-20;
+    margin-top: $space-10;
+    font-size: 13px;
+    color: $text-muted;
+}
+
+// Consent tick boxes
+.survey-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: $space-20;
+    cursor: pointer;
+    font-size: 17px;
+    line-height: 1.5;
+
+    input {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        margin: 2px 0 0;
+        accent-color: $button-bg;
+    }
+}
+
+// ---------------------------------------------------------------- Actions
+
+.survey-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-10 $space-20;
+    margin-top: $space-40;
+
+    .btn {
+        min-height: 50px;
+    }
+
+    .btn--primary {
+        margin-left: auto;
+    }
+
+    @include mobile {
+        .btn {
+            flex: 1 1 auto;
+        }
+
+        .btn--primary {
+            order: -1;
+            flex-basis: 100%;
+            margin-left: 0;
+        }
+    }
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.survey-error,
+.survey .survey-error {
+    margin: $space-20 0 0;
+    padding: 12px $space-20;
+    border-left: 2px solid $error;
+    background-color: rgba($error, 0.08);
+    font-size: 16px;
+    color: $text;
+
+    &:empty {
+        display: none;
+    }
+}
+
+// ---------------------------------------------------------------- "Would you send this?"
+
+.prompt {
+    margin: 0;
+    padding: $space-20 + $space-10 0;
+    border: 0;
+    border-top: 1px solid $hairline;
+    min-width: 0;
+
+    &:last-of-type {
+        border-bottom: 1px solid $hairline;
+    }
+
+    .chips {
+        justify-content: flex-end;
+    }
+
+    &[data-invalid] .chip span {
+        border-color: rgba($error, 0.7);
+    }
+}
+
+.prompt__legend {
+    @include visually-hidden;
+}
+
+.prompt__ctx {
+    margin-bottom: $space-10;
+}
+
+.prompt__ctx-label {
+    display: block;
+    margin-bottom: $space-5;
+    @include label;
+}
+
+.prompt__row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: $space-10;
+}
+
+.bubble {
+    max-width: 88%;
+    padding: 12px 16px;
+    border-radius: 18px 18px 4px 18px;
+    background-color: $white-10;
+    font-size: 16.5px;
+    line-height: 1.45;
+    color: $text;
+}
+
+.bubble__att {
+    margin-bottom: 8px;
+}
+
+.prompt__shot {
+    max-width: 260px;
+    width: 100%;
+    border-radius: 10px;
+}
+
+// Built-in mock screenshots: light "app" colours in every theme
+.mock {
+    max-width: 260px;
+    padding: 10px 12px;
+    background: #fff;
+    color: #1a1a1a;
+    border: 1px solid #d8dce3;
+    border-radius: 10px;
+    font-family: $font-ibm;
+    font-size: 12.5px;
+    line-height: 1.35;
+
+    p,
+    li,
+    span,
+    b {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+    }
+
+    .mt {
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: $fw-bold;
+        color: #334;
+    }
+
+    .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 3px 0;
+        border-bottom: 1px solid #eceef2;
+
+        span {
+            color: #667;
+        }
+
+        b {
+            min-width: 96px;
+            text-align: right;
+
+            &:empty {
+                height: 1em;
+                border-bottom: 1px dotted #99a;
+            }
+        }
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 16px;
+        list-style: disc;
+    }
+
+    .pg {
+        color: #889;
+        font-size: 11px;
+    }
+}
+
+.mslide {
+    background: #f3f5fb;
+
+    .pg {
+        text-align: right;
+    }
+}
+
+.mchat p {
+    margin: 0 0 5px;
+    padding: 5px 7px;
+    border-radius: 8px;
+    background: #eaf5ec;
+
+    b {
+        display: block;
+        font-size: 11px;
+        color: #2a6f3a;
+    }
+}
+
+.mbank .err {
+    margin-top: 6px;
+    color: #b42318;
+    font-weight: $fw-bold;
+}
+
+.mmem li {
+    margin-bottom: 2px;
+}
+
+// ---------------------------------------------------------------- Media posts (fixed "phone app" look)
+
+.post {
+    width: min(360px, 100%);
+    margin: $space-10 auto $space-20;
+    overflow: hidden;
+    border-radius: 22px;
+    background: #fff;
+    color: #111;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 12px 30px rgba(0, 0, 0, 0.35);
+    font-family: $font-montserrat;
+
+    p,
+    span,
+    b,
+    a {
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+    }
+}
+
+.post__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+}
+
+.post__avatar {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    padding: 2px;
+    border-radius: 50%;
+    background: conic-gradient(#ffcd3c, #ff5c8a, #7a5cff, #2f9bff, #ffcd3c);
+
+    i {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: $gradient-dark-blue;
+        border: 2px solid #fff;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 7px 8px 9px;
+            border: 2.5px solid #ffd43b;
+            border-radius: 3px 3px 6px 6px;
+        }
+    }
+}
+
+.post .post__name {
+    font-size: 13.5px;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.post .post__sub {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #666;
+}
+
+.post__more {
+    margin-left: auto;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #333;
+}
+
+.post__img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.post__empty {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    padding: $space-20;
+    background: #eef0f5;
+    text-align: center;
+    font-size: 13px;
+    color: #556;
+}
+
+.post__icons {
+    display: flex;
+    gap: 16px;
+    padding: 10px 12px 4px;
+
+    svg {
+        width: 24px;
+        height: 24px;
+        fill: none;
+        stroke: #111;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .post__save {
+        margin-left: auto;
+    }
+}
+
+.post .post__cap {
+    margin: 0;
+    padding: 2px 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+
+    b {
+        font-weight: 800;
+    }
+
+    .post__tag {
+        color: #1d4fb8;
+    }
+}
+
+.post .post__time {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+}
+
+// Text post
+.post--text {
+    padding: 14px 14px 10px;
+
+    .post__head {
+        padding: 0 0 8px;
+    }
+}
+
+.post__body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    color: #0f1419;
+
+    p {
+        margin: 0 0 10px;
+        font-family: inherit;
+        font-size: inherit;
+        color: inherit;
+    }
+}
+
+.post__row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding: 8px 4px 2px;
+    border-top: 1px solid #eee;
+
+    svg {
+        width: 19px;
+        height: 19px;
+        fill: none;
+        stroke: #536471;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+}
+
+// Reel (9:16)
+.reel {
+    position: relative;
+    width: min(340px, 100%);
+    aspect-ratio: 9 / 16;
+    margin: $space-10 auto $space-20;
+    overflow: hidden;
+    border-radius: 22px;
+    background: #000;
+    color: #fff;
+    font-family: $font-montserrat;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+
+    p,
+    span,
+    b {
+        font-family: inherit;
+        color: inherit;
+    }
+}
+
+.reel__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.reel__shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.6));
+    pointer-events: none;
+}
+
+.reel__rail {
+    position: absolute;
+    right: 8px;
+    bottom: 24%;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+
+    svg {
+        width: 28px;
+        height: 28px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+    }
+}
+
+.reel__meta {
+    position: absolute;
+    left: 12px;
+    right: 56px;
+    bottom: 14px;
+    z-index: 3;
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+
+    .post__avatar {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+.reel__who {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.reel__follow {
+    padding: 1px 8px;
+    border: 1.5px solid #fff;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.reel__audio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 11px;
+
+    svg {
+        width: 13px;
+        height: 13px;
+        fill: #fff;
+    }
+}
+
+.reel__tap {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: -4px;
+    }
+}
+
+.reel__sound {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    cursor: pointer;
+
+    svg {
+        width: 20px;
+        height: 20px;
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $accent;
+        outline-offset: 2px;
+    }
+}
+
+.reel__paused {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: none;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 800;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+
+    .reel.is-paused & {
+        display: grid;
+    }
+}
+
+.reel-controls {
+    display: flex;
+    justify-content: center;
+}
+
+// ---------------------------------------------------------------- Thank-you page
+
+.survey-thanks {
+    text-align: center;
+
+    .survey__prose {
+        max-width: 34em;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .survey-actions {
+        justify-content: center;
+
+        .btn--primary {
+            margin-left: 0;
+        }
+    }
+}
+
+.survey-thanks__logo {
+    width: 180px;
+    height: auto;
+    margin: 0 auto $space-40;
+}
+
+.survey-thanks__share {
+    width: min(320px, 100%);
+    margin: 0 auto;
+
+    img {
+        width: 100%;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+    }
+}
+
+.survey .survey-thanks__status {
+    min-height: 1.5em;
+    margin-top: $space-20;
+    font-size: 15px;
+    color: $text-muted;
+}
+
+// ---------------------------------------------------------------- Researcher view (preview only)
+
+.survey-panel {
+    margin-top: $space-60;
+    padding: $space-20;
+    border: 1px dashed $hairline;
+    text-align: left;
+
+    h2 {
+        margin: 0 0 $space-10;
+        font-family: $font-raleway;
+        font-size: 20px;
+        font-weight: $fw-medium;
+    }
+
+    a {
+        font-size: inherit;
+        color: $text;
+        margin-right: $space-20;
+    }
+}
+
+.survey-stat {
+    display: flex;
+    justify-content: space-between;
+    gap: $space-20;
+    padding: 8px 0;
+    border-top: 1px solid $hairline;
+    font-size: 15px;
+
+    b {
+        text-align: right;
+    }
+}
+
+// ---------------------------------------------------------------- Closed page
+
+.survey-closed {
+    width: 100%;
+}
+
+.survey-closed__inner {
+    padding-top: $space-60;
+    padding-bottom: $space-120;
+    @include page-container;
+}
+
+.survey-closed__actions {
+    margin-top: $space-40;
+}

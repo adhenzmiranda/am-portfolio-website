@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
 from django.contrib.sitemaps.views import sitemap
-from django.urls import path, re_path
+from django.urls import include, path, re_path
 from django.views.generic import TemplateView
 from django_otp.admin import OTPAdminSite
 from django.conf import settings
@@ -75,3 +75,7 @@ if settings.DEBUG:
     urlpatterns += [
         re_path(r'^preview-error/(?P<code>403|404|500)/$', lambda request, code: preview_error(request, int(code))),
     ]
+
+# Surveys live at /<address>/ (e.g. /msc-survey/), edited in the admin.
+# Kept last so every page above wins over a survey address.
+urlpatterns += [path('', include('survey.urls'))]

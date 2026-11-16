@@ -45,6 +45,13 @@ UPLOAD_KINDS = {
         'local_fallback': '',
         'sign_url': 'admin:projects_projectphoto_sign_upload',
     },
+    # The survey's reel (survey.Condition.video). No local compression fallback.
+    'survey_video': {
+        'model': 'survey.Condition', 'field': 'video', 'max_mb': 100,
+        'accept': 'video/*', 'noun': 'video',
+        'local_fallback': '',
+        'sign_url': 'admin:survey_condition_sign_upload',
+    },
 }
 MAX_DIRECT_UPLOAD_MB = UPLOAD_KINDS['video']['max_mb']  # kept for the video help text
 

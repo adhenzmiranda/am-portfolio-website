@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <title>{{ survey.closed_heading }} | {{ survey.title }}</title>
+    <meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<section class="survey-closed" aria-labelledby="survey-closed-title">
+    <div class="survey-closed__inner">
+        <span class="page-head__eyebrow">{{ survey.title }}</span>
+        <h1 class="page-head__title" id="survey-closed-title">{{ survey.closed_heading }}</h1>
+        <p class="page-head__intro">{{ survey.closed_message|linebreaksbr }}</p>
+        <p class="survey-closed__actions"><a class="btn btn--ghost" href="{% url 'home' %}">Visit the site <span aria-hidden="true">&rarr;</span></a></p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ survey.title }}</title>
+    <meta name="description" content="{{ survey.share_text }}">
+    {# Link previews when the survey is shared in WhatsApp, Instagram and so on #}
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ survey.title }}">
+    <meta property="og:description" content="{{ survey.share_text }}">
+    <meta property="og:url" content="{{ config.thanks.shareUrl }}">
+    {% if survey.share_image %}<meta property="og:image" content="{{ survey.share_image.url }}">{% endif %}
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=Montserrat:wght@400;600;700;800;900&family=Raleway:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
+</head>
+
+<body class="home-page survey-page">
+    {# The site's navbar and footer only appear on the thank-you page #}
+    <div class="survey-chrome" data-survey-chrome hidden>{% include "navbar.html" %}</div>
+
+    <header class="survey-top" data-survey-top>
+        <div class="survey-top__inner">
+            <span class="survey-top__title">{{ survey.title }}{% if preview %} <span class="survey-top__badge">Preview</span>{% endif %}</span>
+            <div class="survey-top__bar" aria-hidden="true"><span id="survey-bar"></span></div>
+            <span class="survey-top__count" id="survey-count"></span>
+        </div>
+    </header>
+
+    <main id="survey-app" class="survey" tabindex="-1" aria-live="polite">
+        <noscript><p class="survey__lede">This survey needs JavaScript. Please turn it on, or open the link in another browser.</p></noscript>
+    </main>
+
+    <div class="survey-chrome survey-chrome--footer" data-survey-chrome hidden>{% include "footer.html" %}</div>
+
+    {# Formatted text from the admin (sanitised Markdown), copied into place by survey.js #}
+    <template id="rich-consent">{{ rich.consent }}</template>
+    <template id="rich-thanks">{{ rich.thanks }}</template>
+    {% for html in rich.sections %}<template id="rich-section-{{ forloop.counter0 }}">{{ html }}</template>{% endfor %}
+
+    {{ config|json_script:"survey-config" }}
+    <script src="{% static 'survey/survey.js' %}" defer></script>
+</body>
+</html>
