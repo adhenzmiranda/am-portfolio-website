@@ -25,7 +25,7 @@ sharing sensitive information with AI chatbots?
 
 ```mermaid
 flowchart TD
-    A["Consent page<br/>information, contacts, 2 tick boxes"] -->|"ticks both, presses start<br/>(row created, group assigned)"| B["About you<br/>age, gender, university, emirate,<br/>field of study, chatbot use"]
+    A["Consent page<br/>information, contacts, 3 tick boxes"] -->|"ticks all three, presses start<br/>(row created, group assigned)"| B["About you<br/>age, gender, university, emirate,<br/>field of study, chatbot use"]
     A -->|declines| X["'No problem' page<br/>nothing recorded"]
     B --> C["Would you send this? (BEFORE)<br/>8 prompts, random order"]
     C --> D{{"Random media<br/>ONE of 3 formats"}}
@@ -123,7 +123,7 @@ It's a **3 × 2 mixed design**:
 | **Before score** | The key covariate (ANCOVA) | `before_score` |
 | Age, gender | Standard demographics | `age`, `gender` |
 | University, emirate | Sampling spread. Universities are reported only as A, B, C | `university`, `emirate` |
-| Field of study | IT and cyber students may already know more | `field_of_study` |
+| Field of study | IT and cyber students may already know more. 9 options, merged for analysis into **IT / Cybersecurity**, **Other STEM** (Engineering, Science, Health) and **Non-STEM** (everything else) | `field_of_study` |
 | Chatbot use | Experience with the tools | `chatbot_use` |
 
 ### Possible confounds (name them in the limitations)
@@ -265,6 +265,12 @@ sequenceDiagram
 - **Server-side scoring:** answers are checked and scored **on the server**. Nothing the browser claims is trusted.
 - **Rate limit:** 300 starts or submits per hour per network (classrooms share one IP address).
 - **Previews never save:** your preview and the supervisor's review link never save anything.
+- **Taking part once:** a soft check, because a hard block would mean tracking people.
+  - A consent tick box: "I haven't taken part in this survey before."
+  - The browser remembers a submission and shows "You've already taken part".
+  - Each start's one-time token can only be submitted once.
+  - In the analysis: flag rows with the same age, gender, university, emirate and field of study started close together.
+- **Universities stay anonymous:** the consent page promises they're reported only as University A, B, C, and are never compared or ranked on their own.
 
 ### What is stored, and what never is
 
