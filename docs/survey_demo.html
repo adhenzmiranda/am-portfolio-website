@@ -425,7 +425,7 @@ function render(){
       <div class="stat"><span>Self-efficacy average</span><b>${avg([2,3])}</b></div>
       <div class="stat"><span>Response efficacy average</span><b>${avg([4,5])}</b></div>
       <div class="stat"><span>Intention average</span><b>${avg([6,7])}</b></div>
-      <div class="stat"><span>Content loaded properly</span><b>${S.loaded}</b></div>
+      <div class="stat"><span>Content loaded properly</span><b>${esc(S.loaded)}</b></div>
       <p class="note">Preview a specific format: <span class="links"><a href="#video">Video</a><a href="#infographic">Infographic</a><a href="#text">Text post</a></span></p>
       <div class="actions"><button type="button" class="primary" id="again">Take it again</button></div>
     </section>`;

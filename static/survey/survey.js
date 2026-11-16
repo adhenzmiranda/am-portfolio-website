@@ -80,10 +80,23 @@
     return /^[a-z0-9_-]{1,60}$/i.test(src) ? src.toLowerCase() : '';
   }
 
+  // Returns the survey's own key (never the text from the link).
   function hashCondition() {
     var key = decodeURIComponent((location.hash || '').slice(1));
-    return CONDITIONS[key] ? key : null;
+    var match = C.conditions.filter(function (c) { return c.key === key; })[0];
+    return match ? match.key : null;
   }
+
+  // Values from the page or storage are only ever matched against the survey's
+  // own values, and the survey's copy is kept, so stored or typed text never
+  // becomes HTML.
+  function known(list, value) {
+    for (var i = 0; i < list.length; i++) { if (list[i] === value) { return list[i]; } }
+    return undefined;
+  }
+  var NUMBERS = C.prompts.map(function (p) { return p.n; });
+  var SEND_CODES = C.sendChoices.map(function (c) { return c[0]; });
+  var CONDITION_KEYS = C.conditions.map(function (c) { return c.key; });
 
   function freshState() {
     return {
@@ -102,11 +115,68 @@
     };
   }
 
-  function validState(s) {
-    return s && typeof s === 'object' && s.timing && s.answers &&
-      Array.isArray(s.beforeOrder) && s.beforeOrder.length === C.prompts.length &&
-      (s.step === 'consent' || s.step === 'done' || s.step === 'declined' ||
-        (typeof s.step === 'number' && s.step >= 0 && s.step <= LAST_INDEX));
+  // Rebuilds saved progress from the survey's own values; returns null if it doesn't fit this survey.
+  function restoreState(s) {
+    if (!s || typeof s !== 'object') { return null; }
+    function order(saved) {
+      if (!Array.isArray(saved) || saved.length !== NUMBERS.length ||
+          !NUMBERS.every(function (n) { return saved.indexOf(n) !== -1; })) { return null; }
+      return NUMBERS.slice().sort(function (a, b) { return saved.indexOf(a) - saved.indexOf(b); });
+    }
+    function task(saved) {
+      var out = {};
+      NUMBERS.forEach(function (n) {
+        var code = known(SEND_CODES, saved && saved[n]);
+        if (code) { out[n] = code; }
+      });
+      return out;
+    }
+    var beforeOrder = order(s.beforeOrder);
+    var afterOrder = order(s.afterOrder);
+    var step = known(['consent', 'done', 'declined'], s.step);
+    if (step === undefined) {
+      step = typeof s.step === 'number' && s.step >= 0 && s.step <= LAST_INDEX ? Math.floor(s.step) : null;
+    }
+    if (!beforeOrder || !afterOrder || step === null) { return null; }
+    var answers = {};
+    QUESTIONS.forEach(function (q) {
+      var v = s.answers && s.answers[q.code];
+      if (q.kind === 'checkboxes') {
+        v = Array.isArray(v) ? q.options.filter(function (o) { return v.indexOf(o) !== -1; }) : [];
+        if (v.length) { answers[q.code] = v; }
+      } else if (q.kind === 'choice' || q.kind === 'dropdown') {
+        v = known(q.options, v);
+        if (v !== undefined) { answers[q.code] = v; }
+      } else if (q.kind === 'scale') {
+        v = known([1, 2, 3, 4, 5], v);
+        if (v !== undefined) { answers[q.code] = v; }
+      } else if (q.kind === 'number') {
+        if (typeof v === 'number' && isFinite(v)) { answers[q.code] = v; }
+      } else if (typeof v === 'string') {
+        answers[q.code] = v.slice(0, 2000);   // free text: always escaped when shown
+      }
+    });
+    var timing = s.timing || {};
+    var token = typeof s.token === 'string' && /^[0-9a-f-]{36}$/i.test(s.token) ? s.token : null;
+    return {
+      step: step,
+      consent: C.consent.statements.map(function (_, i) { return i; })
+        .filter(function (i) { return Array.isArray(s.consent) && s.consent.indexOf(i) !== -1; }),
+      token: token,
+      condition: known(CONDITION_KEYS, s.condition) || null,
+      source: typeof s.source === 'string' && /^[a-z0-9_-]{1,60}$/.test(s.source) ? s.source : readSource(),
+      startedAt: typeof s.startedAt === 'number' ? s.startedAt : null,
+      answers: answers,
+      before: task(s.before),
+      after: task(s.after),
+      beforeOrder: beforeOrder,
+      afterOrder: afterOrder,
+      timing: {
+        message: Math.max(0, Number(timing.message) || 0),
+        watched: Math.max(0, Number(timing.watched) || 0),
+        finished: timing.finished === true
+      }
+    };
   }
 
   function save() { session.set(STORE_KEY, S); }
@@ -190,7 +260,7 @@
       '<div class="survey__contacts"><p>Questions about the study: ' + researcher + '</p>' +
       '<p>Questions about your rights: ' + ethics + '</p></div>' +
       c.statements.map(function (text, i) {
-        return '<label class="survey-check"><input type="checkbox" data-consent="' + i + '"' +
+        return '<label class="survey-check"><input type="checkbox" data-consent="' + esc(i) + '"' +
           (started || S.consent.indexOf(i) !== -1 ? ' checked' : '') + '><span>' + esc(text) + '</span></label>';
       }).join('') +
       (PREVIEW ? '<p class="survey__note">Preview: nothing you enter is saved.</p>' : '') +
@@ -205,7 +275,8 @@
     var next = document.getElementById('survey-next');
     boxes.forEach(function (box) {
       box.addEventListener('change', function () {
-        S.consent = boxes.filter(function (b) { return b.checked; }).map(function (b) { return +b.dataset.consent; });
+        S.consent = [];
+        boxes.forEach(function (b, i) { if (b.checked) { S.consent.push(i); } });
         next.disabled = !(S.token || (PREVIEW && S.condition)) && S.consent.length < boxes.length;
         save();
       });
@@ -247,7 +318,7 @@
   // ------------------------------------------------------------ questions
 
   function questionHTML(q) {
-    var id = 'q-' + q.code;
+    var id = esc('q-' + q.code);
     var value = S.answers[q.code];
     var optional = q.required ? '' : ' <span class="sq__optional">(optional)</span>';
     var help = q.help ? '<p class="sq__help" id="' + id + '-help">' + esc(q.help) + '</p>' : '';
@@ -263,7 +334,7 @@
           q.options.map(function (o) { return '<option' + (value === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
       } else if (q.kind === 'number') {
         field = '<input class="sq__input" type="number" inputmode="numeric" step="1" id="' + id + '"' +
-          (q.min != null ? ' min="' + q.min + '"' : '') + (q.max != null ? ' max="' + q.max + '"' : '') +
+          (q.min != null ? ' min="' + esc(q.min) + '"' : '') + (q.max != null ? ' max="' + esc(q.max) + '"' : '') +
           ' value="' + esc(value == null ? '' : value) + '" aria-describedby="' + describedBy + '">';
       } else {
         field = '<input class="sq__input" type="text" id="' + id + '" maxlength="200" autocomplete="off" value="' +
@@ -276,8 +347,8 @@
     var inputs;
     if (q.kind === 'scale') {
       inputs = '<div class="scale">' + [1, 2, 3, 4, 5].map(function (n) {
-        return '<label class="chip"><input type="radio" name="' + id + '" value="' + n + '"' + (value === n ? ' checked' : '') +
-          '><span>' + n + '</span></label>';
+        return '<label class="chip"><input type="radio" name="' + id + '" value="' + esc(n) + '"' + (value === n ? ' checked' : '') +
+          '><span>' + esc(n) + '</span></label>';
       }).join('') + '</div><div class="scale__ends" aria-hidden="true"><span>1 ' + esc(q.low) + '</span><span>5 ' + esc(q.high) + '</span></div>';
     } else {
       var type = q.kind === 'checkboxes' ? 'checkbox' : 'radio';
@@ -298,10 +369,14 @@
     var value;
     if (q.kind === 'choice' || q.kind === 'scale') {
       var picked = box.querySelector('input:checked');
-      value = picked ? (q.kind === 'scale' ? +picked.value : picked.value) : undefined;
+      value = !picked ? undefined
+        : q.kind === 'scale' ? known([1, 2, 3, 4, 5], Number(picked.value)) : known(q.options, picked.value);
     } else if (q.kind === 'checkboxes') {
-      value = Array.prototype.map.call(box.querySelectorAll('input:checked'), function (el) { return el.value; });
+      var ticked = Array.prototype.map.call(box.querySelectorAll('input:checked'), function (el) { return el.value; });
+      value = q.options.filter(function (o) { return ticked.indexOf(o) !== -1; });
       if (!value.length) { value = undefined; }
+    } else if (q.kind === 'dropdown') {
+      value = known(q.options, box.querySelector('select').value);
     } else if (q.kind === 'number') {
       var raw = box.querySelector('input').value.trim();
       value = raw === '' ? undefined : Number(raw);
@@ -341,11 +416,11 @@
     var attachment = p.screenshot
       ? '<img class="prompt__shot" src="' + esc(p.screenshot) + '" alt="Attached screenshot" loading="lazy">'
       : (MOCKS[p.mock] || '');
-    return '<fieldset class="prompt" data-prompt="' + n + '"><legend class="prompt__legend">Message ' + position + ' of ' + C.prompts.length + '</legend>' +
+    return '<fieldset class="prompt" data-prompt="' + esc(p.n) + '"><legend class="prompt__legend">Message ' + esc(position) + ' of ' + esc(C.prompts.length) + '</legend>' +
       ctx +
       '<div class="prompt__row"><div class="bubble">' + (attachment ? '<div class="bubble__att">' + attachment + '</div>' : '') + esc(p.text) + '</div></div>' +
       '<div class="chips">' + C.sendChoices.map(function (choice) {
-        return '<label class="chip"><input type="radio" name="' + phase + '-' + n + '" value="' + choice[0] + '"' +
+        return '<label class="chip"><input type="radio" name="' + esc(phase + '-' + p.n) + '" value="' + esc(choice[0]) + '"' +
           (current === choice[0] ? ' checked' : '') + '><span>' + esc(choice[1]) + '</span></label>';
       }).join('') + '</div></fieldset>';
   }
@@ -353,7 +428,8 @@
   function readTask(phase) {
     C.prompts.forEach(function (p) {
       var picked = app.querySelector('input[name="' + phase + '-' + p.n + '"]:checked');
-      if (picked) { S[phase][p.n] = picked.value; }
+      var code = picked ? known(SEND_CODES, picked.value) : undefined;
+      if (code) { S[phase][p.n] = code; }
     });
   }
 
@@ -502,7 +578,7 @@
     } else if (s.kind === 'task_before' || s.kind === 'task_after') {
       var phase = s.kind === 'task_before' ? 'before' : 'after';
       $$('[data-prompt]').forEach(function (box) {
-        var missing = !S[phase][box.dataset.prompt];
+        var missing = !S[phase][known(NUMBERS, Number(box.dataset.prompt))];
         box.toggleAttribute('data-invalid', missing);
         if (missing && !first) { first = box; }
       });
@@ -738,8 +814,8 @@
   if (!PREVIEW && local.get(DONE_KEY)) {
     S = { step: 'done', already: true, timing: { message: 0 }, answers: {}, before: {}, after: {} };   // soft duplicate check
   } else {
-    S = session.get(STORE_KEY);
-    if (!validState(S) || (PREVIEW && hashCondition() && S.condition && S.condition !== hashCondition())) {
+    S = restoreState(session.get(STORE_KEY));
+    if (!S || (PREVIEW && hashCondition() && S.condition && S.condition !== hashCondition())) {
       S = freshState();
     }
   }
