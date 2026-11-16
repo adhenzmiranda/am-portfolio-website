@@ -234,6 +234,22 @@
       esc(nextLabel) + ' <span aria-hidden="true">&rarr;</span></button></div>';
   }
 
+  // Formatted text (consent, page descriptions, thank-you) is rendered by Django into
+  // <template id="rich-..."> tags. These copy it into place as nodes.
+  function hasRich(key) {
+    var tpl = document.getElementById('rich-' + key);
+    return !!(tpl && tpl.content && tpl.content.textContent.trim());
+  }
+  function richSlot(key, className) {
+    return hasRich(key) ? '<div class="' + className + '" data-rich="' + esc(key) + '"></div>' : '';
+  }
+  function fillRich() {
+    $$('[data-rich]').forEach(function (slot) {
+      var tpl = document.getElementById('rich-' + slot.getAttribute('data-rich'));
+      if (tpl) { slot.appendChild(tpl.content.cloneNode(true)); }
+    });
+  }
+
   function showError(message) {
     var el = document.getElementById('survey-err');
     if (el) { el.textContent = message; }
@@ -256,7 +272,7 @@
     var ethics = c.ethicsContact ? contactLink(c.ethicsContact) : '[supervisor or ethics contact]';
     return '<span class="survey__eyebrow">' + esc(C.title) + '</span>' +
       '<h1 class="survey__title">' + esc(c.heading) + '</h1>' +
-      '<div class="survey__prose">' + c.html + '</div>' +
+      richSlot('consent', 'survey__prose') +
       '<div class="survey__contacts"><p>Questions about the study: ' + researcher + '</p>' +
       '<p>Questions about your rights: ' + ethics + '</p></div>' +
       c.statements.map(function (text, i) {
@@ -548,7 +564,7 @@
     // Back only before the random media: the "before" answers can't change after seeing it.
     var back = MEDIA_INDEX === -1 || i < MEDIA_INDEX;
     return '<h1 class="survey__title">' + esc(s.title) + '</h1>' +
-      (s.html ? '<div class="survey__lede survey__prose">' + s.html + '</div>' : '') +
+      richSlot('section-' + i, 'survey__lede survey__prose') +
       body + actionsHTML(label, { back: back });
   }
 
@@ -691,7 +707,7 @@
     return '<section class="survey-thanks">' +
       '<img class="survey-thanks__logo" src="' + esc(C.logo) + '" width="500" height="188" alt="Adhenz Miranda">' +
       '<h1 class="survey__title">' + esc(already ? t.alreadyDone : t.heading) + '</h1>' +
-      (t.html ? '<div class="survey__prose">' + t.html + '</div>' : '') +
+      richSlot('thanks', 'survey__prose') +
       (t.shareImage ? '<figure class="survey-thanks__share"><img src="' + esc(t.shareImage) + '" alt="Invite to take the survey"></figure>' : '') +
       '<div class="survey-actions">' +
       '<button type="button" class="btn btn--primary" id="share-btn">Share the survey</button>' +
@@ -805,6 +821,7 @@
       app.innerHTML = sectionHTML(S.step);
       bindSection();
     }
+    fillRich();
     window.scrollTo(0, 0);
     app.focus({ preventScroll: true });
   }

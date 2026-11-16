@@ -38,6 +38,11 @@
 
     <div class="survey-chrome survey-chrome--footer" data-survey-chrome hidden>{% include "footer.html" %}</div>
 
+    {# Formatted text from the admin (sanitised Markdown), copied into place by survey.js #}
+    <template id="rich-consent">{{ rich.consent }}</template>
+    <template id="rich-thanks">{{ rich.thanks }}</template>
+    {% for html in rich.sections %}<template id="rich-section-{{ forloop.counter0 }}">{{ html }}</template>{% endfor %}
+
     {{ config|json_script:"survey-config" }}
     <script src="{% static 'survey/survey.js' %}" defer></script>
 </body>

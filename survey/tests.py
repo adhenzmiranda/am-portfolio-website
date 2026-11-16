@@ -77,6 +77,17 @@ class PageTests(SurveyTestCase):
         self.assertEqual(config['mode'], 'live')
         self.assertTrue(all('risky' not in p for p in config['prompts']))
         self.assertNotContains(res, '"risky"')
+        # Formatted text arrives as sanitised HTML in <template> tags, never inside the JSON.
+        self.assertNotIn('html', config['consent'])
+        self.assertContains(res, '<template id="rich-consent"><p>A short survey')
+        self.assertContains(res, '<h3>About this study</h3>')
+
+    def test_markdown_is_sanitised(self):
+        self.survey.intro_text = 'Hi <script>alert(1)</script> <img src=x onerror=alert(2)>'
+        self.survey.save()
+        res = self.client.get(self.url('page'))
+        self.assertNotContains(res, '<script>alert(1)')
+        self.assertNotContains(res, 'onerror')
 
     def test_draft_is_404_for_the_public(self):
         Survey.objects.filter(pk=self.survey.pk).update(status=Survey.DRAFT)

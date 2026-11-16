@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404, render
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 from markdownify.templatetags.markdownify import markdownify
@@ -35,7 +36,21 @@ def can_preview(request):
 
 
 def _md(text):
-    return markdownify(text) if text and text.strip() else ''
+    """Markdown from the admin as sanitised HTML (django-markdownify runs bleach with the site's allow-list)."""
+    return mark_safe(markdownify(text)) if text and text.strip() else ''
+
+
+def rich_text(survey, sections):
+    """The formatted blocks, rendered by the template into <template> tags.
+
+    Kept out of the JSON config on purpose: the page copies these ready-made
+    nodes into place, so no HTML is ever built from strings in the browser.
+    """
+    return {
+        'consent': _md(survey.intro_text),
+        'thanks': _md(survey.thanks_message),
+        'sections': [_md(s.description) for s in sections],
+    }
 
 
 def _url(field):
@@ -64,7 +79,6 @@ def page_config(request, survey, preview):
         'handle': survey.post_handle,
         'consent': {
             'heading': survey.intro_heading,
-            'html': _md(survey.intro_text),
             'statements': survey.consent_list(),
             'startLabel': survey.start_label,
             'researcherEmail': survey.researcher_email,
@@ -73,7 +87,6 @@ def page_config(request, survey, preview):
         'sections': [{
             'kind': s.kind,
             'title': s.title,
-            'html': _md(s.description),
             'button': s.button_label,
             'questions': [{
                 'code': q.code,
@@ -115,7 +128,6 @@ def page_config(request, survey, preview):
         } for c in survey.conditions.filter(active=True)],
         'thanks': {
             'heading': survey.thanks_heading,
-            'html': _md(survey.thanks_message),
             'shareImage': _url(survey.share_image),
             'shareImageDownload': _download_url(survey.share_image),
             'shareText': survey.share_text,
@@ -143,6 +155,7 @@ def survey_page(request, slug):
         'survey': survey,
         'preview': preview,
         'config': page_config(request, survey, preview),
+        'rich': rich_text(survey, survey.sections.all()),
     }))
 
 
