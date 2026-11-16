@@ -4003,7 +4003,7 @@ body.lightbox-open {
   margin: 0 0 40px;
   font-size: 18px;
   line-height: 1.5;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 @media screen and (max-width: 440px) {
   .survey__lede,
@@ -4021,7 +4021,7 @@ body.lightbox-open {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 17px;
   line-height: 1.6;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 .survey__prose p {
   margin: 0 0 20px;
@@ -4055,7 +4055,7 @@ body.lightbox-open {
   border-left: 2px solid rgba(237, 239, 248, 0.15);
   font-size: 15px;
   line-height: 1.5;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .survey__contacts {
@@ -4068,7 +4068,7 @@ body.lightbox-open {
   margin: 0;
   font-size: 15px;
   line-height: 1.6;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 .survey__contacts p + p {
   margin-top: 10px;
@@ -4081,15 +4081,40 @@ body.lightbox-open {
   word-break: break-word;
 }
 
-.sq {
-  margin: 0;
-  padding: 30px 0;
-  border: 0;
-  border-top: 1px solid rgba(237, 239, 248, 0.15);
-  min-width: 0;
+.survey-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.sq:last-of-type {
-  border-bottom: 1px solid rgba(237, 239, 248, 0.15);
+
+.sq,
+.prompt {
+  margin: 0;
+  padding: 22px 24px 24px;
+  min-width: 0;
+  background-color: #10142e;
+  border: 1px solid rgba(237, 239, 248, 0.16);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+@media screen and (max-width: 440px) {
+  .sq,
+  .prompt {
+    padding: 18px 16px 20px;
+  }
+}
+.sq:focus-within,
+.prompt:focus-within {
+  border-color: rgba(237, 239, 248, 0.28);
+  box-shadow: inset 4px 0 0 #2F50E4;
+}
+.sq[data-invalid],
+.prompt[data-invalid] {
+  border-color: rgba(255, 143, 143, 0.6);
+  box-shadow: inset 4px 0 0 #ff8f8f;
+}
+
+.sq__req {
+  color: #ff8f8f;
 }
 
 .sq__label {
@@ -4116,14 +4141,14 @@ body.lightbox-open {
 .sq__optional {
   font-family: "IBM Plex Sans", sans-serif;
   font-size: 14px;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .survey .sq__help {
   clear: both;
   margin: 0 0 10px;
   font-size: 15px;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .sq__body {
@@ -4252,8 +4277,117 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   outline-offset: 3px;
 }
 
-.sq[data-invalid] .chip span {
-  border-color: rgba(255, 143, 143, 0.7);
+.opts {
+  display: grid;
+  gap: 8px;
+}
+
+@media screen and (min-width: 600px) {
+  .opts--row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 10px 14px;
+  border: 1px solid rgba(237, 239, 248, 0.4);
+  background-color: rgba(237, 239, 248, 0.03);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #EDEFF8;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.opt input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.opt:hover {
+  border-color: rgba(237, 239, 248, 0.7);
+  background-color: rgba(237, 239, 248, 0.06);
+}
+.opt:has(input:checked) {
+  border-color: #2F50E4;
+  background-color: rgba(47, 80, 228, 0.28);
+  box-shadow: inset 0 0 0 1px #2F50E4;
+}
+.opt:has(input:focus-visible) {
+  outline: 2px solid #2F50E4;
+  outline-offset: 2px;
+}
+
+.opt__mark {
+  position: relative;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(237, 239, 248, 0.8);
+  border-radius: 50%;
+  transition: border-color 0.15s;
+}
+input[type=checkbox] + .opt__mark {
+  border-radius: 2px;
+}
+input:checked + .opt__mark {
+  border-color: #2F50E4;
+}
+input[type=radio]:checked + .opt__mark::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background-color: #2F50E4;
+}
+input[type=checkbox]:checked + .opt__mark {
+  background-color: #2F50E4;
+}
+input[type=checkbox]:checked + .opt__mark::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #EDEFF8;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.opt__text {
+  min-width: 0;
+}
+
+.survey-pagehead {
+  margin-bottom: 14px;
+  padding: 22px 24px 20px;
+  background-color: #10142e;
+  border: 1px solid rgba(237, 239, 248, 0.16);
+  border-top: 6px solid #2436BC;
+}
+@media screen and (max-width: 440px) {
+  .survey-pagehead {
+    padding: 18px 16px;
+  }
+}
+.survey-pagehead .survey__title {
+  margin-bottom: 10px;
+}
+.survey-pagehead .survey__lede {
+  margin-bottom: 0;
+}
+
+.survey .survey-pagehead__req {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: #ff8f8f;
 }
 
 .scale {
@@ -4273,7 +4407,7 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   gap: 20px;
   margin-top: 10px;
   font-size: 13px;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .survey-check {
@@ -4335,23 +4469,6 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   display: none;
 }
 
-.prompt {
-  margin: 0;
-  padding: 30px 0;
-  border: 0;
-  border-top: 1px solid rgba(237, 239, 248, 0.15);
-  min-width: 0;
-}
-.prompt:last-of-type {
-  border-bottom: 1px solid rgba(237, 239, 248, 0.15);
-}
-.prompt .chips {
-  justify-content: flex-end;
-}
-.prompt[data-invalid] .chip span {
-  border-color: rgba(255, 143, 143, 0.7);
-}
-
 .prompt__legend {
   position: absolute;
   width: 1px;
@@ -4362,6 +4479,28 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.survey .prompt__count {
+  margin: 0 0 14px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
+}
+
+.survey .prompt__ask {
+  margin: 18px 0 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(237, 239, 248, 0.16);
+  font-family: "Raleway", sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: #EDEFF8;
 }
 
 .prompt__ctx {
@@ -4378,6 +4517,7 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .prompt__row {
@@ -4850,7 +4990,7 @@ input[type=number].sq__input::-webkit-inner-spin-button, input[type=number].sq__
   min-height: 1.5em;
   margin-top: 20px;
   font-size: 15px;
-  color: rgba(237, 239, 248, 0.6);
+  color: rgba(237, 239, 248, 0.8);
 }
 
 .survey-panel {
