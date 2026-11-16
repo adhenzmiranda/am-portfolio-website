@@ -153,6 +153,7 @@ class SurveyAdmin(admin.ModelAdmin):
     def links(self, obj):
         if not obj.pk:
             return 'Save first.'
+        from .views import review_url
         live = f'{settings.SITE_URL}/{obj.slug}/'
         qr = reverse('admin:survey_survey_qr', args=[obj.pk])
         export = reverse('admin:survey_survey_export', args=[obj.pk])
@@ -162,6 +163,7 @@ class SurveyAdmin(admin.ModelAdmin):
         return format_html(
             '{lock}'
             '<p>Public link: <a href="{live}" target="_blank" rel="noopener">{live}</a></p>'
+            '<p>Review link (supervisor; no login, nothing saved): <a href="{review}" target="_blank" rel="noopener">{review}</a></p>'
             '<p><a class="button" href="/{slug}/edit/" style="background:#2436BC;color:#fff">Open the editor</a> '
             '<a class="button" href="/{slug}/?preview=1" target="_blank" rel="noopener">Preview (nothing is saved)</a></p>'
             '<p>QR code for '
@@ -172,7 +174,7 @@ class SurveyAdmin(admin.ModelAdmin):
             '<br><small>A tag adds ?src=tag to the link, so the CSV shows where each person came from.</small></p>'
             '<p>Responses as CSV: <a href="{export}?completed=1">completed only</a> | '
             '<a href="{export}">everyone, including drop-outs</a></p>',
-            lock=lock_note, live=live, slug=obj.slug, qr=qr, export=export,
+            lock=lock_note, live=live, review=review_url(obj), slug=obj.slug, qr=qr, export=export,
         )
 
     @admin.display(description='Ready to open?')

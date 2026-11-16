@@ -915,6 +915,7 @@
         h('div', { class: 'ed-add' },
           h('a', { class: 'btn btn--primary ed-btn', href: ST.links.export + '?completed=1', text: 'CSV: completed only' }),
           h('a', { class: 'btn btn--ghost ed-btn', href: ST.links.export, text: 'CSV: everyone, including drop-outs' }))),
+      reviewCard(),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-card__title', text: 'Share the survey' }),
         h('p', { class: 'ed-link-line' }, h('a', { href: ST.links.public, target: '_blank', rel: 'noopener', text: ST.links.public })),
@@ -924,6 +925,20 @@
         }), copied),
         qrForm)
     ];
+  }
+
+  // Review link for a supervisor: the whole survey, no login, nothing saved, any status.
+  function reviewCard() {
+    var status = h('span', { class: 'ed-upload__status', role: 'status' });
+    return h('section', { class: 'ed-card' },
+      h('h2', { class: 'ed-card__title', text: 'Review link (for your supervisor)' }),
+      note('Anyone with this link can try the whole survey, even while it is a draft. No login is needed and nothing is saved, ' +
+           'so it never mixes into your data. Only share it with people reviewing the survey.'),
+      h('p', { class: 'ed-link-line' }, h('a', { href: ST.links.review, target: '_blank', rel: 'noopener', text: ST.links.review })),
+      h('div', { class: 'ed-add' }, button('Copy review link', function () {
+        (navigator.clipboard ? navigator.clipboard.writeText(ST.links.review) : Promise.reject())
+          .then(function () { status.textContent = 'Copied.'; }, function () { status.textContent = ST.links.review; });
+      }, { class: 'btn btn--primary ed-btn' }), status));
   }
 
   // ------------------------------------------------------------ Settings tab

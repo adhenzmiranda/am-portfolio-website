@@ -102,3 +102,6 @@ backups/
 
 # Survey response exports (participant data: never commit)
 survey_responses_*.csv
+
+# Survey media drafts (reel, infographic, their sources): uploaded through the editor, not served from the repo
+survey_media/

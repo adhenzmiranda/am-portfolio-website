@@ -27,7 +27,7 @@ from projects.direct_upload import DirectUploadField, signed_upload_params
 from .admin import LOCKED_SURVEY_FIELDS, duplicate_survey
 from .logic import progress
 from .models import BUILTIN_MOCKS, Condition, Prompt, Question, Section, Survey
-from .views import can_preview
+from .views import can_preview, review_url
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +157,7 @@ def state(survey):
         'progress': progress(survey),
         'links': {
             'public': f'{settings.SITE_URL}/{survey.slug}/',
+            'review': review_url(survey),
             'preview': f'/{survey.slug}/?preview=1',
             'editor': f'/{survey.slug}/edit/',
             'api': f'/{survey.slug}/edit/api/',
