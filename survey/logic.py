@@ -10,6 +10,9 @@ SEND, CHANGE, DONT_SEND = 'send', 'change', 'dont_send'
 SEND_CHOICES = [(SEND, 'Send as is'), (CHANGE, 'Change it first'), (DONT_SEND, 'Wouldn’t send')]
 SEND_CODES = [code for code, _ in SEND_CHOICES]
 
+# Order of the construct mean columns in the CSV (as in the rating statements).
+CONSTRUCT_ORDER = ['engagement', 'self_efficacy', 'response_efficacy', 'intention']
+
 # People who started this long ago without finishing count as dropped out
 # (no longer hold a place when balancing groups).
 RECENT_START = timedelta(minutes=60)
