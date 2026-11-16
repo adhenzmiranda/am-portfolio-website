@@ -203,7 +203,11 @@
     slide: '<div class="mock mslide"><div class="mt">Lecture 4: Network security basics</div><ul><li>Firewalls and what they block</li><li>TCP vs UDP</li><li>Common attacks: phishing, DDoS</li></ul><div class="pg">4 / 22</div></div>',
     chat: '<div class="mock mchat"><div class="mt">Group project (5 members)</div><p><b>Sara Al Mansoori</b>my number is 050 987 6543 if anyone needs it</p><p><b>Omar Haddad</b>grades are out, I got 68 in the midterm</p><p><b>Lina</b>meeting moved to Thursday, room B214</p></div>',
     bank: '<div class="mock mbank"><div class="mt">Your bank</div><div class="row"><span>Account no.</span><b>0123 4567 8901 23</b></div><div class="row"><span>Balance</span><b>AED 3,250.40</b></div><div class="err">Error 403: session expired. Please log in again.</div></div>',
-    memory: '<div class="mock mmem"><div class="mt">Saved memories</div><ul><li>Studies cybersecurity at university</li><li>Prefers short, simple answers</li><li>Passport number P8364215, expires 2029</li><li>Plays football on weekends</li><li>Mentioned their ethnicity and religion in an earlier chat</li><li>Is vegetarian</li><li>Lives in Al Nahda, Sharjah</li></ul><div class="pg">Memory is on</div></div>'
+    memory: '<div class="mock mmem"><div class="mt">Saved memories</div><ul><li>Studies cybersecurity at university</li><li>Prefers short, simple answers</li><li>Passport number P8364215, expires 2029</li><li>Plays football on weekends</li><li>Mentioned their ethnicity and religion in an earlier chat</li><li>Is vegetarian</li><li>Lives in Al Nahda, Sharjah</li></ul><div class="pg">Memory is on</div></div>',
+    // Safe: the contact details are already blacked out.
+    cvRedacted: '<div class="mock mcv"><div class="mt">CV_final.pdf</div><div class="row"><span>Name</span><i class="redact"></i></div><div class="row"><span>Phone</span><i class="redact"></i></div><div class="row"><span>Email</span><i class="redact redact--long"></i></div><div class="sec">Experience</div><p><b>Marketing intern</b>, events company, 2025<br>helped with social media and organising events</p><div class="sec">Skills</div><p>Canva, Excel, Arabic and English</p></div>',
+    // Risky, but quietly: the request is innocent; the signature (and the illness) are the leak.
+    uniEmail: '<div class="mock memail"><div class="mt">Draft: Extension request</div><div class="hdr"><span>To:</span> Dr Khalid (course leader)</div><p>hi doctor, i was sick last week with a bad fever so i couldnt finish the report, can i have 3 more days pls</p><div class="sig">Mariam Al Suwaidi<br>Student ID 202312345 &middot; Mob 050 456 7812</div></div>'
   };
 
   // ------------------------------------------------------------ top bar and site chrome
@@ -434,11 +438,11 @@
     var ctx = '';
     if (p.contextImage || p.contextMock) {
       ctx = '<div class="prompt__ctx"><span class="prompt__ctx-label">' + esc(p.contextLabel) + '</span>' +
-        (p.contextImage ? '<img class="prompt__shot" src="' + esc(p.contextImage) + '" alt="' + esc(p.contextLabel) + '" loading="lazy">' : (MOCKS[p.contextMock] || '')) +
+        (p.contextImage ? '<img class="prompt__shot" src="' + esc(p.contextImage) + '" alt="' + esc(p.contextLabel) + '" loading="lazy" draggable="false">' : (MOCKS[p.contextMock] || '')) +
         '</div>';
     }
     var attachment = p.screenshot
-      ? '<img class="prompt__shot" src="' + esc(p.screenshot) + '" alt="Attached screenshot" loading="lazy">'
+      ? '<img class="prompt__shot" src="' + esc(p.screenshot) + '" alt="Attached screenshot" loading="lazy" draggable="false">'
       : (MOCKS[p.mock] || '');
     var count = 'Message ' + esc(position) + ' of ' + esc(C.prompts.length);
     return '<fieldset class="prompt" data-prompt="' + esc(p.n) + '"><legend class="prompt__legend">' + count + '</legend>' +

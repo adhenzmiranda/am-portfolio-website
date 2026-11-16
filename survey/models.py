@@ -31,6 +31,8 @@ BUILTIN_MOCKS = [
     ('chat', 'Group chat'),
     ('bank', 'Banking app error'),
     ('memory', 'Chatbot saved memories'),
+    ('cvRedacted', 'CV with contact details blacked out (safe)'),
+    ('uniEmail', 'Email to a lecturer, ID and phone in the signature (risky)'),
 ]
 
 

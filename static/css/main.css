@@ -4628,6 +4628,56 @@ input[type=checkbox]:checked + .opt__mark::after {
   margin-bottom: 2px;
 }
 
+.mcv .sec {
+  margin: 8px 0 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #445;
+}
+.mcv p {
+  margin: 0 0 4px;
+}
+
+.redact {
+  display: inline-block;
+  width: 110px;
+  height: 0.95em;
+  background-color: #16181d;
+  border-radius: 2px;
+}
+.redact--long {
+  width: 150px;
+}
+
+.memail .hdr {
+  margin-bottom: 6px;
+  padding: 3px 0 6px;
+  border-bottom: 1px solid #eceef2;
+  color: #556;
+}
+.memail .hdr span {
+  color: #889;
+}
+.memail p {
+  margin: 0 0 8px;
+}
+.memail .sig {
+  padding-top: 6px;
+  border-top: 1px solid #eceef2;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #8a8f99;
+}
+
+.bubble,
+.prompt__ctx {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .post {
   width: min(360px, 100%);
   margin: 10px auto 20px;

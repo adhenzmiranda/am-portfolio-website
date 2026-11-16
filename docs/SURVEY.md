@@ -101,6 +101,17 @@ The contacts aren't in the code (the repo is public), so enter them once on the 
    ```
 3. Keep CSV files out of the repo. `survey_responses_*.csv` is gitignored.
 
+## Optional trickier prompts (check with your supervisor first)
+
+Two built-in screenshots are ready if you want prompts 2 and 5 to make people think harder. To swap one, open the **Prompts** tab, change the message and the answer key, and pick the built-in screenshot. It works while the survey has no responses.
+
+| Prompt | Message | Built-in screenshot | Answer key | Why it's tricky |
+| --- | --- | --- | --- | --- |
+| 2 | Can you rewrite my CV so it sounds more professional? | CV with contact details blacked out | **Safe** | Looks personal, but the details are already removed. It catches over-caution, like prompt 4. |
+| 5 | Can you make this email to my lecturer sound more formal? | Email to a lecturer, ID and phone in the signature | **Risky** | The request is innocent. The leak is the small signature (name, student ID, mobile) and the illness (health data). |
+
+All prompt screenshots and chat bubbles can't be highlighted, copied, dragged or long-pressed, so they behave like real screenshots.
+
 ## CSV columns
 
 | Column | Meaning |

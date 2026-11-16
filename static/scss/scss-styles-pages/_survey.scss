@@ -797,6 +797,68 @@ input[type='number'].sq__input {
     margin-bottom: 2px;
 }
 
+// CV with the contact details blacked out (a safe prompt that looks risky)
+.mcv {
+    .sec {
+        margin: 8px 0 3px;
+        font-size: 10.5px;
+        font-weight: $fw-bold;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #445;
+    }
+
+    p {
+        margin: 0 0 4px;
+    }
+}
+
+.redact {
+    display: inline-block;
+    width: 110px;
+    height: 0.95em;
+    background-color: #16181d;
+    border-radius: 2px;
+
+    &--long {
+        width: 150px;
+    }
+}
+
+// Email to a lecturer: the leak is in the small grey signature
+.memail {
+    .hdr {
+        margin-bottom: 6px;
+        padding: 3px 0 6px;
+        border-bottom: 1px solid #eceef2;
+        color: #556;
+
+        span {
+            color: #889;
+        }
+    }
+
+    p {
+        margin: 0 0 8px;
+    }
+
+    .sig {
+        padding-top: 6px;
+        border-top: 1px solid #eceef2;
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: #8a8f99;
+    }
+}
+
+// Prompts behave like screenshots in a chat: nothing to highlight, copy, drag or long-press.
+.bubble,
+.prompt__ctx {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
 // ---------------------------------------------------------------- Media posts (fixed "phone app" look)
 
 .post {
