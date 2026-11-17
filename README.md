@@ -1,184 +1,181 @@
-# 🎨 AM Portfolio Website
+# Adhenz Miranda: portfolio website
 
-A modern, responsive portfolio website built with Django and SCSS, showcasing the projects, skills, and professional journey of yours truly, Adhenz Miranda.
+The source code of **[adhenzmiranda.com](https://adhenzmiranda.com)**, the portfolio of Adhenz Miranda, a UAE-based creative developer and content creator studying an MSc in Cybersecurity.
 
-![Portfolio Preview](static/assets/images/navbar/PortfolioLogo.png)
+It's a Django site with its own website builder, **Studio**, so projects, blog posts, media and the About page are all edited in a friendly interface instead of the Django admin. It also hosts the survey for an MSc dissertation.
 
----
-
-## ✨ Features
-
-- **Responsive Design**: Mobile-first approach with custom breakpoints and adaptive layouts
-- **Modern UI**: Custom SCSS architecture with smooth GSAP animations
-- **Django Backend**: Robust backend with REST API support and admin customization
-- **Project Showcase**: Featured projects carousel on homepage with dynamic ordering
-- **Advanced Media Management**:
-  - Photo galleries with thumbnail previews
-  - Video uploads with compression tracking
-  - Social media embeds (Instagram, Reddit, LinkedIn, Facebook)
-  - Lightbox/carousel viewer for fullscreen media browsing
-- **Dynamic Category System**: Database-driven categories with admin interface for easy management
-- **Custom Error Pages**: Branded 403, 404, and 500 error pages with http.cats integration
-- **Contact Form**: Backend-integrated contact system
-- **Downloadable CV**: Easy access to professional resume
-- **Enhanced Admin Panel**:
-  - Visual thumbnail previews for photos and videos
-  - Bulk upload capabilities
-  - Inline editing for project media
-  - Compression quality tracking for videos
-- **iOS Compatibility**: Blend mode detection for Safari support
-- **Accessible & SEO-Friendly**: Semantic HTML and optimized meta tags
+![The home page of adhenzmiranda.com](docs/screenshots/home.jpg)
 
 ---
 
-## 🛠️ Tech Stack
+## What's on the site
 
-**Frontend:**
+| Page | What it shows |
+| --- | --- |
+| **Home** | Introduction, featured projects and the technology stack |
+| **Projects** | Every project grouped by year, with filters by category |
+| **Project pages** | Two layouts. **Portfolio:** description, videos, a photo gallery with a full-screen viewer, embeds (YouTube, Vimeo, Instagram, Figma, itch.io, LinkedIn) and the tools used. **Blog post:** an article with numbered chapters and a chapter list beside it. |
+| **About** | Experience and Education, kept in the database and edited in Studio |
+| **Contact** | A contact form (Cloudflare Turnstile and rate limiting against spam) and a CV download |
+| **Error pages** | Branded 403, 404 and 500 pages, each with its [http.cat](https://http.cat) |
 
-- HTML5, SCSS/CSS3 (modular architecture with components, layouts, and pages)
-- JavaScript (ES6+ with GSAP animations)
-- Custom lightbox/carousel component for media viewing
+<table>
+  <tr>
+    <td><img src="docs/screenshots/featured.jpg" alt="Featured projects on the home page"></td>
+    <td><img src="docs/screenshots/projects.jpg" alt="The projects page with category filters"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/blog-post.jpg" alt="A blog post with its chapter list"></td>
+    <td><img src="docs/screenshots/about.jpg" alt="The About page"></td>
+  </tr>
+</table>
 
-**Backend:**
+Every page works on phones, follows the visitor's "reduce motion" setting, and includes search essentials: page titles and descriptions, a sitemap, `robots.txt`, `llms.txt`, and Bing [IndexNow](https://www.indexnow.org/) pings when content changes.
 
-- Django 5.x
-- Django REST Framework
-- SQLite (development) / PostgreSQL (production-ready)
-- Cloudinary integration for media storage
-- Custom admin interface with enhanced features
-
-**Other Tools:**
-
-- Cloudinary (image hosting)
-- Node.js & npm (for SCSS compilation)
-- Git & GitHub
-- Visual Studio Code
+<p align="center"><img src="docs/screenshots/phone.jpg" width="300" alt="The home page on a phone"></p>
 
 ---
 
-## 📦 Project Structure
+## Studio: the website builder
+
+Studio, at `/studio/`, is for the site owner only (staff login with two-factor authentication). It has:
+
+- **Dashboard:** counts, shortcuts and recently edited projects.
+- **Projects:** search and filters. Creating a project takes one name.
+- **Project editor:**
+  - **Details:** name, year, category, featured, technologies and cover image.
+  - **Write:** the description, with a formatting toolbar and a live preview.
+  - **Chapters (blog posts):** add, reorder, and import or export as markdown.
+  - **Media:** photos and videos upload straight from the browser to Cloudinary, with progress. Embeds are checked and previewed.
+- **About page:** Experience and Education, with show or hide.
+- **Survey editor:** the dissertation survey's editor, in the same frame.
+
+Everything saves itself as you type. Every save is checked on the server with the same rules as the Django admin.
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/studio-dashboard.jpg" alt="Studio dashboard"></td>
+    <td><img src="docs/screenshots/studio-write.jpg" alt="Writing a blog post in Studio with the live preview"></td>
+  </tr>
+</table>
+
+How it's built: [docs/STUDIO_ARCHITECTURE.md](docs/STUDIO_ARCHITECTURE.md).
+
+---
+
+## The dissertation survey
+
+The `survey` app runs the MSc research survey at `/msc-survey/` (a draft until ethics approval). It has:
+
+- a Google Forms-style editor
+- media groups assigned so they stay even
+- scoring done on the server
+- a lock once responses exist
+- a CSV export ready for analysis
+
+Read [docs/SURVEY.md](docs/SURVEY.md) first, then [docs/SURVEY_ARCHITECTURE.md](docs/SURVEY_ARCHITECTURE.md).
+
+---
+
+## Tech stack
+
+| Area | Used |
+| --- | --- |
+| Back end | Python 3.12, Django 5.2, Django REST Framework |
+| Database | PostgreSQL on [Neon](https://neon.tech) (live), SQLite (local) |
+| Media | [Cloudinary](https://cloudinary.com), with direct browser uploads |
+| Front end | SCSS compiled with Dart Sass, plain JavaScript, GSAP |
+| Hosting | Heroku, behind Cloudflare; static files served by WhiteNoise |
+| Security and monitoring | django-otp (2FA), django-ratelimit, Cloudflare Turnstile, Sentry |
+
+---
+
+## Security
+
+- The Django admin sits at a secret address and needs a password plus a 2FA code. Studio and the survey editor need the same login.
+- In production the site forces HTTPS, sets HSTS and uses secure cookies.
+- Pasted embeds are reduced to one checked `<iframe>` address from an allowed site.
+- The contact form is protected by Turnstile and rate limiting. Visitors' IP addresses are used for rate limiting only and are never stored.
+- Uploads are verified on the server before they're saved.
+- CodeQL scans every pull request.
+
+More detail: [docs/SECURITY_DOCUMENTATION.md](docs/SECURITY_DOCUMENTATION.md).
+
+---
+
+## Run it locally (Windows)
+
+1. Clone the repository and open it in VS Code.
+2. In the terminal, run the setup script. It installs Python 3.12, Node and Git if they're missing, creates `.venv`, installs everything, writes a starter `.env`, compiles the styles and sets up the database:
+
+   ```
+   powershell -ExecutionPolicy Bypass -File scripts\setup_dev.ps1
+   ```
+
+3. Restart VS Code, then fill in `.env`. You need at least `SECRET_KEY`, `DEBUG=True` and the three `CLOUDINARY_*` values.
+4. Start the site at http://127.0.0.1:8000:
+
+   ```
+   npm run dev
+   ```
+
+Other everyday commands:
+
+```
+npm run sass                          # compile the SCSS once
+npm run sass:watch                    # recompile on save
+.venv\Scripts\python manage.py test   # run the tests
+```
+
+A new local database is empty. [CLAUDE.md](CLAUDE.md) explains how to copy the live content down, how to log in to the admin locally, and the safety rules (for example, never point local work at the live database).
+
+---
+
+## Project structure
 
 ```
 am-portfolio-website/
-├── static/           # Static assets
-│   ├── assets/       # Images, icons, tech stack logos
-│   ├── css/          # Compiled CSS
-│   ├── scss/         # SCSS source files (components, layouts, pages)
-│   └── js/           # JavaScript files and components
-├── templates/        # Django HTML templates
-├── projects/         # Django app: models, views, admin, serializers
-│   ├── models.py     # Project, Category, ProjectPhoto, ProjectVideo, ProjectEmbed
-│   ├── admin.py      # Custom admin with inline editors and previews
-│   ├── views.py      # View functions with project ordering
-│   └── migrations/   # Database migrations
-├── media/            # User-uploaded media (Cloudinary integration)
-├── manage.py         # Django management script
-└── README.md         # Project documentation
+├── projects/        Django project: settings, URLs, and the main app (projects, About, contact, SEO)
+├── studio/          Studio, the website builder: pages, JSON API, tests
+├── survey/          The dissertation survey: models, logic, editor API, tests
+├── templates/       HTML templates (site pages, components, Studio, survey)
+├── static/
+│   ├── scss/        SCSS source (base, components, pages)
+│   ├── css/         Compiled CSS (committed)
+│   ├── js/          Site JavaScript (animations, lightbox, filters)
+│   ├── studio/      Studio's editor kit and page scripts
+│   └── survey/      Survey and survey editor scripts
+├── scripts/         Setup and backup scripts
+├── docs/            Architecture, security and how-to documents
+└── CLAUDE.md        Notes for developers and AI coding agents
 ```
 
 ---
 
-## 🚀 Getting Started
+## Documentation
 
-### Prerequisites
-
-- Python 3.10+
-- Node.js & npm
-
-### Installation
-
-1. **Clone the repository:**
-
-   ```sh
-   git clone https://github.com/adhenzmiranda/am-portfolio-website.git
-   cd am-portfolio-website
-   ```
-
-2. **Create and activate a virtual environment:**
-
-   ```sh
-   python -m venv venv
-   # On Windows:
-   venv\Scripts\activate
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
-
-3. **Install Python dependencies:**
-
-   ```sh
-   pip install -r requirements.txt
-   ```
-
-4. **Install Node.js dependencies (for SCSS):**
-
-   ```sh
-   npm install
-   ```
-
-5. **Compile SCSS:**
-
-   ```sh
-   npm run scss
-   ```
-
-   Or to watch for changes:
-
-   ```sh
-   npm run scss:watch
-   ```
-
-6. **Apply migrations and run the server:**
-   ```sh
-   python manage.py migrate
-   python manage.py runserver
-   ```
+| Document | About |
+| --- | --- |
+| [CLAUDE.md](CLAUDE.md) | Setup, everyday commands, environment, deploying and safety rules |
+| [docs/STUDIO_ARCHITECTURE.md](docs/STUDIO_ARCHITECTURE.md) | How Studio works |
+| [docs/STUDIO_CHECKLIST.md](docs/STUDIO_CHECKLIST.md) | What Studio has, and ideas for later |
+| [docs/SURVEY.md](docs/SURVEY.md) | Running the dissertation survey |
+| [docs/SURVEY_ARCHITECTURE.md](docs/SURVEY_ARCHITECTURE.md) | How the survey works, with diagrams |
+| [docs/SECURITY_DOCUMENTATION.md](docs/SECURITY_DOCUMENTATION.md) | Security measures |
+| [docs/SECURITY_ROUTINE_CHECKLIST.md](docs/SECURITY_ROUTINE_CHECKLIST.md) | Regular security checks |
+| [docs/REDESIGN_SPEC.md](docs/REDESIGN_SPEC.md) | The current design |
 
 ---
 
-## 🖼️ Screenshots
+## Licence
 
-![Screenshot 1](static/assets/screenshots/s1.png)
-![Screenshot 2](static/assets/screenshots/s2.png)
-![Screenshot 3](static/assets/screenshots/s3.png)
-![Screenshot 4](static/assets/screenshots/s4.png)
-![Screenshot 5](static/assets/screenshots/s5.png)
+The source code is under the [MIT Licence](LICENSE).
+
+All content (text, images, videos and the logo) is © Adhenz Miranda and may not be used without permission.
 
 ---
 
-## 🎨 Design & UX
+## Contact
 
-- **Clean & Modern Interface**: Minimalist design with focus on content
-- **Featured Projects Carousel**: Auto-rotating showcase on homepage
-- **Lightbox Media Viewer**: Fullscreen carousel for browsing project media (photos, videos, embeds)
-- **Project Detail Pages**:
-  - Comprehensive project information with markdown support
-  - Technology stack visualization with icons
-  - Video galleries with compression info
-  - Social media embed support
-  - Photo galleries with captions
-- **Dynamic Navigation**: Mobile-responsive navbar with animated toggle
-- **Technology Stack Section**: Visual representation of skills and tools
-- **Custom Error Pages**: Branded error handling with personality
-- **Contact & CV Sections**: Easy ways to get in touch or download resume
-
----
-
-## 📄 License
-
-The source code for this website is licensed under the [MIT License](LICENSE).
-
-All content (text, images, etc.) is © Adhenz Miranda and may not be used without permission.
-
----
-
-## 📞 Contact
-
-**Adhenz Miranda**  
-[adhenz.miranda@gmail.com](mailto:adhenz.miranda@gmail.com)  
-[LinkedIn](https://linkedin.com/in/am04)  
-[Portfolio Live](https://am04-c1eccbd13c2a.herokuapp.com/)
-
----
-
-Made with ❤️ by Adhenz Miranda | AM04 Digital
+**Adhenz Miranda**<br>
+[adhenz.miranda@gmail.com](mailto:adhenz.miranda@gmail.com) · [LinkedIn](https://linkedin.com/in/am04) · [adhenzmiranda.com](https://adhenzmiranda.com)
