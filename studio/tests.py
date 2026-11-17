@@ -1,6 +1,8 @@
 import json
 import os
+import time
 from unittest import mock
+from urllib.parse import parse_qs, urlsplit
 
 os.environ.setdefault('ADMIN_URL', 'admin-test')
 
@@ -55,7 +57,13 @@ class AccessTests(StudioTestCase):
         for url in ('/studio/', '/studio/projects/', f'/studio/projects/{self.project.pk}/'):
             res = self.client.get(url)
             self.assertEqual(res.status_code, 302, url)
-            self.assertIn('/login/?next=' + url, res['Location'])
+            self.assertIn('/login/?', res['Location'])
+            self.assertEqual(parse_qs(urlsplit(res['Location']).query)['next'], [url])
+
+    def test_login_redirect_keeps_the_whole_link(self):
+        self.allowed.return_value = False
+        res = self.client.get('/studio/projects/?mode=blogpost&featured=1')
+        self.assertEqual(parse_qs(urlsplit(res['Location']).query)['next'], ['/studio/projects/?mode=blogpost&featured=1'])
 
     def test_api_refuses_without_login(self):
         self.allowed.return_value = False
@@ -226,6 +234,34 @@ class ChapterTests(StudioTestCase):
         res = self.post(self.base + 'cards/import/', {'markdown': 'no markers here', 'commit': True})
         self.assertEqual(res.status_code, 400)
         self.assertEqual(self.project.cards.count(), 0)
+
+    def test_import_size_is_capped(self):
+        res = self.post(self.base + 'cards/import/', {'markdown': 'x' * 300_001})
+        self.assertEqual(res.status_code, 400)
+
+    def test_import_parser_stays_fast_on_hostile_text(self):
+        # The inputs CodeQL described for the old patterns; each used to take quadratic time.
+        from projects.markdown_import import parse_markdown_cards
+        hostile = [
+            '<!-- CARD -->' + '<!--title:' + ' ' * 50_000,
+            '<!-- CARD -->' + '<!--teaser:' + ' ' * 50_000,
+            '<!--card-->' + '<!--card-->a' * 20_000,
+            '<!-- CARD -->\n<!-- TITLE: t -->\n<!-- TEASER: t -->\nb\n<!-- TAKEAWAYS -->\n* ' + ' ' * 50_000 + '\n<!-- /CARD -->',
+        ]
+        for text in hostile:
+            started = time.perf_counter()
+            parse_markdown_cards(text)
+            self.assertLess(time.perf_counter() - started, 0.5)
+
+    def test_import_parser_reads_the_template_as_before(self):
+        from projects.markdown_import import parse_markdown_cards
+        text = ('<!-- /CARD --> stray\n<!-- card -->\n<!--TITLE:   Spaced title   -->\n<!-- TEASER: Tease -->\n'
+                'Body\n<!-- TAKEAWAYS -->\n- One\n  *   Two  \n-not a bullet\n- \n<!-- /CARD -->\n<!-- CARD --> never closed')
+        cards, errors = parse_markdown_cards(text)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(cards), 1)
+        self.assertEqual((cards[0].title, cards[0].teaser, cards[0].body), ('Spaced title', 'Tease', 'Body'))
+        self.assertEqual(cards[0].takeaways_raw, 'One\nTwo\n')
 
     def test_export(self):
         ProjectCard.objects.create(project=self.project, title='Exported', teaser='T', body='Body')

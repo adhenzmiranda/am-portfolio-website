@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme, urlencode
 
 
 def is_studio_user(request):
@@ -26,7 +27,11 @@ def studio_page(view):
     @wraps(view)
     def wrapped(request, *args, **kwargs):
         if not is_studio_user(request):
-            return redirect(f"{reverse('admin:login')}?next={request.get_full_path()}")
+            target = request.get_full_path()
+            if not url_has_allowed_host_and_scheme(target, allowed_hosts={request.get_host()},
+                                                   require_https=request.is_secure()):
+                target = reverse('studio:dashboard')
+            return redirect(f"{reverse('admin:login')}?{urlencode({'next': target})}")
         get_token(request)   # sets the CSRF cookie the API calls send back
         return _private(view(request, *args, **kwargs))
     return wrapped

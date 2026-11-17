@@ -31,6 +31,7 @@ PROJECT_FIELDS = ('name', 'description', 'year', 'featured', 'category', 'techno
 CARD_FIELDS = ('title', 'teaser', 'body', 'takeaways_raw', 'visual_placeholder')
 IMAGE_FIELDS = {'project': {'thumbnail_image'}, 'card': {'image'}}
 MAX_IMAGE_MB = 10
+MAX_IMPORT_CHARS = 300_000   # a long article is ~60k; this leaves plenty of room
 YEAR_RANGE = (1990, 2100)
 MODES = [('portfolio', 'Portfolio'), ('blogpost', 'Blog Post')]
 
@@ -335,7 +336,10 @@ def cards_import(request, pk):
     """{"markdown": "...", "commit": false} previews; "commit": true creates (append, or "replace": true)."""
     project_obj = get_object_or_404(Projects, pk=pk)
     body = _body(request) or {}
-    cards, errors = parse_markdown_cards(str(body.get('markdown', '')))
+    text = str(body.get('markdown', ''))
+    if len(text) > MAX_IMPORT_CHARS:
+        return _error(f'That is too long to import at once (over {MAX_IMPORT_CHARS // 1000}k characters). Split it into parts.')
+    cards, errors = parse_markdown_cards(text)
     preview_data = {
         'cards': [{'title': c.title, 'teaser': c.teaser, 'words': c.word_count, 'takeaways': c.takeaway_count} for c in cards],
         'errors': [{'index': e.index, 'title': e.title, 'message': e.message} for e in errors],
