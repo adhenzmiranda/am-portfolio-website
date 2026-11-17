@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'projects',
     'survey',
+    'studio',
     'markdownify',
     'django_otp',
     'django_otp.plugins.otp_totp',

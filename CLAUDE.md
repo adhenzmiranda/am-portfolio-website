@@ -96,6 +96,10 @@ This needs `heroku login` first. Images still load from Cloudinary. `backups/` i
 ## Docs and current work
 
 - `docs/`: security notes (`SECURITY_DOCUMENTATION.md`, `SECURITY_ROUTINE_CHECKLIST.md`, `NIST_SECURITY_REPORT.md`), `REDESIGN_SPEC.md`, `EMBED_IMPLEMENTATION.md`, `DATABASE_LOCK_PREVENTION.md`.
+- **Studio:** the website builder at `/studio/` (staff with 2FA), used instead of the Django admin for everyday content. **Read `docs/STUDIO_ARCHITECTURE.md` first**; progress is in `docs/STUDIO_CHECKLIST.md` (tick a box only when it's built and tested).
+  - Code: the `studio` app (`api.py` does every write through a ModelForm), `templates/studio/page.html` (a shell), and `static/studio/` (`kit.js` is shared; one script per page).
+  - Same front-end rules as the survey: DOM methods only, and state loaded with `fetch`.
+  - Tests mock Cloudinary uploads. Don't upload real files from local tests.
 - **Dissertation survey:** the `survey` app at `/msc-survey/` (Draft until ethics approval). **Read `docs/SURVEY.md` first**; `SURVEY_HANDOVER.md` is the original brief.
   - Content lives in the database, not the code. It's edited in the Google Forms-style editor at `/msc-survey/edit/` (staff with 2FA) or in the Django admin.
   - `survey/seed.py` only loads the starting version.
