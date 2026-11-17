@@ -11,8 +11,8 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 | Part | State |
 | --- | --- |
 | Dashboard, All projects, project editor (Details, Write, Chapters) | Built (PR 1) |
-| Media tab | Shows the counts and links to the admin for now. The full editor comes in PR 2. |
-| About page (`/studio/about/`) | PR 2 |
+| Media tab (photos, videos, embeds) | Built (PR 2) |
+| About page (`/studio/about/`) | PR 3 |
 
 ---
 
@@ -31,7 +31,7 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 ```mermaid
 flowchart TD
     D["/studio/<br/>Dashboard"] --> P["/studio/projects/<br/>All projects: search, filter"]
-    D -.-> A["/studio/about/<br/>Experience and Education<br/>(PR 2)"]
+    D -.-> A["/studio/about/<br/>Experience and Education<br/>(PR 3)"]
     D --> S["/msc-survey/edit/<br/>Survey editor (existing)"]
     D --> X["Django admin<br/>(backup)"]
     P -->|"+ New project"| E
@@ -50,7 +50,7 @@ flowchart TD
 | **Project editor: Details** | Name, year, category (add new inline), Featured switch, Portfolio / Blog Post switch, technologies as chips (Portfolio only, since the Blog Post page hides them), thumbnail upload, delete |
 | **Project editor: Write** | The description: a markdown editor with a toolbar, a formatted preview drawn in the page (no frame, so it can't steal typing focus), and Insert image from the project's photos. **Portfolio:** shown beside the cover image. **Blog Post:** the article intro. |
 | **Project editor: Chapters** (Blog Post) | The article's sections, which the live page shows as **Chapters**: title, teaser, body, takeaways, image, placeholder. Reorder, plus import and export as markdown. |
-| **Project editor: Media** | **Portfolio:** Videos, Photos and Embeds sections. Photos are multi-uploaded straight to Cloudinary with progress bars, captions, drag to reorder; videos by direct upload (up to 100 MB); embeds pasted, validated and previewed. **Blog Post:** the photo library for images placed in the article (copy or insert the markdown). |
+| **Project editor: Media** | **Portfolio:** Videos, Photos and Embedded work, in the live page's order. Pick or drop several files; each goes straight to Cloudinary with its own progress row (photos up to 10 MB, videos up to 100 MB). Captions, drag or arrow reorder, delete. Embeds are pasted, checked and previewed. **Blog Post:** only the photo library, for images placed in the article (Copy markdown, or the Image button in Write). Videos and embeds are kept but not shown, since the live blog page doesn't show them. |
 
 How the two modes show on the live page:
 
@@ -78,7 +78,23 @@ flowchart LR
 
 - **Pages are shells:** each page loads its data from the API, the same pattern that passed CodeQL in the survey editor, so nothing is read back out of the page.
 - **Every write** goes through a `ModelForm` with an explicit list of fields. The models' own `clean()` runs, including the embed safety check.
-- **Uploads:** photos and videos (PR 2) go **straight from the browser to Cloudinary** with a signature from the server (`projects/direct_upload.py`, shared with the admin), so Heroku's 30-second limit never applies. Thumbnails and chapter images (10 MB or less) go through the server, inside their own database savepoint, so a failed upload reports a clear error and changes nothing.
+- **Uploads:** photos and videos go **straight from the browser to Cloudinary** with a signature from the server (`projects/direct_upload.py`, shared with the admin), so Heroku's 30-second limit never applies.
+
+```mermaid
+sequenceDiagram
+    participant B as Browser (Media tab)
+    participant S as Studio API
+    participant C as Cloudinary
+    B->>S: media/photos/sign/
+    S-->>B: signature (folder and size limit set by the server)
+    B->>C: the file, with that signature
+    C-->>B: public id, version, Cloudinary's signature
+    B->>S: media/photos/new/ with the signed reference
+    S->>S: check the signature, the type and the folder
+    S-->>B: the new photo (or "could not be verified")
+```
+
+  The server never trusts the browser's reference on its own: it must carry Cloudinary's signature for this account, be the right type (image or video), and sit in that kind's folder. Removing a photo or video only removes it from the project. The file stays in Cloudinary, because a blog post's text may still show it by its address. Thumbnails and chapter images (10 MB or less) go through the server, inside their own database savepoint, so a failed upload reports a clear error and changes nothing.
 - **Saves trigger the same signals as the admin,** so the IndexNow ping for changed pages keeps working. Autosave saves often, so `_ping_indexnow` in `projects/models.py` sends each page **at most once every 10 minutes** (a cache key per URL). Saving in the admin follows the same rule.
 
 ### The API
@@ -95,6 +111,9 @@ All under `/studio/api/`. Reads are GET, writes are POST with JSON (uploads use 
 | `projects/<id>/cards/new/`, `cards/<cid>/`, `cards/<cid>/delete/`, `cards/<cid>/upload/image/` | Chapter add, save, delete, image |
 | `projects/<id>/cards/reorder/` | New order (must list exactly this project's chapters) |
 | `projects/<id>/cards/import/`, `cards/export/` | Check or add markdown chapters (append or replace); download them as `.md` |
+| `projects/<id>/media/<kind>/sign/` | A signature for one direct upload (`photos` or `videos`) |
+| `projects/<id>/media/<kind>/new/` | Add a photo or video from a verified upload reference, or an embed from pasted code |
+| `projects/<id>/media/<kind>/<mid>/`, `.../delete/`, `media/<kind>/reorder/` | Caption (and embed code), remove from the project, new order |
 
 ---
 
@@ -109,7 +128,7 @@ All under `/studio/api/`. Reads are GET, writes are POST with JSON (uploads use 
 | Autosave queue | Saves each field about 0.7 s after typing stops; merges edits per item; shows *Saving… / Saved* or the reason in red |
 | Field helpers | Text, number, textarea (auto-growing), select, switch, segmented buttons, chips; locked or disabled states; per-field errors |
 | Drag and drop + arrows | The ⠇ handle on a laptop, ↑ ↓ everywhere; posts the new order |
-| Uploads | Server upload for small images, with Remove. Signed direct upload with a progress bar comes with Media (PR 2). |
+| Uploads | `imageField`: server upload for small images, with Remove. `directUpload`: sign, send straight to Cloudinary with progress, return the signed reference; the page warns before you leave mid-upload. |
 | Actions | `act()`: create, delete or reorder, with an optional confirm, then reload the state |
 
 The survey editor was built first, with its own copy of these pieces. Moving it onto the kit is a later step (see the checklist), so the survey isn't touched while it waits for approval.
@@ -141,5 +160,6 @@ The survey editor was built first, with its own copy of these pieces. Moving it 
 
 ## 7. Testing
 
-- **`studio/tests.py`** (`.venv\Scripts\python manage.py test studio`): access, dashboard, create, edit and validation, categories, delete, uploads with Cloudinary mocked (so nothing lands in the live library), the sanitised preview, chapters (add, edit, delete, reorder, other projects' chapters refused), import and export, and the IndexNow limit.
+- **`studio/tests.py`** (`.venv\Scripts\python manage.py test studio`): access, dashboard, create, edit and validation, categories, delete, uploads with Cloudinary mocked (so nothing lands in the live library), the sanitised preview, chapters (add, edit, delete, reorder, other projects' chapters refused), import and export, and the IndexNow limit. Media: signatures fix the folder; forged, wrong-type and wrong-folder references are refused; embeds use the model's check; other projects' media are 404. References are signed in the tests with a stand-in secret, so nothing goes over the network.
+- **Media click-through:** the browser's upload to Cloudinary is intercepted and answered with a file already in the library, signed so the server's real check runs. Nothing new is uploaded.
 - **Browser click-through** in Edge on a laptop and a phone size, against the local database with a throwaway admin user. It covers every tab, autosave, the toolbar, the photo picker, import, drag and arrow reorder, the phone Write/Preview switch, no sideways scrolling, and no JavaScript errors.

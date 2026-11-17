@@ -308,16 +308,237 @@
     ];
   }
 
-  // ------------------------------------------------------------ Media (full editor in the next update)
+  // ------------------------------------------------------------ Media (photos, videos, embeds)
+  //
+  // Photos and videos go straight from the browser to Cloudinary (kit.directUpload); the server only
+  // checks Cloudinary's signed reference and saves it. The upload list lives outside render(), so a
+  // re-render (or switching tabs) never interrupts an upload.
+
+  var NOUN = { photos: ['photo', 'photos'], videos: ['video', 'videos'], embeds: ['embed', 'embeds'] };
+  var uploadList = h('ul', { class: 'st-uploads', 'aria-live': 'polite' });
+  var mediaLists = {};
+
+  function mediaPath(kind, id) { return BASE + 'media/' + kind + '/' + (id ? id + '/' : ''); }
+
+  function count(n, kind) { return n + ' ' + NOUN[kind][n === 1 ? 0 : 1]; }
+
+  function uploadFiles(kind, files) {
+    var max = CH.maxUploadMb[kind];
+    var type = kind === 'photos' ? 'image/' : 'video/';
+    var failed = 0;
+    var chain = Promise.resolve();
+    Array.prototype.forEach.call(files, function (file) {
+      var bar = h('progress', { class: 'ed-upload__bar', max: '100', value: '0' });
+      var status = h('span', { class: 'st-upload__status', text: 'Waiting…' });
+      var row = h('li', { class: 'st-upload' }, h('span', { class: 'st-upload__name', text: file.name }), bar, status);
+      uploadList.appendChild(row);
+      function fail(message) {
+        failed += 1;
+        bar.hidden = true;
+        status.textContent = message;
+        row.classList.add('is-error');
+        row.appendChild(kit.iconButton('✕', 'Dismiss', function () { row.parentNode.removeChild(row); }));
+      }
+      var mb = file.size / (1024 * 1024);
+      if ((file.type || '').indexOf(type) !== 0) { fail('Not a ' + NOUN[kind][0] + ' file.'); return; }
+      if (mb > max) {
+        fail(mb.toFixed(0) + ' MB: Cloudinary’s free plan allows up to ' + max + ' MB per ' + NOUN[kind][0] + '. ' +
+             (kind === 'videos' ? 'Compress it first (for example with HandBrake).' : 'Export it smaller (for example a JPEG under 4000 px wide).'));
+        return;
+      }
+      chain = chain.then(function () {
+        status.textContent = 'Uploading… 0%';
+        kit.setSave('busy', 'Uploading…');
+        return kit.directUpload(mediaPath(kind) + 'sign/', file, function (pct) {
+          bar.value = pct;
+          status.textContent = 'Uploading… ' + pct + '%';
+        }).then(function (ref) {
+          status.textContent = 'Saving…';
+          return kit.api(mediaPath(kind) + 'new/', { body: { ref: ref } });
+        }).then(function (res) {
+          if (!res.ok) { throw new Error(res.data.error || 'Uploaded, but it couldn’t be added. Try again.'); }
+          ST[kind].push(res.data.item);
+          ST.counts[kind] = ST[kind].length;
+          bar.value = 100;
+          status.textContent = 'Added ✓';
+          row.classList.add('is-done');
+          setTimeout(function () { if (row.parentNode) { row.parentNode.removeChild(row); } }, 5000);
+          redrawMedia(kind);
+        }).catch(function (err) { fail(err.message); });
+      });
+    });
+    return chain.then(function () {
+      if (failed) { kit.setSave('error', failed === 1 ? 'One file wasn’t added: see the list.' : failed + ' files weren’t added: see the list.'); }
+      else { kit.setSave('ok', 'Saved'); }
+    });
+  }
+
+  // Redraw one list in place (after an upload lands). Waits if you're typing in it, so focus isn't lost.
+  function redrawMedia(kind) {
+    var box = mediaLists[kind];
+    if (!box || !box.isConnected) { return; }
+    if (box.contains(document.activeElement)) {
+      box.addEventListener('focusout', function () { setTimeout(function () { redrawMedia(kind); }, 0); }, { once: true });
+      return;
+    }
+    fillMedia(kind, box);
+  }
+
+  function copyButton(p) {
+    var btn = kit.button('Copy markdown', function () {
+      var snippet = '![' + (p.caption || ST.project.name) + '](' + p.url + ')';   // read now: the caption may have just changed
+      var done = function () { btn.textContent = 'Copied ✓'; setTimeout(function () { btn.textContent = 'Copy markdown'; }, 2000); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(snippet).then(done, function () { window.prompt('Copy this:', snippet); });
+      } else {
+        window.prompt('Copy this:', snippet);
+      }
+    }, { class: 'ed-link' });
+    btn.title = 'Paste it into the text to show this photo there';
+    return btn;
+  }
+
+  function mediaPreview(kind, m) {
+    if (kind === 'photos') {
+      return h('a', { class: 'st-media__thumb', href: m.url, target: '_blank', rel: 'noopener', title: 'Open full size' },
+        h('img', { src: m.url, alt: '', loading: 'lazy' }));
+    }
+    if (kind === 'videos') {
+      return h('div', { class: 'st-media__thumb' },
+        h('video', { src: m.url, controls: true, muted: true, playsinline: true, preload: 'metadata' }));
+    }
+    return m.src
+      ? h('div', { class: 'st-media__thumb st-media__thumb--embed' },
+          h('iframe', { src: m.src, title: m.caption || 'Embed preview', loading: 'lazy', allowfullscreen: true,
+                        referrerpolicy: 'strict-origin-when-cross-origin' }))
+      : h('div', { class: 'st-media__thumb st-media__thumb--empty', text: 'Not shown: the code didn’t pass the check' });
+  }
+
+  function mediaRow(kind, m, i, ids) {
+    var t = { path: mediaPath(kind, m.id), item: m };
+    var noun = NOUN[kind][0];
+    var fields = [];
+    if (kind === 'embeds') {
+      fields.push(kit.input(t, 'embed_code', { label: 'Embed code', rows: 3, inputClass: 'st-code', onChangeOnly: true, rerender: true,
+                                                hint: 'Saved when you click away. The preview updates after it passes the check.' }));
+    }
+    fields.push(kit.input(t, 'caption', { label: kind === 'photos' ? 'Caption (also the image description for screen readers)' : 'Caption',
+                                           maxlength: 200, placeholder: kind === 'videos' ? 'Video ' + (i + 1) : 'Optional' }));
+    return h('article', { class: 'ed-card st-media', 'data-drag': kind, 'data-id': m.id },
+      kit.dragHandle(kind),
+      h('div', { class: 'st-media__row' },
+        mediaPreview(kind, m),
+        h('div', { class: 'st-media__body' },
+          fields,
+          h('div', { class: 'st-media__tools' },
+            kind === 'photos' ? copyButton(m) : null,
+            h('span', { class: 'st-media__spacer' }),
+            kit.arrows(ids, i, noun, function (next) { kit.act(mediaPath(kind) + 'reorder/', { ids: next }); }),
+            kit.iconButton('✕', 'Delete ' + noun, function () {
+              kit.act(mediaPath(kind, m.id) + 'delete/', {}, { confirm: 'Remove this ' + noun + ' from the project?' });
+            })))));
+  }
+
+  function fillMedia(kind, box) {
+    kit.clear(box);
+    var items = ST[kind];
+    var ids = items.map(function (m) { return m.id; });
+    items.forEach(function (m, i) { box.appendChild(mediaRow(kind, m, i, ids)); });
+    if (!items.length) { box.appendChild(kit.note('No ' + NOUN[kind][1] + ' yet.')); }
+    var title = box.parentNode && box.parentNode.querySelector('.st-media__count');
+    if (title) { title.textContent = count(items.length, kind); }
+  }
+
+  function uploadSection(kind, title, note) {
+    var file = h('input', { type: 'file', class: 'ed-upload__file', multiple: true, accept: kind === 'photos' ? 'image/*' : 'video/*' });
+    file.id = 'st-pick-' + kind;
+    file.addEventListener('change', function () { uploadFiles(kind, file.files); file.value = ''; });
+    var list = h('div', { class: 'ed-qlist st-media__list' });
+    mediaLists[kind] = list;
+    fillMedia(kind, list);
+    kit.enableDrag(list, kind, function (next) { kit.act(mediaPath(kind) + 'reorder/', { ids: next }); });
+    var section = h('section', { class: 'st-media-section', 'aria-label': title },
+      h('div', { class: 'ed-card ed-card--fixed st-drop' },
+        h('div', { class: 'st-media__head' },
+          h('h2', { class: 'ed-card__title', text: title }),
+          h('span', { class: 'ed-chip st-media__count', text: count(ST[kind].length, kind) })),
+        kit.note(note),
+        h('div', { class: 'ed-add' },
+          h('label', { class: 'btn btn--primary ed-btn', for: file.id, text: 'Upload ' + NOUN[kind][1] }), file,
+          h('span', { class: 'ed-hint', text: 'or drop files here · up to ' + CH.maxUploadMb[kind] + ' MB each' }))),
+      list);
+    // Drop files from your computer onto the section to upload them.
+    section.addEventListener('dragover', function (e) {
+      if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types, 'Files') !== -1) {
+        e.preventDefault();
+        section.classList.add('is-dropping');
+      }
+    });
+    section.addEventListener('dragleave', function (e) { if (!section.contains(e.relatedTarget)) { section.classList.remove('is-dropping'); } });
+    section.addEventListener('drop', function (e) {
+      if (!(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length)) { return; }
+      e.preventDefault();
+      section.classList.remove('is-dropping');
+      uploadFiles(kind, e.dataTransfer.files);
+    });
+    return section;
+  }
+
+  function embedSection() {
+    var code = h('textarea', { class: 'ed-input st-code', rows: 3, 'aria-label': 'New embed code',
+                               placeholder: '<iframe src="https://www.youtube.com/embed/…"></iframe>' });
+    var caption = h('input', { class: 'ed-input', type: 'text', maxlength: 200, placeholder: 'Caption (optional)', 'aria-label': 'New embed caption' });
+    var err = h('p', { class: 'ed-err', role: 'alert' });
+    var add = kit.button('Add embed', function () {
+      err.textContent = '';
+      kit.setSave('busy', 'Saving…');
+      kit.api(mediaPath('embeds') + 'new/', { body: { embed_code: code.value, caption: caption.value } }).then(function (res) {
+        if (!res.ok) {
+          var errors = res.data.errors || {};
+          err.textContent = res.data.error || Object.keys(errors).map(function (f) { return errors[f].join(' '); }).join(' ') || 'Couldn’t add it.';
+          kit.setSave('error', 'Not added: see the message in red.');
+          return;
+        }
+        ST.embeds.push(res.data.item);
+        ST.counts.embeds = ST.embeds.length;
+        kit.setSave('ok', 'Saved');
+        render();
+      });
+    }, { class: 'btn btn--primary ed-btn' });
+    var list = h('div', { class: 'ed-qlist st-media__list' });
+    mediaLists.embeds = list;
+    fillMedia('embeds', list);
+    kit.enableDrag(list, 'embeds', function (next) { kit.act(mediaPath('embeds') + 'reorder/', { ids: next }); });
+    return h('section', { class: 'st-media-section', 'aria-label': 'Embedded work' },
+      h('div', { class: 'ed-card ed-card--fixed' },
+        h('div', { class: 'st-media__head' },
+          h('h2', { class: 'ed-card__title', text: 'Embedded work' }),
+          h('span', { class: 'ed-chip st-media__count', text: count(ST.embeds.length, 'embeds') })),
+        kit.note('Paste the embed code from ' + CH.embedDomains.join(', ') + '. Only the iframe’s address is used on the site.'),
+        h('details', { class: 'st-addembed' },
+          h('summary', { class: 'st-new__summary', text: '+ Add an embed' }),
+          code, caption, h('div', { class: 'ed-add' }, add), err)),
+      list);
+  }
 
   function mediaTab() {
-    var c = ST.counts;
-    return [h('section', { class: 'ed-card' },
-      h('h2', { class: 'ed-card__title', text: 'Media' }),
-      h('p', { class: 'ed-big' }, h('strong', { text: c.photos }), ' photos · ', h('strong', { text: c.videos }), ' videos · ',
-        h('strong', { text: c.embeds }), ' embeds'),
-      kit.note('Uploading and arranging photos, videos and embeds here is coming in the next Studio update. Until then, use the admin.'),
-      h('div', { class: 'ed-add' }, h('a', { class: 'btn btn--ghost ed-btn', href: ST.links.admin, text: 'Edit media in the admin' })))];
+    var out = [];
+    if (isBlog()) {
+      out.push(uploadSection('photos', 'Photos for the article',
+        'Blog posts don’t show a photo gallery. Upload photos here, then place them in the text with Copy markdown, or the Image button in Write.'));
+      var hidden = ST.videos.length + ST.embeds.length;
+      if (hidden) {
+        out.push(h('section', { class: 'ed-card' },
+          kit.note('This project also has ' + count(ST.videos.length, 'videos') + ' and ' + count(ST.embeds.length, 'embeds') +
+                   '. Blog posts don’t show them, but they’re kept. Switch the type to Portfolio in Details to edit them.')));
+      }
+    } else {
+      out.push(uploadSection('videos', 'Videos', 'Shown first on the project page, in this order.'));
+      out.push(uploadSection('photos', 'Photos', 'The gallery. Captions show under each photo.'));
+      out.push(embedSection());
+    }
+    out.splice(0, 0, uploadList);
+    return out;
   }
 
   // ------------------------------------------------------------ page
