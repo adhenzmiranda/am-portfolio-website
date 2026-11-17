@@ -26,4 +26,10 @@ urlpatterns = [
     path('api/projects/<int:pk>/cards/<int:cid>/', api.card_update, name='api_card_update'),
     path('api/projects/<int:pk>/cards/<int:cid>/delete/', api.card_delete, name='api_card_delete'),
     path('api/projects/<int:pk>/cards/<int:cid>/upload/<str:field>/', api.card_upload, name='api_card_upload'),
+    # Media: <kind> is photos, videos or embeds
+    path('api/projects/<int:pk>/media/<str:kind>/sign/', api.media_sign, name='api_media_sign'),
+    path('api/projects/<int:pk>/media/<str:kind>/new/', api.media_create, name='api_media_create'),
+    path('api/projects/<int:pk>/media/<str:kind>/reorder/', api.media_reorder, name='api_media_reorder'),
+    path('api/projects/<int:pk>/media/<str:kind>/<int:mid>/', api.media_update, name='api_media_update'),
+    path('api/projects/<int:pk>/media/<str:kind>/<int:mid>/delete/', api.media_delete, name='api_media_delete'),
 ]

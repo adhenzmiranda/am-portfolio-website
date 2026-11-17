@@ -35,13 +35,14 @@ Each phase ships as its own PR. A box is ticked only when it's built **and** tes
 - [x] Tests: preview sanitising, card CRUD and reorder, import
 
 ## Phase 4: Media (PR 2)
-- [ ] Photos: multi-upload straight to Cloudinary, progress per file
-- [ ] Photos: caption, reorder (drag and arrows), delete, copy the markdown snippet
-- [ ] Videos: direct upload (100 MB or less), caption, reorder, delete
-- [ ] Embeds: paste code, validate with the model's check, preview, caption, reorder, delete
-- [ ] Tests: forged upload references refused, embed validation, ownership checks
+- [x] Photos: multi-upload straight to Cloudinary, progress per file, drop files onto the section
+- [x] Photos: caption, reorder (drag and arrows), delete, copy the markdown snippet
+- [x] Videos: direct upload (100 MB or less), caption, reorder, delete
+- [x] Embeds: paste code, validate with the model's check, preview, caption, reorder, delete
+- [x] Blog Post: Media shows the photo library only (the live page shows no gallery, videos or embeds); existing videos and embeds are kept
+- [x] Tests: forged upload references refused, embed validation, ownership checks
 
-## Phase 5: About page (PR 2)
+## Phase 5: About page (PR 3)
 - [ ] Experience: add, edit, highlights (one per line), reorder, show or hide, delete
 - [ ] Education: add, edit, reorder, show or hide, delete
 - [ ] Tests
@@ -49,7 +50,8 @@ Each phase ships as its own PR. A box is ticked only when it's built **and** tes
 ## Phase 6: Quality and release
 - [ ] Browser click-through on a laptop and a phone (Edge), no JavaScript errors
   - [x] PR 1: dashboard, projects list, new project, Details, Write, Chapters, delete (35 checks, desktop and phone)
-  - [ ] PR 2: Media and About
+  - [x] PR 2: Media (26 checks, with Cloudinary's upload answered by the test so nothing new lands in the library)
+  - [ ] PR 3: About
 - [ ] CodeQL clean
 - [ ] `CLAUDE.md` and docs updated
 - [ ] PRs merged and deploys checked

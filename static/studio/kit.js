@@ -8,6 +8,7 @@
  * - kit.input / select / toggle / segmented / chips / imageField   fields that save themselves
  * - kit.act(path, body, {confirm})    structural changes (add, delete, move), then refresh
  * - kit.dragHandle / arrows / enableDrag   reordering by mouse or buttons
+ * - kit.directUpload(signPath, file, onProgress)   browser -> Cloudinary upload, resolves with the signed reference
  *
  * A "target" names what a field edits: { path: 'projects/5/', item: obj, locked: false }.
  * Field edits are merged per target and saved 0.7 s after the last keystroke.
@@ -171,7 +172,7 @@
         t.item[field] = value;
         if (autoGrow) { grow(el); }
         if (o.onInput) { o.onInput(value); }
-        queueSave(t, field, value, { now: !!o.onChangeOnly });
+        queueSave(t, field, value, { now: !!o.onChangeOnly, rerender: o.rerender });
       });
       if (autoGrow) { requestAnimationFrame(function () { grow(el); }); }
       var box = wrap(t.path, field, o.line ? null : o.label, el, o.hint);
@@ -305,6 +306,47 @@
         o.hint ? h('p', { class: 'ed-hint', text: o.hint }) : null);
     }
 
+    // ---- direct uploads (browser -> Cloudinary; see projects/direct_upload.py)
+
+    var uploading = 0;
+
+    // Asks `signPath` for a signature, sends the file straight to Cloudinary and resolves with
+    // Cloudinary's signed reference, which the server verifies before saving it.
+    // onProgress(percent) is called while the file goes up.
+    function directUpload(signPath, file, onProgress) {
+      uploading += 1;
+      return api(signPath, { body: {} }).then(function (res) {
+        if (!res.ok) { throw new Error(res.data.error || 'Couldn’t start the upload.'); }
+        var sig = res.data;
+        return new Promise(function (resolve, reject) {
+          var body = new FormData();
+          Object.keys(sig.params).forEach(function (k) { body.append(k, sig.params[k]); });
+          body.append('api_key', sig.api_key);
+          body.append('file', file);
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', sig.upload_url);
+          xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable && onProgress) { onProgress(Math.round(e.loaded / e.total * 100)); }
+          });
+          xhr.addEventListener('load', function () {
+            var data = {};
+            try { data = JSON.parse(xhr.responseText); } catch (err) { /* handled below */ }
+            if (xhr.status >= 200 && xhr.status < 300 && data.public_id) {
+              resolve(data.resource_type + '/' + data.type + '/v' + data.version + '/' + data.public_id + '.' + data.format + '#' + data.signature);
+            } else {
+              reject(new Error((data.error && data.error.message) || 'Cloudinary refused the upload (' + xhr.status + ').'));
+            }
+          });
+          xhr.addEventListener('error', function () { reject(new Error('Network error while uploading. Check your connection and try again.')); });
+          xhr.send(body);
+        });
+      }).then(function (ref) { uploading -= 1; return ref; }, function (err) { uploading -= 1; throw err; });
+    }
+
+    window.addEventListener('beforeunload', function (e) {
+      if (uploading) { e.preventDefault(); e.returnValue = ''; }
+    });
+
     // ---- reordering
 
     function dragHandle(kind, locked) {
@@ -362,7 +404,7 @@
       h: h, clear: clear, api: api, setSave: setSave, queueSave: queueSave, flush: flush, flushAll: flushAll, act: act,
       input: input, select: select, toggle: toggle, segmented: segmented, chips: chips, imageField: imageField,
       button: button, iconButton: iconButton, note: note, wrap: wrap, grow: grow, fieldError: fieldError,
-      dragHandle: dragHandle, arrows: arrows, enableDrag: enableDrag
+      dragHandle: dragHandle, arrows: arrows, enableDrag: enableDrag, directUpload: directUpload
     };
   }
 

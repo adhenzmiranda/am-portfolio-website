@@ -270,6 +270,110 @@ class ChapterTests(StudioTestCase):
         self.assertIn('<!-- TITLE: Exported -->', res.content.decode())
 
 
+TEST_SECRET = 'studio-test-secret'
+
+
+def signed_ref(public_id, resource_type='image', fmt='jpg', version='1700000000', secret=TEST_SECRET):
+    """The reference the browser sends after a direct upload, signed the way Cloudinary signs it."""
+    import cloudinary.utils
+    signature = cloudinary.utils.api_sign_request({'public_id': public_id, 'version': version}, secret)
+    return f'{resource_type}/upload/v{version}/{public_id}.{fmt}#{signature}'
+
+
+class MediaTests(StudioTestCase):
+    def setUp(self):
+        super().setUp()
+        import cloudinary
+        config = cloudinary.config()
+        for key, value in (('api_secret', TEST_SECRET), ('api_key', '1234'), ('cloud_name', 'studio-test')):
+            patcher = mock.patch.object(config, key, value, create=True)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
+    def media(self, kind, rest=''):
+        return f'{self.base}media/{kind}/{rest}'
+
+    def test_sign_fixes_the_folder(self):
+        data = self.post(self.media('photos', 'sign/')).json()
+        self.assertEqual(data['params']['folder'], 'project_photos')
+        self.assertIn('signature', data['params'])
+        self.assertIn('/image/upload', data['upload_url'])
+        self.assertIn('/video/upload', self.post(self.media('videos', 'sign/')).json()['upload_url'])
+        self.assertEqual(self.post(self.media('embeds', 'sign/')).status_code, 404)
+        self.assertEqual(self.post(self.media('scripts', 'sign/')).status_code, 404)
+
+    def test_add_photo_and_video_from_verified_uploads(self):
+        res = self.post(self.media('photos', 'new/'), {'ref': signed_ref('project_photos/abc')})
+        self.assertEqual(res.status_code, 200, res.content)
+        photo = self.project.photos.get()
+        self.assertEqual(photo.image.public_id, 'project_photos/abc')
+        self.assertIn('project_photos/abc', res.json()['item']['url'])
+        res = self.post(self.media('videos', 'new/'), {'ref': signed_ref('project_videos/clip', 'video', 'mp4')})
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(self.project.videos.get().video.public_id, 'project_videos/clip')
+        second = self.post(self.media('photos', 'new/'), {'ref': signed_ref('project_photos/def')}).json()['item']
+        self.assertEqual(second['order'], photo.order + 1)
+
+    def test_forged_or_misplaced_uploads_are_refused(self):
+        cases = {
+            'bad signature': ('photos', signed_ref('project_photos/abc', secret='wrong')),
+            'not a reference': ('photos', 'https://evil.example/x.jpg'),
+            'other folder': ('photos', signed_ref('thumbnails/abc')),
+            'video as photo': ('photos', signed_ref('project_photos/abc', 'video', 'mp4')),
+            'photo as video': ('videos', signed_ref('project_videos/abc', 'image')),
+            'empty': ('photos', ''),
+        }
+        for name, (kind, ref) in cases.items():
+            with self.subTest(name):
+                self.assertEqual(self.post(self.media(kind, 'new/'), {'ref': ref}).status_code, 400)
+        self.assertFalse(self.project.photos.exists() or self.project.videos.exists())
+
+    def test_embeds_use_the_model_check(self):
+        good = '<iframe width="560" src="https://www.youtube.com/embed/abc" allowfullscreen></iframe>'
+        res = self.post(self.media('embeds', 'new/'), {'embed_code': good, 'caption': 'Trailer'})
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(res.json()['item']['src'], 'https://www.youtube.com/embed/abc')
+        for bad in ('<iframe src="https://evil.example/x"></iframe>',
+                    '<iframe src="https://www.youtube.com/embed/a"></iframe><script>alert(1)</script>',
+                    '<iframe src="http://www.youtube.com/embed/a"></iframe>', ''):
+            with self.subTest(bad):
+                res = self.post(self.media('embeds', 'new/'), {'embed_code': bad})
+                self.assertEqual(res.status_code, 400)
+                self.assertIn('embed_code', res.json()['errors'])
+        embed = self.project.embeds.get()
+        res = self.post(self.media('embeds', f'{embed.pk}/'), {'embed_code': '<iframe src="https://evil.example/x"></iframe>'})
+        self.assertIn('embed_code', res.json()['errors'])
+        embed.refresh_from_db()
+        self.assertEqual(embed.safe_src, 'https://www.youtube.com/embed/abc')   # unchanged
+        self.assertEqual(self.post(self.media('embeds', f'{embed.pk}/'), {'safe_src': 'https://evil.example'}).status_code, 400)
+
+    def test_caption_reorder_delete_and_ownership(self):
+        from projects.models import ProjectPhoto
+        a = ProjectPhoto.objects.create(project=self.project, image='project_photos/a', order=1)
+        b = ProjectPhoto.objects.create(project=self.project, image='project_photos/b', order=2)
+        theirs = ProjectPhoto.objects.create(project=self.other, image='project_photos/c', order=1)
+        res = self.post(self.media('photos', f'{a.pk}/'), {'caption': 'Sunset'})
+        self.assertEqual(res.json()['item']['caption'], 'Sunset')
+        self.assertEqual(self.post(self.media('photos', f'{a.pk}/'), {'caption': 'x' * 201}).status_code, 400)
+        self.assertEqual(self.post(self.media('photos', 'reorder/'), {'ids': [b.pk, a.pk]}).status_code, 200)
+        self.assertEqual(list(self.project.photos.values_list('pk', flat=True)), [b.pk, a.pk])
+        self.assertEqual(self.post(self.media('photos', 'reorder/'), {'ids': [b.pk, a.pk, theirs.pk]}).status_code, 400)
+        self.assertEqual(self.post(self.media('photos', f'{theirs.pk}/'), {'caption': 'x'}).status_code, 404)
+        self.assertEqual(self.post(self.media('photos', f'{theirs.pk}/delete/')).status_code, 404)
+        self.post(self.media('photos', f'{a.pk}/delete/'))
+        self.assertEqual(list(self.project.photos.values_list('pk', flat=True)), [b.pk])
+
+    def test_state_lists_the_media(self):
+        from projects.models import ProjectEmbed, ProjectPhoto
+        ProjectPhoto.objects.create(project=self.project, image='project_photos/a', caption='A')
+        ProjectEmbed.objects.create(project=self.project, embed_code='x', safe_src='https://evil.example', is_safe=False)
+        data = self.get(self.base).json()
+        self.assertEqual(data['counts'], {'photos': 1, 'videos': 0, 'embeds': 1})
+        self.assertEqual(data['photos'][0]['caption'], 'A')
+        self.assertEqual(data['embeds'][0]['src'], '')   # an embed that never passed the check gets no preview
+        self.assertEqual(data['choices']['maxUploadMb'], {'photos': 10, 'videos': 100})
+
+
 @override_settings(DEBUG=False, SECURE_SSL_REDIRECT=False)
 class IndexNowThrottleTests(TestCase):
     def test_autosaves_ping_each_page_at_most_once_per_window(self):
