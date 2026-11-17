@@ -20,7 +20,7 @@ from django.utils import timezone
 # Paths already used by the site; a survey can't take them.
 RESERVED_SLUGS = {
     'about', 'admin', 'admin-dev', 'api', 'contact', 'llms', 'media', 'preview-error',
-    'projects', 'robots', 'sitemap', 'static', 'survey',
+    'projects', 'robots', 'sitemap', 'static', 'studio', 'survey',
 }
 
 BUILTIN_MOCKS = [

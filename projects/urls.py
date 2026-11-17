@@ -54,6 +54,8 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('llms.txt', views.llms_txt, name='llms_txt'),
+    # Studio: the website builder (staff with 2FA only)
+    path('studio/', include('studio.urls')),
     re_path(r'^(?P<key>[0-9a-fA-F]{8,128})\.txt$', views.indexnow_key, name='indexnow_key'),
 ]
 

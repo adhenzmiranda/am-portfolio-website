@@ -27,11 +27,25 @@ from dataclasses import dataclass
 TITLE_MAX_LENGTH = 100
 TEASER_MAX_LENGTH = 200
 
-CARD_RE = re.compile(r'<!--\s*CARD\s*-->(.*?)<!--\s*/CARD\s*-->', re.DOTALL | re.IGNORECASE)
-TITLE_RE = re.compile(r'<!--\s*TITLE:\s*(.*?)-->', re.IGNORECASE)
-TEASER_RE = re.compile(r'<!--\s*TEASER:\s*(.*?)-->', re.IGNORECASE)
+# Every pattern here runs in linear time on any input, since the text can come from the Studio API.
+# (No "\s*" next to ".*?": both can match the same spaces, which makes backtracking blow up.)
+CARD_MARKER_RE = re.compile(r'<!--\s*(/?)CARD\s*-->', re.IGNORECASE)
+TITLE_RE = re.compile(r'<!--\s*TITLE:([^\n]*?)-->', re.IGNORECASE)
+TEASER_RE = re.compile(r'<!--\s*TEASER:([^\n]*?)-->', re.IGNORECASE)
 TAKEAWAYS_SPLIT_RE = re.compile(r'<!--\s*TAKEAWAYS\s*-->', re.IGNORECASE)
-BULLET_RE = re.compile(r'^\s*[-*]\s+(.*)$')
+
+
+def _card_blocks(text):
+    """The text between each <!-- CARD --> and the next <!-- /CARD -->, found in one pass."""
+    blocks, start = [], None
+    for marker in CARD_MARKER_RE.finditer(text):
+        closing = marker.group(1) == '/'
+        if not closing and start is None:
+            start = marker.end()
+        elif closing and start is not None:
+            blocks.append(text[start:marker.start()])
+            start = None
+    return blocks
 
 
 @dataclass
@@ -69,9 +83,10 @@ def _strip_marker_lines(text):
 def _parse_takeaways(text):
     lines = []
     for raw_line in text.splitlines():
-        match = BULLET_RE.match(raw_line)
-        if match:
-            lines.append(match.group(1).strip())
+        line = raw_line.lstrip()
+        # A bullet: "-" or "*", then at least one space.
+        if line[:1] in ('-', '*') and line[1:2].isspace():
+            lines.append(line[1:].strip())
     return '\n'.join(lines)
 
 
@@ -87,7 +102,7 @@ def parse_markdown_cards(text):
         text = ''
     normalized = text.replace('\r\n', '\n').replace('\r', '\n')
 
-    blocks = CARD_RE.findall(normalized)
+    blocks = _card_blocks(normalized)
     cards = []
     errors = []
 

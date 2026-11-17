@@ -349,14 +349,22 @@ class Education(models.Model):
         return self.title
 
 
-# Tell Bing (IndexNow) about changed pages after saves in the admin. Runs after
+# Tell Bing (IndexNow) about changed pages after saves (admin or Studio). Runs after
 # the database commit and never blocks or breaks the save if the ping fails.
+# Studio autosaves every few seconds while you type, so each page is pinged at most
+# once every 10 minutes (IndexNow asks sites not to resubmit the same URL repeatedly).
+INDEXNOW_COOLDOWN = 600
+
+
 def _ping_indexnow(urls):
     from django.conf import settings
+    from django.core.cache import cache
     from django.db import transaction
     from . import indexnow
     if indexnow.enabled() and not settings.DEBUG:
-        transaction.on_commit(lambda: indexnow.submit_quietly([settings.SITE_URL + u for u in urls]))
+        fresh = [u for u in urls if cache.add(f'indexnow:{u}', 1, INDEXNOW_COOLDOWN)]
+        if fresh:
+            transaction.on_commit(lambda: indexnow.submit_quietly([settings.SITE_URL + u for u in fresh]))
 
 
 @receiver([post_save, post_delete], sender=Projects)

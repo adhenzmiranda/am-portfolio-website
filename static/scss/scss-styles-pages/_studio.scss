@@ -1,0 +1,566 @@
+// Studio (/studio/): the website builder. Builds on the survey editor's styles
+// (.ed-* in _survey-editor.scss: cards, fields, switches, toolbar bits) and adds
+// the dashboard, the project grid, chips, the markdown toolbar and the write/preview split.
+@use '../base/breakpoints' as *;
+@use '../base/typography' as *;
+@use '../base/colors' as *;
+@use '../base/variable' as *;
+@use '../base/mixins' as *;
+
+$card: #10142e;
+$line: rgba($dark-mode-white, 0.16);
+$soft: rgba($dark-mode-white, 0.78);
+$star: #f2b33d;
+
+// ---------------------------------------------------------------- Frame
+
+.studio-page .st-layout {
+    max-width: 1120px;
+}
+
+// .btn sets display, which would otherwise beat the hidden attribute (Preview is hidden off the project editor).
+.studio-page .ed-top__btn[hidden] {
+    display: none;
+}
+
+.st-nav a.ed-tab {
+    white-space: nowrap;
+    text-decoration: none;
+    font-size: 15px;
+}
+
+.st-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+
+    a {
+        margin-right: 6px;
+        color: $text;
+        font-size: 15px;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.st-subtabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: $space-20;
+    border-bottom: 1px solid $line;
+    overflow-x: auto;
+}
+
+.st-subtab {
+    flex: none;
+    padding: 12px 16px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: $soft;
+    font-family: $font-ibm;
+    font-size: 16px;
+    font-weight: $fw-semibold;
+    cursor: pointer;
+    @include focus-ring;
+
+    &:hover {
+        color: $text;
+    }
+
+    &[aria-current='page'] {
+        border-bottom-color: $accent;
+        color: $text;
+    }
+}
+
+.st-chip--star {
+    border-color: $star;
+
+    .editor-page & {
+        color: $star;
+    }
+}
+
+.st-danger {
+    border-left-color: $error;
+}
+
+.st-inline {
+    display: flex;
+    gap: 8px;
+
+    .ed-input {
+        min-width: 0;
+    }
+}
+
+.st-list {
+    margin: 6px 0 10px;
+    padding-left: 1.3em;
+    list-style: disc;
+    color: $soft;
+    font-size: 15px;
+
+    li {
+        margin-bottom: 4px;
+    }
+}
+
+ol.st-list {
+    list-style: decimal;
+}
+
+// ---------------------------------------------------------------- Dashboard
+
+.st-hero {
+    margin: 4px 0 $space-20;
+}
+
+.st-h1 {
+    margin: 0 0 6px;
+    font-family: $font-montserrat;
+    font-size: 40px;
+    font-weight: $fw-regular;
+
+    @include mobile {
+        font-size: 30px;
+    }
+}
+
+.st-tiles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: $space-20;
+
+    @media screen and (max-width: 760px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.st-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 20px;
+    background: $card;
+    border: 1px solid $line;
+    border-top: 4px solid $button-bg;
+    color: $text;
+    text-decoration: none;
+    transition: border-color $duration-fast;
+    @include focus-ring;
+
+    &:hover {
+        border-color: rgba($dark-mode-white, 0.35);
+        border-top-color: $accent;
+    }
+}
+
+.st-tile__value {
+    font-family: $font-montserrat;
+    font-size: 38px;
+    font-weight: $fw-semibold;
+    line-height: 1;
+}
+
+.st-tile__label {
+    color: $soft;
+    font-size: 15px;
+}
+
+.st-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+
+    @include mobile {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.st-shortcut {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 16px;
+    border: 1px solid $line;
+    color: $text;
+    text-decoration: none;
+    @include focus-ring;
+
+    &:hover {
+        border-color: $accent;
+        background: rgba($dark-mode-white, 0.03);
+    }
+}
+
+.st-shortcut__title {
+    font-weight: $fw-semibold;
+}
+
+.st-shortcut__text {
+    color: $soft;
+    font-size: 14px;
+}
+
+.st-recent {
+    display: grid;
+    gap: 6px;
+}
+
+.st-recent__link {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 8px;
+    color: $text;
+    text-decoration: none;
+    border: 1px solid transparent;
+    @include focus-ring;
+
+    &:hover {
+        border-color: $line;
+        background: rgba($dark-mode-white, 0.03);
+    }
+}
+
+.st-recent__img {
+    width: 72px;
+    height: 40px;
+    object-fit: cover;
+    background: rgba($dark-mode-white, 0.06);
+}
+
+.st-recent__name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.st-recent__meta {
+    color: $soft;
+    font-size: 14px;
+    white-space: nowrap;
+
+    @include mobile {
+        display: none;
+    }
+}
+
+// ---------------------------------------------------------------- All projects
+
+.st-new {
+    border-left-color: $accent;
+
+    .ed-err {
+        margin-top: 8px;
+    }
+}
+
+.st-new__summary {
+    font-family: $font-raleway;
+    font-size: 19px;
+    font-weight: $fw-medium;
+    cursor: pointer;
+}
+
+.st-new__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+
+    @media screen and (max-width: 700px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.st-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin: 4px 0 10px;
+
+    @media screen and (max-width: 760px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.st-count {
+    display: block;
+    margin-bottom: 12px;
+}
+
+.st-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+}
+
+.st-pcard {
+    display: flex;
+    flex-direction: column;
+    background: $card;
+    border: 1px solid $line;
+    color: $text;
+    text-decoration: none;
+    transition: border-color $duration-fast, transform $duration-fast;
+    @include focus-ring;
+
+    &:hover {
+        border-color: $accent;
+        transform: translateY(-2px);
+    }
+}
+
+.st-pcard__img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+.st-pcard__img--empty {
+    display: grid;
+    place-items: center;
+    background: rgba($dark-mode-white, 0.05);
+    color: $soft;
+    font-size: 14px;
+}
+
+.st-pcard__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px 14px;
+}
+
+.st-pcard__name {
+    font-weight: $fw-semibold;
+    line-height: 1.3;
+}
+
+.st-pcard__meta {
+    color: $soft;
+    font-size: 14px;
+}
+
+.st-pcard__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+// ---------------------------------------------------------------- Chips (technologies)
+
+.st-chips__group {
+    margin-top: 12px;
+}
+
+.st-chips__name {
+    display: block;
+    margin-bottom: 6px;
+    @include label;
+    color: $soft;
+}
+
+.st-chips__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.st-chip {
+    padding: 7px 14px;
+    border: 1px solid rgba($dark-mode-white, 0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: $text;
+    font-family: $font-ibm;
+    font-size: 14px;
+    cursor: pointer;
+    @include focus-ring;
+
+    &:hover:not(:disabled) {
+        border-color: rgba($dark-mode-white, 0.7);
+    }
+
+    &[aria-pressed='true'] {
+        border-color: $accent;
+        background: rgba($accent, 0.3);
+    }
+}
+
+// ---------------------------------------------------------------- Images
+
+.ed-upload__img.st-img--wide,
+.ed-upload__empty.st-img--wide {
+    width: 240px;
+    height: 135px;
+    max-height: none;
+}
+
+// ---------------------------------------------------------------- Write (markdown + preview)
+
+.st-write__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.st-write__toggle {
+    // Phones only: the columns stack, so this switches between them.
+    @media screen and (min-width: 1000px) {
+        display: none;
+    }
+}
+
+.st-write__cols {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+    margin-top: 10px;
+
+    @media screen and (max-width: 999px) {
+        grid-template-columns: minmax(0, 1fr);
+
+        .st-write__preview {
+            display: none;
+        }
+
+        .show-preview & {
+            .st-write__editor {
+                display: none;
+            }
+
+            .st-write__preview {
+                display: block;
+            }
+        }
+    }
+}
+
+textarea.st-md {
+    min-height: 360px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    resize: vertical;
+    overflow: auto;
+}
+
+.st-qbody textarea.st-md,
+.ed-qcard textarea.st-md {
+    min-height: 180px;
+}
+
+.st-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.st-tool {
+    min-width: 40px;
+    padding: 7px 10px;
+    border: 1px solid $line;
+    background: rgba($dark-mode-white, 0.04);
+    color: $text;
+    font-family: $font-ibm;
+    font-size: 14px;
+    font-weight: $fw-semibold;
+    cursor: pointer;
+    @include focus-ring;
+
+    &:hover {
+        border-color: $accent;
+    }
+}
+
+.st-picker {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px dashed $line;
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.st-picker__item {
+    padding: 0;
+    border: 2px solid transparent;
+    background: none;
+    cursor: pointer;
+
+    img {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+    &:hover,
+    &:focus-visible {
+        border-color: $accent;
+        outline: none;
+    }
+}
+
+.st-write__preview {
+    min-width: 0;
+}
+
+.st-preview {
+    max-height: 640px;
+    overflow: auto;
+    padding: 16px 18px;
+    border: 1px solid $line;
+    background: rgba($dark-mode-white, 0.02);
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+// ---------------------------------------------------------------- Chapters
+
+.st-chapter {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.st-chapter__img {
+    width: 120px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+
+    @include mobile {
+        width: 80px;
+    }
+}
+
+.st-import summary {
+    margin-bottom: 4px;
+}
+
+.st-import__result {
+    margin-top: 8px;
+}
