@@ -81,6 +81,26 @@ class AccessTests(StudioTestCase):
             self.assertContains(res, 'studio/' + script)
             self.assertIn('csrftoken', res.cookies)
 
+    def test_survey_tab_opens_the_right_survey(self):
+        from survey.models import Survey
+        Survey.objects.exclude(slug='msc-survey').delete()
+        main = Survey.objects.get(slug='msc-survey')
+        self.assertRedirects(self.client.get('/studio/survey/'), '/msc-survey/edit/', fetch_redirect_response=False)
+        # A newer draft (e.g. the next version) wins over an older draft...
+        Survey.objects.filter(pk=main.pk).update(status=Survey.DRAFT)
+        newer = Survey.objects.create(slug='msc-survey-v2', title='v2', status=Survey.DRAFT)
+        self.assertRedirects(self.client.get('/studio/survey/'), '/msc-survey-v2/edit/', fetch_redirect_response=False)
+        # ...but an open survey always comes first.
+        Survey.objects.filter(pk=main.pk).update(status=Survey.OPEN)
+        self.assertRedirects(self.client.get('/studio/survey/'), '/msc-survey/edit/', fetch_redirect_response=False)
+        Survey.objects.all().delete()
+        self.assertIn('/survey/survey/', self.client.get('/studio/survey/')['Location'])
+        self.assertTrue(newer.pk)
+
+    def test_survey_tab_needs_login(self):
+        self.allowed.return_value = False
+        self.assertIn('/login/?', self.client.get('/studio/survey/')['Location'])
+
     def test_unknown_project_page_is_404(self):
         self.assertEqual(self.client.get('/studio/projects/99999/').status_code, 404)
 

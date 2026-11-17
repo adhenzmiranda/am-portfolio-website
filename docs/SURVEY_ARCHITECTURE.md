@@ -313,6 +313,6 @@ sequenceDiagram
 | Editor API | `survey/editor.py` |
 | CSV export | `survey/export.py` |
 | Participant front end | `static/survey/survey.js`, `static/scss/scss-styles-pages/_survey.scss` |
-| Editor front end | `static/survey/editor.js`, `static/scss/scss-styles-pages/_survey-editor.scss` |
+| Editor front end | `static/survey/editor.js` on Studio's kit (`static/studio/kit.js`), in Studio's frame (`templates/studio/page.html`); styles in `static/scss/scss-styles-pages/_survey-editor.scss` |
 | Media drafts (not in git) | `survey_media/` |
 | Tests | `survey/tests.py`, `survey/test_editor.py` |

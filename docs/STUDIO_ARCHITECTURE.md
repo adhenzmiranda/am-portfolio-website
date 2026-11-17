@@ -1,6 +1,6 @@
 # Studio architecture: the website builder at /studio/
 
-**Studio** is a website builder for the whole site. It replaces the Django admin for everyday content: projects (in **Portfolio** and **Blog Post** mode), their media, and the About page. It uses the same look and building blocks as the survey editor at `/msc-survey/edit/`.
+**Studio** is a website builder for the whole site. It replaces the Django admin for everyday content: projects (in **Portfolio** and **Blog Post** mode), their media, and the About page. The dissertation survey's editor (`/msc-survey/edit/`) is part of Studio too: it opens in Studio's frame and runs on the same kit.
 
 Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file describes the design and is updated as each part ships.
 
@@ -13,6 +13,7 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 | Dashboard, All projects, project editor (Details, Write, Chapters) | Built (PR 1) |
 | Media tab (photos, videos, embeds) | Built (PR 2) |
 | About page (`/studio/about/`) | Built (PR 3) |
+| Survey editor in Studio (`/studio/survey/`) | Built (PR 4): Studio's frame and kit; the survey's rules unchanged |
 
 ---
 
@@ -32,7 +33,7 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 flowchart TD
     D["/studio/<br/>Dashboard"] --> P["/studio/projects/<br/>All projects: search, filter"]
     D --> A["/studio/about/<br/>Experience and Education"]
-    D --> S["/msc-survey/edit/<br/>Survey editor (existing)"]
+    D --> SS["/studio/survey/"] -->|"the open survey,<br/>else the newest draft"| S["/:address/edit/<br/>Survey editor"]
     D --> X["Django admin<br/>(backup)"]
     P -->|"+ New project"| E
     P -->|open| E["/studio/projects/:id/<br/>Project editor"]
@@ -133,7 +134,18 @@ All under `/studio/api/`. Reads are GET, writes are POST with JSON (uploads use 
 | Uploads | `imageField`: server upload for small images, with Remove. `directUpload`: sign, send straight to Cloudinary with progress, return the signed reference; the page warns before you leave mid-upload. |
 | Actions | `act()`: create, delete or reorder, with an optional confirm, then reload the state |
 
-The survey editor was built first, with its own copy of these pieces. Moving it onto the kit is a later step (see the checklist), so the survey isn't touched while it waits for approval.
+Options the survey editor needed, available to any page:
+
+- `locked` can be a function of the field, for per-field locks. Once the survey has responses, pages and questions lock completely but only some survey settings do.
+- `keep: ['questions']` stops a save from replacing fields the page manages itself. A survey page comes back from the server with its questions, and open question cards still point at the old ones.
+- A save that answers with `redirect` follows it (the survey's address changed).
+- `enableDrag(list, kind, onDrop, {across: true, locked})`: cards can move between lists of the same kind (survey questions between pages); the list a card lands in reports the drop.
+
+### The survey editor in Studio
+
+The survey editor was built first, with its own copy of these pieces, and now runs on the kit (`static/survey/editor.js`, about 700 lines instead of 1,050). It opens in Studio's frame (`templates/studio/page.html` with `page = 'survey'`): Studio's header and navigation, the survey's status chip, and its own tabs (Pages, Prompts, Media, Results, Settings) under them. Its address stays `/<address>/edit/` and its API stays in `survey/editor.py`. Studio's **Survey** tab goes to `/studio/survey/`, which opens the survey that's open, or else the newest draft.
+
+Nothing about the survey's rules moved: the content lock, the "Ready to open?" checklist, balanced assignment and scoring are still enforced on the server in `survey/models.py`, `logic.py` and `editor.py`.
 
 ---
 
@@ -165,4 +177,5 @@ The survey editor was built first, with its own copy of these pieces. Moving it 
 - **`studio/tests.py`** (`.venv\Scripts\python manage.py test studio`): access, dashboard, create, edit and validation, categories, delete, uploads with Cloudinary mocked (so nothing lands in the live library), the sanitised preview, chapters (add, edit, delete, reorder, other projects' chapters refused), import and export, and the IndexNow limit. Media: signatures fix the folder; forged, wrong-type and wrong-folder references are refused; embeds use the model's check; other projects' media are 404. References are signed in the tests with a stand-in secret, so nothing goes over the network.
 - **Media click-through:** the browser's upload to Cloudinary is intercepted and answered with a file already in the library, signed so the server's real check runs. Nothing new is uploaded.
 - **About:** the tests cover new entries starting hidden, show and hide on `/about/`, validation, reorder (and its IndexNow ping) and delete. The click-through saves the local entries' order first and puts it back afterwards, and its test entries are named "Studio QA" so they can be removed.
+- **Survey editor:** `survey/test_editor.py` (the API, locks, checklist and redirects, unchanged) plus a page test for Studio's frame; `studio/tests.py` covers `/studio/survey/`. The click-through runs on a throwaway copy of the survey (`editor-test`): editing, options, reordering (including dragging a question onto another page), the checklist, an address change and back, a reel upload (answered by the test, nothing uploaded) and the lock.
 - **Browser click-through** in Edge on a laptop and a phone size, against the local database with a throwaway admin user. It covers every tab, autosave, the toolbar, the photo picker, import, drag and arrow reorder, the phone Write/Preview switch, no sideways scrolling, and no JavaScript errors.

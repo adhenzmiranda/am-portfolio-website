@@ -54,11 +54,18 @@ Each phase ships as its own PR. A box is ticked only when it's built **and** tes
   - [x] PR 1: dashboard, projects list, new project, Details, Write, Chapters, delete (35 checks, desktop and phone)
   - [x] PR 2: Media (26 checks, with Cloudinary's upload answered by the test so nothing new lands in the library)
   - [x] PR 3: About (20 checks; the local entries' order is saved first and put back afterwards)
-- [ ] CodeQL clean (PR 1 and PR 2 clean; PR 3 waiting)
+- [x] CodeQL clean (PRs 1 to 3)
 - [x] `CLAUDE.md` and docs updated
-- [ ] PRs merged and deploys checked
+- [x] PRs merged and deploys checked (PRs 1 to 3, checked live by Adhenz)
+
+## Phase 7: Survey editor in Studio (PR 4)
+- [x] Opens in Studio's frame: Studio's header and navigation, the status chip, its own tabs under them
+- [x] Runs on the shared kit (saving, fields, uploads, reordering); its copy of those pieces removed
+- [x] Kit options it needed: per-field locks, keep fields on save, follow a redirect, drag between lists
+- [x] `/studio/survey/` opens the open survey, else the newest draft; Studio's Survey tab and the dashboard use it
+- [x] The survey's server rules untouched (lock, checklist, assignment, scoring); all its tests pass
+- [x] Click-through on a copy of the survey, plus every earlier Studio click-through again
 
 ## Later
-- [ ] Move the survey editor onto the shared kit (after the survey has launched)
 - [ ] Manage categories (rename, merge)
 - [ ] Site-wide text (home hero, footer bio) if wanted

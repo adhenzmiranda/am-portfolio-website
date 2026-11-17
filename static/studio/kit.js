@@ -11,6 +11,8 @@
  * - kit.directUpload(signPath, file, onProgress)   browser -> Cloudinary upload, resolves with the signed reference
  *
  * A "target" names what a field edits: { path: 'projects/5/', item: obj, locked: false }.
+ * Optional: locked can be function(field) for per-field locks; keep: ['questions'] lists fields
+ * a save must not overwrite in item.
  * Field edits are merged per target and saved 0.7 s after the last keystroke.
  * Loaded before each page script; see docs/STUDIO_ARCHITECTURE.md.
  */
@@ -81,6 +83,17 @@
       box.classList.toggle('is-invalid', !!message);
     }
 
+    // A target's lock is one flag, or a function(field) for per-field locks (the survey's content lock).
+    function isLocked(t, field) { return typeof t.locked === 'function' ? !!t.locked(field) : !!t.locked; }
+
+    // Copy the saved item from the server into ours, except fields the page keeps itself (target.keep),
+    // e.g. a survey page's question list, which open question cards still point at.
+    function merge(t, fresh) {
+      Object.keys(fresh || {}).forEach(function (k) {
+        if (!(t.keep && t.keep.indexOf(k) !== -1)) { t.item[k] = fresh[k]; }
+      });
+    }
+
     function queueSave(target, field, value, o) {
       o = o || {};
       var path = target.path;
@@ -102,8 +115,9 @@
         inFlight -= 1;
         Object.keys(entry.patch).forEach(function (f) { fieldError(path, f, ''); });
         if (res.ok) {
-          if (res.data.item) { Object.assign(entry.target.item, res.data.item); }
+          if (res.data.item) { merge(entry.target, res.data.item); }
           if (opts.onSaved) { opts.onSaved(entry.target, res.data); }
+          if (res.data.redirect) { location.replace(res.data.redirect); return; }   // e.g. the survey's address changed
           if (!Object.keys(queue).length && !inFlight) { setSave('ok', 'Saved'); }
           if (entry.rerender && opts.render) { opts.render(); }
         } else {
@@ -164,7 +178,7 @@
       if (o.line) { el.setAttribute('aria-label', o.label); el.placeholder = o.placeholder || o.label; }
       else if (o.placeholder) { el.placeholder = o.placeholder; }
       if (o.maxlength) { el.maxLength = o.maxlength; }
-      el.disabled = !!t.locked;
+      el.disabled = isLocked(t, field);
       var autoGrow = o.rows && o.grow !== false;
       el.addEventListener(o.onChangeOnly ? 'change' : 'input', function () {
         var value = el.value;
@@ -182,7 +196,7 @@
 
     function select(t, field, choices, o) {
       o = o || {};
-      var el = h('select', { class: 'ed-input ed-select', 'aria-label': o.aria || null, disabled: !!t.locked });
+      var el = h('select', { class: 'ed-input ed-select', 'aria-label': o.aria || null, disabled: isLocked(t, field) });
       el.id = nextId();
       (o.empty ? [[o.emptyValue === undefined ? '' : o.emptyValue, o.empty]] : []).concat(choices).forEach(function (c) {
         el.appendChild(h('option', { value: String(c[0]), text: c[1], selected: String(t.item[field]) === String(c[0]) }));
@@ -197,7 +211,7 @@
 
     function toggle(t, field, text, o) {
       o = o || {};
-      var el = h('input', { type: 'checkbox', class: 'ed-switch__input', checked: !!t.item[field], disabled: !!t.locked });
+      var el = h('input', { type: 'checkbox', class: 'ed-switch__input', checked: !!t.item[field], disabled: isLocked(t, field) });
       el.id = nextId();
       el.addEventListener('change', function () {
         t.item[field] = el.checked;
@@ -213,7 +227,7 @@
       o = o || {};
       var group = h('div', { class: 'ed-seg', role: 'group', 'aria-label': o.label });
       choices.forEach(function (c) {
-        var btn = h('button', { type: 'button', class: 'ed-seg__btn', 'aria-pressed': String(t.item[field] === c[0]), text: c[1], disabled: !!t.locked });
+        var btn = h('button', { type: 'button', class: 'ed-seg__btn', 'aria-pressed': String(t.item[field] === c[0]), text: c[1], disabled: isLocked(t, field) });
         btn.addEventListener('click', function () {
           t.item[field] = c[0];
           group.querySelectorAll('.ed-seg__btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
@@ -237,7 +251,7 @@
         var row = h('div', { class: 'st-chips__row' });
         g[1].forEach(function (c) {
           var on = selected.indexOf(c[0]) !== -1;
-          var btn = h('button', { type: 'button', class: 'st-chip', 'aria-pressed': String(on), text: c[1], disabled: !!t.locked });
+          var btn = h('button', { type: 'button', class: 'st-chip', 'aria-pressed': String(on), text: c[1], disabled: isLocked(t, field) });
           btn.addEventListener('click', function () {
             var i = selected.indexOf(c[0]);
             if (i === -1) { selected.push(c[0]); } else { selected.splice(i, 1); }
@@ -269,7 +283,7 @@
     function imageField(t, field, labelText, o) {
       o = o || {};
       var status = h('span', { class: 'ed-upload__status', role: 'status' });
-      var file = h('input', { type: 'file', accept: 'image/*', class: 'ed-upload__file', disabled: !!t.locked });
+      var file = h('input', { type: 'file', accept: 'image/*', class: 'ed-upload__file', disabled: isLocked(t, field) });
       file.id = nextId();
       var preview = t.item[field]
         ? h('img', { class: 'ed-upload__img' + (o.wide ? ' st-img--wide' : ''), src: t.item[field], alt: '' })
@@ -279,7 +293,8 @@
         setSave('busy', 'Uploading…');
         return api(t.path + 'upload/' + field + '/', { form: form }).then(function (res) {
           if (!res.ok) { status.textContent = res.data.error || 'Upload failed.'; setSave('error', 'Upload failed.'); return; }
-          if (res.data.item) { Object.assign(t.item, res.data.item); }
+          if (res.data.item) { merge(t, res.data.item); }
+          if (opts.onSaved) { opts.onSaved(t, res.data); }
           setSave('ok', 'Saved');
           if (opts.render) { opts.render(); }
         });
@@ -292,7 +307,7 @@
         form.append('file', chosen);
         send(form);
       });
-      var remove = t.item[field] && !t.locked ? button('Remove', function () {
+      var remove = t.item[field] && !isLocked(t, field) ? button('Remove', function () {
         var form = new FormData();
         form.append('clear', '1');
         send(form);
@@ -301,7 +316,7 @@
         labelText ? h('span', { class: 'ed-label', text: labelText }) : null,
         h('div', { class: 'ed-upload__row' }, preview,
           h('div', { class: 'ed-upload__actions' },
-            h('label', { class: 'btn btn--ghost ed-btn' + (t.locked ? ' is-disabled' : ''), for: file.id, text: t.item[field] ? 'Replace' : 'Upload image' }),
+            h('label', { class: 'btn btn--ghost ed-btn' + (isLocked(t, field) ? ' is-disabled' : ''), for: file.id, text: t.item[field] ? 'Replace' : 'Upload image' }),
             file, remove, status)),
         o.hint ? h('p', { class: 'ed-hint', text: o.hint }) : null);
     }
@@ -369,19 +384,26 @@
     }
 
     // Children marked data-drag="<kind>" data-id="<id>" can be dragged by their [data-handle="<kind>"].
-    function enableDrag(list, kind, onDrop) {
+    // onDrop(ids, list) gets the list's ids in their new order. o.across: cards can also move to another
+    // list of the same kind that has o.across (e.g. survey questions between pages); the list a card
+    // lands in reports the drop. o.locked: no dragging at all.
+    function enableDrag(list, kind, onDrop, o) {
+      o = o || {};
+      if (o.locked) { return; }
+      list.studioDrop = { onDrop: onDrop, across: !!o.across };
       list.addEventListener('dragstart', function (e) {
         var handle = e.target.closest && e.target.closest('[data-handle="' + kind + '"]');
         var card = handle && handle.closest('[data-drag="' + kind + '"]');
         if (!card || dragging) { return; }
-        dragging = { card: card, kind: kind, list: list, onDrop: onDrop };
+        dragging = { card: card, kind: kind, list: list, onDrop: onDrop, across: !!o.across };
         card.classList.add('is-dragging');
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', card.dataset.id);
         if (e.dataTransfer.setDragImage) { e.dataTransfer.setDragImage(card, 24, 24); }
       });
       list.addEventListener('dragover', function (e) {
-        if (!dragging || dragging.kind !== kind || dragging.list !== list) { return; }
+        if (!dragging || dragging.kind !== kind) { return; }
+        if (dragging.list !== list && !(dragging.across && o.across)) { return; }
         e.preventDefault();
         var cards = Array.prototype.filter.call(list.children, function (c) { return c.dataset.drag === kind && c !== dragging.card; });
         var after = cards.filter(function (c) { var b = c.getBoundingClientRect(); return e.clientY < b.top + b.height / 2; })[0];
@@ -395,9 +417,11 @@
       var d = dragging;
       dragging = null;
       d.card.classList.remove('is-dragging');
-      var ids = Array.prototype.filter.call(d.list.children, function (c) { return c.dataset.drag === d.kind; })
+      var list = d.card.parentElement;
+      var drop = list && list.studioDrop ? list.studioDrop.onDrop : d.onDrop;
+      var ids = Array.prototype.filter.call(list.children, function (c) { return c.dataset.drag === d.kind; })
         .map(function (c) { return Number(c.dataset.id); });
-      d.onDrop(ids);
+      drop(ids, list);
     });
 
     return {
