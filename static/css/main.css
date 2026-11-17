@@ -6865,4 +6865,26 @@ textarea.st-code {
   color: rgba(237, 239, 248, 0.78);
 }
 
+.st-edu {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 16px;
+}
+.st-edu .ed-field {
+  margin-top: 0;
+}
+@media screen and (max-width: 700px) {
+  .st-edu {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.st-is-hidden {
+  border-style: dashed;
+}
+.st-is-hidden .ed-qcard__q,
+.st-is-hidden .ed-kicker {
+  opacity: 0.7;
+}
+
 /*# sourceMappingURL=main.css.map */

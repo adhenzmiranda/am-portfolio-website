@@ -26,6 +26,12 @@ def projects(request):
 
 @studio_page
 @require_GET
+def about(request):
+    return render(request, 'studio/page.html', _context('about', title='About page'))
+
+
+@studio_page
+@require_GET
 def project(request, pk):
     item = get_object_or_404(Projects, pk=pk)
     return render(request, 'studio/page.html', _context('project', title=item.name, project_id=item.pk))

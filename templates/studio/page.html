@@ -29,6 +29,7 @@
         <nav class="ed-tabs st-nav" aria-label="Studio">
             <a class="ed-tab" href="{% url 'studio:dashboard' %}"{% if page == 'dashboard' %} aria-current="page"{% endif %}>Dashboard</a>
             <a class="ed-tab" href="{% url 'studio:projects' %}"{% if page == 'projects' or page == 'project' %} aria-current="page"{% endif %}>Projects</a>
+            <a class="ed-tab" href="{% url 'studio:about' %}"{% if page == 'about' %} aria-current="page"{% endif %}>About</a>
             <a class="ed-tab" href="/msc-survey/edit/">Survey</a>
             <a class="ed-tab" href="{{ admin_url }}">Admin</a>
             <a class="ed-tab" href="/" target="_blank" rel="noopener">View site <span aria-hidden="true">&nearr;</span></a>

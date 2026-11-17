@@ -43,17 +43,19 @@ Each phase ships as its own PR. A box is ticked only when it's built **and** tes
 - [x] Tests: forged upload references refused, embed validation, ownership checks
 
 ## Phase 5: About page (PR 3)
-- [ ] Experience: add, edit, highlights (one per line), reorder, show or hide, delete
-- [ ] Education: add, edit, reorder, show or hide, delete
-- [ ] Tests
+- [x] Experience: add, edit, highlights (one per line), reorder, show or hide, delete
+- [x] Education: add, edit, reorder, show or hide, delete
+- [x] New entries start hidden at the top, so placeholder text never reaches the live page
+- [x] About in the Studio navigation and a dashboard shortcut; Preview opens `/about/`
+- [x] Tests
 
 ## Phase 6: Quality and release
-- [ ] Browser click-through on a laptop and a phone (Edge), no JavaScript errors
+- [x] Browser click-through on a laptop and a phone (Edge), no JavaScript errors
   - [x] PR 1: dashboard, projects list, new project, Details, Write, Chapters, delete (35 checks, desktop and phone)
   - [x] PR 2: Media (26 checks, with Cloudinary's upload answered by the test so nothing new lands in the library)
-  - [ ] PR 3: About
-- [ ] CodeQL clean
-- [ ] `CLAUDE.md` and docs updated
+  - [x] PR 3: About (20 checks; the local entries' order is saved first and put back afterwards)
+- [ ] CodeQL clean (PR 1 and PR 2 clean; PR 3 waiting)
+- [x] `CLAUDE.md` and docs updated
 - [ ] PRs merged and deploys checked
 
 ## Later

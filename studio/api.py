@@ -10,7 +10,7 @@ import json
 import logging
 
 from django.db import transaction
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Min, Q
 from django.forms.models import model_to_dict, modelform_factory
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -23,8 +23,8 @@ from markdownify.templatetags.markdownify import markdownify
 
 from projects.direct_upload import UPLOAD_KINDS, DirectUploadField, signed_upload_params
 from projects.markdown_import import parse_markdown_cards, serialize_cards_to_markdown
-from projects.models import (ALLOWED_EMBED_DOMAINS, TECH_STACK_CHOICES, Category, ProjectCard, ProjectEmbed,
-                             ProjectPhoto, Projects, ProjectVideo)
+from projects.models import (ALLOWED_EMBED_DOMAINS, TECH_STACK_CHOICES, Category, Education, Experience, ProjectCard,
+                             ProjectEmbed, ProjectPhoto, Projects, ProjectVideo, _ping_indexnow)
 
 from .access import studio_api
 
@@ -202,6 +202,7 @@ def dashboard(request):
         'recent': [ser_project_summary(p) for p in recent],
         'links': {
             'projects': reverse('studio:projects'),
+            'about': reverse('studio:about'),
             'survey': '/msc-survey/edit/',
             'admin': reverse('admin:index'),
             'site': '/',
@@ -504,4 +505,94 @@ def media_reorder(request, pk, kind):
     with transaction.atomic():
         for i, mid in enumerate(ids, 1):
             spec['model'].objects.filter(pk=mid).update(order=i)
+    return JsonResponse({'ok': True})
+
+
+# ---------------------------------------------------------------- About page (Experience and Education)
+
+ABOUT = {
+    'experience': {
+        'model': Experience,
+        'fields': ('role', 'organisation', 'location', 'dates', 'highlights_raw', 'visible'),
+        'new': {'role': 'New role', 'organisation': 'Organisation', 'location': 'City, Country', 'dates': 'Month Year - Present'},
+    },
+    'education': {
+        'model': Education,
+        'fields': ('title', 'details', 'visible'),
+        'new': {'title': 'New qualification', 'details': 'Place, year'},
+    },
+}
+
+
+def _about_spec(kind):
+    if kind not in ABOUT:
+        raise Http404
+    return ABOUT[kind]
+
+
+def ser_about(kind, item):
+    data = model_to_dict(item, fields=ABOUT[kind]['fields'])
+    data.update(id=item.pk, order=item.order)
+    return data
+
+
+def _about_changed():
+    # Reordering uses update(), which sends no save signal, so tell IndexNow here (same 10-minute limit).
+    _ping_indexnow(['/about/'])
+
+
+@studio_api
+@require_GET
+def about(request):
+    return JsonResponse({
+        'experience': [ser_about('experience', e) for e in Experience.objects.all()],
+        'education': [ser_about('education', e) for e in Education.objects.all()],
+        'links': {'public': reverse('about'), 'admin': reverse('admin:index')},
+    })
+
+
+@studio_api
+@require_POST
+def about_create(request, kind):
+    """New entries go to the top (the newest role usually comes first) and start hidden, so
+    placeholder text never appears on the live page."""
+    spec = _about_spec(kind)
+    top = spec['model'].objects.aggregate(m=Min('order'))['m']
+    item = spec['model'].objects.create(order=(top - 1) if top is not None else 0, visible=False, **spec['new'])
+    return JsonResponse({'ok': True, 'item': ser_about(kind, item)})
+
+
+@studio_api
+@require_POST
+def about_update(request, kind, aid):
+    spec = _about_spec(kind)
+    item = get_object_or_404(spec['model'], pk=aid)
+    patch = _body(request)
+    if patch is None:
+        return _error('Bad request.')
+    ok, response = _save_patch(item, spec['fields'], patch)
+    if not ok:
+        return response
+    return JsonResponse({'ok': True, 'item': ser_about(kind, item)})
+
+
+@studio_api
+@require_POST
+def about_delete(request, kind, aid):
+    get_object_or_404(_about_spec(kind)['model'], pk=aid).delete()
+    return JsonResponse({'ok': True})
+
+
+@studio_api
+@require_POST
+def about_reorder(request, kind):
+    spec = _about_spec(kind)
+    ids = (_body(request) or {}).get('ids')
+    own = set(spec['model'].objects.values_list('pk', flat=True))
+    if not isinstance(ids, list) or set(ids) != own or len(ids) != len(own):
+        return _error('Bad order.')
+    with transaction.atomic():
+        for i, aid in enumerate(ids, 1):
+            spec['model'].objects.filter(pk=aid).update(order=i)
+    _about_changed()
     return JsonResponse({'ok': True})

@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.dashboard, name='dashboard'),
     path('projects/', views.projects, name='projects'),
     path('projects/<int:pk>/', views.project, name='project'),
+    path('about/', views.about, name='about'),
 
     # API
     path('api/dashboard/', api.dashboard, name='api_dashboard'),
@@ -26,6 +27,12 @@ urlpatterns = [
     path('api/projects/<int:pk>/cards/<int:cid>/', api.card_update, name='api_card_update'),
     path('api/projects/<int:pk>/cards/<int:cid>/delete/', api.card_delete, name='api_card_delete'),
     path('api/projects/<int:pk>/cards/<int:cid>/upload/<str:field>/', api.card_upload, name='api_card_upload'),
+    # About page: <kind> is experience or education
+    path('api/about/', api.about, name='api_about'),
+    path('api/about/<str:kind>/new/', api.about_create, name='api_about_create'),
+    path('api/about/<str:kind>/reorder/', api.about_reorder, name='api_about_reorder'),
+    path('api/about/<str:kind>/<int:aid>/', api.about_update, name='api_about_update'),
+    path('api/about/<str:kind>/<int:aid>/delete/', api.about_delete, name='api_about_delete'),
     # Media: <kind> is photos, videos or embeds
     path('api/projects/<int:pk>/media/<str:kind>/sign/', api.media_sign, name='api_media_sign'),
     path('api/projects/<int:pk>/media/<str:kind>/new/', api.media_create, name='api_media_create'),
