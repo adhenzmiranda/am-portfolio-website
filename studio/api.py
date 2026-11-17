@@ -203,7 +203,7 @@ def dashboard(request):
         'links': {
             'projects': reverse('studio:projects'),
             'about': reverse('studio:about'),
-            'survey': '/msc-survey/edit/',
+            'survey': reverse('studio:survey'),
             'admin': reverse('admin:index'),
             'site': '/',
         },

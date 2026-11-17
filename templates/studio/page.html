@@ -12,7 +12,7 @@
     <link rel="icon" type="image/png" href="{% static 'assets/images/navbar/FaviconPortfolioLogo.png' %}">
 </head>
 
-{# Every Studio page is a shell: its script loads the content from /studio/api/ #}
+{# Every Studio page is a shell: its script loads the content from its API (/studio/api/, or /<address>/edit/api/ for the survey) #}
 <body class="home-page survey-page editor-page studio-page" data-page="{{ page }}">
     <header class="ed-top">
         <div class="ed-top__inner">
@@ -20,9 +20,10 @@
                 <img src="{% static 'assets/images/navbar/PortfolioLogo.svg' %}" width="500" height="188" alt="Studio home">
             </a>
             <div class="ed-top__title">
-                <span class="ed-top__eyebrow">Studio</span>
+                <span class="ed-top__eyebrow">Studio{% if page == 'survey' %} · Survey{% endif %}</span>
                 <span class="ed-top__name" id="st-title">{{ title }}</span>
             </div>
+            {% if page == 'survey' %}<span class="ed-status" id="ed-status"></span>{% endif %}
             <span class="ed-save" id="ed-save" role="status" aria-live="polite"></span>
             <a class="btn btn--ghost ed-top__btn" id="st-preview" href="/" target="_blank" rel="noopener" hidden>Preview <span aria-hidden="true">&nearr;</span></a>
         </div>
@@ -30,13 +31,14 @@
             <a class="ed-tab" href="{% url 'studio:dashboard' %}"{% if page == 'dashboard' %} aria-current="page"{% endif %}>Dashboard</a>
             <a class="ed-tab" href="{% url 'studio:projects' %}"{% if page == 'projects' or page == 'project' %} aria-current="page"{% endif %}>Projects</a>
             <a class="ed-tab" href="{% url 'studio:about' %}"{% if page == 'about' %} aria-current="page"{% endif %}>About</a>
-            <a class="ed-tab" href="/msc-survey/edit/">Survey</a>
+            <a class="ed-tab" href="{% url 'studio:survey' %}"{% if page == 'survey' %} aria-current="page"{% endif %}>Survey</a>
             <a class="ed-tab" href="{{ admin_url }}">Admin</a>
             <a class="ed-tab" href="/" target="_blank" rel="noopener">View site <span aria-hidden="true">&nearr;</span></a>
         </nav>
     </header>
 
-    <div class="ed-layout st-layout">
+    {# The survey editor keeps the narrower Google Forms width #}
+    <div class="ed-layout{% if page != 'survey' %} st-layout{% endif %}">
         <main class="ed-main st-main" id="ed-main" tabindex="-1">
             <p class="ed-note">Loading&hellip;</p>
             <noscript><p>Studio needs JavaScript.</p></noscript>

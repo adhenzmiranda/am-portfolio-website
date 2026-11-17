@@ -10,6 +10,7 @@ urlpatterns = [
     path('projects/', views.projects, name='projects'),
     path('projects/<int:pk>/', views.project, name='project'),
     path('about/', views.about, name='about'),
+    path('survey/', views.survey, name='survey'),   # opens the survey editor (/<address>/edit/)
 
     # API
     path('api/dashboard/', api.dashboard, name='api_dashboard'),

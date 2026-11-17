@@ -4,7 +4,7 @@ The survey lives at **adhenzmiranda.com/msc-survey/**. It works like a Google Fo
 
 ## The editor
 
-**adhenzmiranda.com/msc-survey/edit/** works on your laptop or phone. It needs your admin login with 2FA; anyone else is sent to the login page. The admin's survey page has an **Open the editor** button too.
+**adhenzmiranda.com/msc-survey/edit/** works on your laptop or phone. It's part of Studio, so you can also reach it from Studio's **Survey** tab (`/studio/survey/`). It needs your admin login with 2FA; anyone else is sent to the login page. The admin's survey page has an **Open the editor** button too.
 
 | Tab | What it's for |
 | --- | --- |

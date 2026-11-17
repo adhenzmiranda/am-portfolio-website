@@ -1,7 +1,8 @@
 """
 The Google Forms-style editor at /<address>/edit/ (staff with 2FA only).
 
-The page (templates/survey/editor.html + static/survey/editor.js) autosaves
+The page (Studio's frame, templates/studio/page.html, + static/survey/editor.js on
+Studio's kit, static/studio/kit.js) autosaves
 through the small JSON API below. Every change goes through a ModelForm, so
 the same validation as the admin applies, and the content lock is enforced
 here too: once a survey has responses, only settings that don't change what
@@ -224,7 +225,10 @@ def editor_page(request, survey):
     # The page is only a shell: editor.js loads everything from api_state, so no
     # data is read back out of the page. get_token() sets the CSRF cookie the API calls use.
     get_token(request)
-    return render(request, 'survey/editor.html', {'survey': survey})
+    # Opens inside Studio's frame (its header and navigation), with Studio's editor kit loaded first.
+    return render(request, 'studio/page.html', {
+        'page': 'survey', 'title': survey.title, 'script': 'survey/editor.js', 'admin_url': reverse('admin:index'),
+    })
 
 
 @editor_required()

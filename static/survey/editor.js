@@ -1,9 +1,12 @@
 /*
- * Survey editor (/<address>/edit/), for the researcher only.
+ * Survey editor (/<address>/edit/), for the researcher only. Part of Studio: it opens in
+ * Studio's frame and uses Studio's editor kit (static/studio/kit.js) for saving, fields,
+ * uploads and reordering.
  *
  * Google Forms-style: every field saves itself a moment after you stop typing
- * (survey/editor.py checks it with the same rules as the admin). Pages and
- * questions reorder by drag and drop (mouse) or the arrow buttons (anywhere).
+ * (survey/editor.py checks it with the same rules as the admin, including the content
+ * lock). Pages and questions reorder by drag and drop (mouse) or the arrow buttons
+ * (anywhere); questions can be dragged between pages.
  * Everything is built with DOM methods and textContent, never HTML strings.
  */
 (function () {
@@ -15,33 +18,21 @@
   var CH = null;           // choices for dropdowns, from the server
   var ST = null;           // the survey, from the server
   var main = document.getElementById('ed-main');
-  var saveEl = document.getElementById('ed-save');
   var tab = readTab();
-  var queue = {};          // pending field saves, keyed "model:id"
-  var inFlight = 0;
   var uid = 0;
-  var dragging = null;
+
+  var kit = StudioKit.create({ api: API, refresh: refresh, render: render, onSaved: afterSave });
+  var h = kit.h;
+  var button = kit.button;
+  var iconButton = kit.iconButton;
+  var note = kit.note;
 
   // ------------------------------------------------------------ small helpers
 
-  function h(tag, props) {
-    var el = document.createElement(tag);
-    Object.keys(props || {}).forEach(function (key) {
-      var value = props[key];
-      if (value === null || value === undefined || value === false) { return; }
-      if (key === 'class') { el.className = value; }
-      else if (key === 'text') { el.textContent = value; }
-      else if (key.slice(0, 2) === 'on') { el.addEventListener(key.slice(2), value); }
-      else if (key === 'value' || key === 'checked' || key === 'disabled' || key === 'selected') { el[key] = value; }
-      else { el.setAttribute(key, value === true ? '' : value); }
-    });
-    for (var i = 2; i < arguments.length; i++) { append(el, arguments[i]); }
-    return el;
-  }
   function append(el, child) {
     if (child === null || child === undefined || child === false) { return; }
     if (Array.isArray(child)) { child.forEach(function (c) { append(el, c); }); return; }
-    el.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+    el.appendChild(child);
   }
   function label(list, value) {
     for (var i = 0; i < list.length; i++) { if (list[i][0] === value) { return list[i][1]; } }
@@ -55,138 +46,51 @@
     try { sessionStorage.setItem('survey-editor-tab', value); } catch (e) { /* private mode */ }
   }
 
-  // ------------------------------------------------------------ server
+  // ------------------------------------------------------------ server (through the Studio kit)
 
-  function csrfToken() {
-    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
-  }
-
-  function api(path, options) {
-    options = options || {};
-    var init = { method: options.method || 'POST', credentials: 'same-origin', headers: { 'X-CSRFToken': csrfToken() } };
-    if (options.form) {
-      init.body = options.form;
-    } else if (init.method !== 'GET') {
-      init.headers['Content-Type'] = 'application/json';
-      init.body = JSON.stringify(options.body || {});
-    }
-    return fetch(API + path, init).then(function (res) {
-      return res.json().catch(function () { return {}; }).then(function (data) {
-        return { ok: res.ok, status: res.status, data: data };
-      });
-    }).catch(function () {
-      return { ok: false, status: 0, data: { error: 'Could not reach the server. Check your connection.' } };
-    });
-  }
-
-  function setSave(state, text) {
-    saveEl.dataset.state = state;
-    saveEl.textContent = text;
-  }
-
+  // Once a survey has responses, everything is locked except a few survey settings.
   function isLocked(model, field) {
     return ST.locked && (model !== 'survey' || CH.lockedFields.indexOf(field) !== -1);
   }
 
-  // Field saves are merged per item and sent 0.7 s after the last keystroke.
-  function queueSave(model, id, field, value, options) {
-    options = options || {};
-    var key = model + ':' + id;
-    var entry = queue[key] || (queue[key] = { model: model, id: id, patch: {}, timer: null, rerender: false });
-    entry.patch[field] = value;
-    entry.rerender = entry.rerender || !!options.rerender;
-    clearTimeout(entry.timer);
-    entry.timer = setTimeout(function () { flush(key); }, options.now ? 0 : 700);
-    setSave('busy', 'Saving…');
+  function path(model, id) { return model + '/' + id + '/'; }
+
+  // What a field edits, in the kit's terms. A page's question list is kept on save, because
+  // open question cards still point at those question objects.
+  function tgt(model, item) {
+    return { path: path(model, item.id), item: item, model: model,
+             locked: function (field) { return isLocked(model, field); },
+             keep: model === 'section' ? ['questions'] : null };
   }
 
-  function flush(key) {
-    var entry = queue[key];
-    if (!entry) { return Promise.resolve(); }
-    delete queue[key];
-    clearTimeout(entry.timer);
-    inFlight += 1;
-    return api(entry.model + '/' + entry.id + '/', { body: entry.patch }).then(function (res) {
-      inFlight -= 1;
-      Object.keys(entry.patch).forEach(function (f) { fieldError(entry.model, entry.id, f, ''); });
-      if (res.ok) {
-        applySaved(res.data, entry.model);
-        if (res.data.redirect) { location.replace(res.data.redirect); return; }
-        if (entry.rerender) { render(); }
-        if (!Object.keys(queue).length && !inFlight) { setSave('ok', 'Saved'); }
-      } else {
-        var errors = res.data.errors || {};
-        var show = function () {
-          Object.keys(errors).forEach(function (f) { fieldError(entry.model, entry.id, f, errors[f].join(' ')); });
-          setSave('error', res.data.error || (Object.keys(errors).length ? 'Not saved: see the message in red.' : 'Couldn’t save.'));
-        };
-        // Buttons and dropdowns already show the new choice: put back what the server has.
-        if (entry.rerender) { return refresh().then(show); }
-        show();
-      }
-    });
-  }
-
-  function flushAll() {
-    return Promise.all(Object.keys(queue).map(flush));
-  }
-
-  function applySaved(data, model) {
+  // After every save: the checklist, the lock and the status can all change.
+  function afterSave(target, data) {
     ST.problems = data.problems;
     ST.locked = data.locked;
     if (data.status) { ST.survey.status = data.status; }
-    if (data.item) { replaceItem(model, data.item); }
     updateHeader();
     var box = document.getElementById('ed-checklist');
     if (box) { box.replaceWith(checklist()); }
     // An earlier "not ready to open" message is out of date once the checklist changes.
-    if (!(model === 'survey' && data.item && data.item.status === 'open')) { fieldError('survey', ST.survey.id, 'status', ''); }
+    if (!(target.model === 'survey' && data.item && data.item.status === 'open')) {
+      kit.fieldError(path('survey', ST.survey.id), 'status', '');
+    }
   }
 
-  function replaceItem(model, item) {
-    if (model === 'survey') { ST.survey = item; return; }
-    var lists = model === 'question'
-      ? ST.sections.map(function (s) { return s.questions; })
-      : [model === 'section' ? ST.sections : model === 'prompt' ? ST.prompts : ST.conditions];
-    lists.forEach(function (list) {
-      for (var i = 0; i < list.length; i++) {
-        if (list[i].id === item.id) {
-          if (model === 'section') { item.questions = list[i].questions; }
-          list[i] = item;
-        }
-      }
-    });
-  }
-
-  // Structural changes (add, delete, move): save pending edits, act, then redraw from the server.
-  function act(path, body, options) {
-    options = options || {};
-    if (options.confirm && !window.confirm(options.confirm)) { return Promise.resolve(null); }
-    return flushAll().then(function () {
-      setSave('busy', 'Saving…');
-      return api(path, { body: body || {} });
-    }).then(function (res) {
-      if (!res.ok) { setSave('error', res.data.error || 'Couldn’t save.'); return null; }
-      if (res.data.redirect) { location.replace(res.data.redirect); return null; }
-      return refresh().then(function () {
-        setSave('ok', 'Saved');
-        return res.data;
-      });
-    });
-  }
+  function act(apiPath, body, options) { return kit.act(apiPath, body, options); }
+  function flush(model, id) { return kit.flush(path(model, id)); }
 
   function refresh() {
-    return api('state/', { method: 'GET' }).then(function (res) {
+    return kit.api('state/', { method: 'GET' }).then(function (res) {
       if (res.ok) {
         ST = res.data;
         CH = res.data.choices;
         render();
         return;
       }
-      setSave('error', res.data.error || 'Couldn’t load the latest version.');
+      kit.setSave('error', res.data.error || 'Couldn’t load the latest version.');
       if (!ST) {
-        while (main.firstChild) { main.removeChild(main.firstChild); }
+        kit.clear(main);
         main.appendChild(h('p', { class: 'ed-banner', text: 'The editor couldn’t load. ' + (res.data.error || 'Check your connection and reload the page.') }));
       }
     });
@@ -201,163 +105,41 @@
     }
   }
 
-  // ------------------------------------------------------------ form controls
+  // ------------------------------------------------------------ form controls (the kit's, per model)
 
-  function wrap(model, id, field, labelText, control, hint) {
-    return h('div', { class: 'ed-field', 'data-key': model + ':' + id + ':' + field },
-      labelText ? h('label', { class: 'ed-label', for: control.id, text: labelText }) : null,
-      control,
-      hint ? h('p', { class: 'ed-hint', text: hint }) : null,
-      h('p', { class: 'ed-err', role: 'alert' }));
-  }
+  function wrap(model, id, field, labelText, control, hint) { return kit.wrap(path(model, id), field, labelText, control, hint); }
 
-  function fieldError(model, id, field, message) {
-    var box = main.querySelector('[data-key="' + model + ':' + id + ':' + field + '"]');
-    if (!box) { return; }
-    box.querySelector('.ed-err').textContent = message;
-    box.classList.toggle('is-invalid', !!message);
-  }
-
-  function grow(el) {
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 2 + 'px';
-  }
-
-  // Text, number or multi-line field that saves itself.
-  // opts.line: Google Forms style (underlined, the label is the placeholder and the screen-reader name).
   function input(model, item, field, opts) {
     opts = opts || {};
-    var cls = opts.line ? 'ed-line' + (opts.lineClass ? ' ' + opts.lineClass : '') : 'ed-input' + (opts.big ? ' ed-input--big' : '');
-    var el = opts.rows
-      ? h('textarea', { class: cls, rows: opts.rows })
-      : h('input', { class: cls, type: opts.type || 'text', inputmode: opts.number ? 'numeric' : null });
-    el.id = nextId();
-    el.value = item[field] === null || item[field] === undefined ? '' : item[field];
-    if (opts.line) {
-      el.setAttribute('aria-label', opts.label);
-      el.placeholder = opts.placeholder || opts.label;
-    } else if (opts.placeholder) { el.placeholder = opts.placeholder; }
-    if (opts.maxlength) { el.maxLength = opts.maxlength; }
-    el.disabled = isLocked(model, field);
-    el.addEventListener(opts.onChangeOnly ? 'change' : 'input', function () {
-      var value = el.value;
-      if (opts.number) { value = value.trim() === '' ? null : Number(value); }
-      item[field] = value;
-      if (opts.rows) { grow(el); }
-      if (opts.onInput) { opts.onInput(value); }
-      queueSave(model, item.id, field, value, { now: !!opts.onChangeOnly });
-    });
-    if (opts.rows) { requestAnimationFrame(function () { grow(el); }); }
-    return wrap(model, item.id, field, opts.line ? null : opts.label, el, opts.hint);
+    return kit.input(tgt(model, item), field, {
+      label: opts.label, rows: opts.rows, type: opts.type, number: opts.number, line: opts.line, lineClass: opts.lineClass,
+      inputClass: opts.big ? 'ed-input--big' : null, placeholder: opts.placeholder, maxlength: opts.maxlength,
+      hint: opts.hint, onInput: opts.onInput, onChangeOnly: opts.onChangeOnly });
   }
 
   function select(model, item, field, choices, opts) {
     opts = opts || {};
-    var el = h('select', { class: 'ed-input ed-select', 'aria-label': opts.aria || null });
-    el.id = nextId();
-    choices.forEach(function (c) { el.appendChild(h('option', { value: c[0], text: c[1], selected: item[field] === c[0] })); });
-    el.disabled = isLocked(model, field);
-    el.addEventListener('change', function () {
-      item[field] = el.value;
-      queueSave(model, item.id, field, el.value, { now: true, rerender: opts.rerender });
-    });
-    return wrap(model, item.id, field, opts.label, el, opts.hint);
+    return kit.select(tgt(model, item), field, choices, { label: opts.label, aria: opts.aria, hint: opts.hint, rerender: opts.rerender });
   }
 
   function toggle(model, item, field, text, opts) {
-    opts = opts || {};
-    var el = h('input', { type: 'checkbox', class: 'ed-switch__input', checked: !!item[field] });
-    el.id = nextId();
-    el.disabled = isLocked(model, field);
-    el.addEventListener('change', function () {
-      item[field] = el.checked;
-      queueSave(model, item.id, field, el.checked, { now: true, rerender: opts.rerender });
-    });
-    return h('div', { class: 'ed-field ed-field--inline', 'data-key': model + ':' + item.id + ':' + field },
-      h('label', { class: 'ed-switch', for: el.id }, el, h('span', { class: 'ed-switch__track', 'aria-hidden': 'true' }), h('span', { text: text })),
-      h('p', { class: 'ed-err', role: 'alert' }));
+    return kit.toggle(tgt(model, item), field, text, { rerender: (opts || {}).rerender });
   }
 
   // Two or three buttons, one active (e.g. Safe / Risky, Draft / Open / Closed).
   function segmented(model, item, field, choices, opts) {
     opts = opts || {};
-    var group = h('div', { class: 'ed-seg', role: 'group', 'aria-label': opts.label });
-    choices.forEach(function (c) {
-      var btn = h('button', { type: 'button', class: 'ed-seg__btn', 'aria-pressed': String(item[field] === c[0]), text: c[1],
-                              disabled: isLocked(model, field) });
-      btn.addEventListener('click', function () {
-        item[field] = c[0];
-        group.querySelectorAll('.ed-seg__btn').forEach(function (b) { b.setAttribute('aria-pressed', String(b === btn)); });
-        queueSave(model, item.id, field, c[0], { now: true, rerender: opts.rerender });
-      });
-      group.appendChild(btn);
-    });
-    return h('div', { class: 'ed-field', 'data-key': model + ':' + item.id + ':' + field },
-      opts.label ? h('span', { class: 'ed-label', text: opts.label }) : null, group,
-      opts.hint ? h('p', { class: 'ed-hint', text: opts.hint }) : null,
-      h('p', { class: 'ed-err', role: 'alert' }));
+    return kit.segmented(tgt(model, item), field, choices, { label: opts.label, hint: opts.hint, rerender: opts.rerender });
   }
-
-  function button(text, onClick, opts) {
-    opts = opts || {};
-    return h('button', { type: 'button', class: opts.class || 'btn btn--ghost ed-btn', onclick: onClick,
-                         disabled: !!opts.disabled, title: opts.title || null, 'aria-label': opts.aria || null, text: text });
-  }
-
-  function iconButton(symbol, aria, onClick, disabled) {
-    return h('button', { type: 'button', class: 'ed-icon', 'aria-label': aria, title: aria, onclick: onClick,
-                         disabled: !!disabled, text: symbol });
-  }
-
-  function note(text) { return h('p', { class: 'ed-note', text: text }); }
 
   // ------------------------------------------------------------ uploads
 
   function imageField(model, item, field, labelText, hint) {
-    var locked = isLocked(model, field) || (ST.locked && model !== 'survey');
-    var status = h('span', { class: 'ed-upload__status', role: 'status' });
-    var file = h('input', { type: 'file', accept: 'image/*', class: 'ed-upload__file', disabled: locked });
-    file.id = nextId();
-    var preview = item[field]
-      ? h('img', { class: 'ed-upload__img', src: item[field], alt: '' })
-      : h('span', { class: 'ed-upload__empty', text: 'No image' });
-    file.addEventListener('change', function () {
-      var chosen = file.files && file.files[0];
-      if (!chosen) { return; }
-      if (chosen.size > CH.maxImageMb * 1024 * 1024) {
-        status.textContent = 'Too big: images can be up to ' + CH.maxImageMb + ' MB.';
-        file.value = '';
-        return;
-      }
-      var form = new FormData();
-      form.append('file', chosen);
-      status.textContent = 'Uploading…';
-      setSave('busy', 'Uploading…');
-      api(model + '/' + item.id + '/upload/' + field + '/', { form: form }).then(function (res) {
-        if (!res.ok) { status.textContent = res.data.error || 'Upload failed.'; setSave('error', 'Upload failed.'); return; }
-        applySaved(res.data, model);
-        setSave('ok', 'Saved');
-        render();
-      });
-    });
-    var remove = item[field] && !locked ? button('Remove', function () {
-      var form = new FormData();
-      form.append('clear', '1');
-      api(model + '/' + item.id + '/upload/' + field + '/', { form: form }).then(function (res) {
-        if (res.ok) { applySaved(res.data, model); render(); }
-      });
-    }, { class: 'ed-link' }) : null;
-    return h('div', { class: 'ed-field ed-upload' },
-      h('span', { class: 'ed-label', text: labelText }),
-      h('div', { class: 'ed-upload__row' }, preview,
-        h('div', { class: 'ed-upload__actions' },
-          h('label', { class: 'btn btn--ghost ed-btn' + (locked ? ' is-disabled' : ''), for: file.id, text: item[field] ? 'Replace' : 'Upload image' }),
-          file, remove, status)),
-      hint ? h('p', { class: 'ed-hint', text: hint }) : null);
+    return kit.imageField(tgt(model, item), field, labelText, { hint: hint, maxMb: CH.maxImageMb });
   }
 
   // Reels go straight from the browser to Cloudinary (signed by the server), so Heroku's
-  // 30 second limit never applies. Same reference format as the admin's uploader.
+  // 30 second limit never applies. The server checks Cloudinary's signature before saving.
   function videoField(item) {
     var locked = ST.locked;
     var status = h('span', { class: 'ed-upload__status', role: 'status' });
@@ -377,46 +159,24 @@
         return;
       }
       status.textContent = 'Preparing upload…';
-      setSave('busy', 'Uploading video…');
-      api('sign-video/', { body: {} }).then(function (res) {
-        if (!res.ok) { throw new Error(res.data.error || 'Could not start the upload.'); }
-        return new Promise(function (resolve, reject) {
-          var sig = res.data;
-          var body = new FormData();
-          Object.keys(sig.params).forEach(function (k) { body.append(k, sig.params[k]); });
-          body.append('api_key', sig.api_key);
-          body.append('file', chosen);
-          var xhr = new XMLHttpRequest();
-          xhr.open('POST', sig.upload_url);
-          xhr.upload.addEventListener('progress', function (e) {
-            if (!e.lengthComputable) { return; }
-            var pct = Math.round(e.loaded / e.total * 100);
-            bar.hidden = false;
-            bar.value = pct;
-            status.textContent = 'Uploading to Cloudinary… ' + pct + '%';
-          });
-          xhr.addEventListener('load', function () {
-            var data = {};
-            try { data = JSON.parse(xhr.responseText); } catch (e) { /* handled below */ }
-            if (xhr.status >= 200 && xhr.status < 300 && data.public_id) { resolve(data); }
-            else { reject(new Error((data.error && data.error.message) || 'Cloudinary refused the upload.')); }
-          });
-          xhr.addEventListener('error', function () { reject(new Error('Network error while uploading.')); });
-          xhr.send(body);
-        });
-      }).then(function (result) {
-        var ref = result.resource_type + '/' + result.type + '/v' + result.version + '/' + result.public_id + '.' + result.format + '#' + result.signature;
-        return api('condition/' + item.id + '/', { body: { video: ref } });
+      kit.setSave('busy', 'Uploading video…');
+      kit.directUpload('sign-video/', chosen, function (pct) {
+        bar.hidden = false;
+        bar.value = pct;
+        status.textContent = 'Uploading to Cloudinary… ' + pct + '%';
+      }).then(function (ref) {
+        return kit.api(path('condition', item.id), { body: { video: ref } });
       }).then(function (res) {
         if (!res.ok) { throw new Error(res.data.error || 'The upload could not be saved.'); }
-        applySaved(res.data, 'condition');
-        setSave('ok', 'Saved');
+        if (res.data.item) { Object.assign(item, res.data.item); }
+        afterSave(tgt('condition', item), res.data);
+        kit.setSave('ok', 'Saved');
         render();
       }).catch(function (err) {
         bar.hidden = true;
         file.value = '';
         status.textContent = err.message;
-        setSave('error', 'Upload failed.');
+        kit.setSave('error', 'Upload failed.');
       });
     });
     return h('div', { class: 'ed-field ed-upload' },
@@ -430,67 +190,25 @@
 
   // ------------------------------------------------------------ reordering
 
-  // The ⠿ grip: drag with a mouse (hidden on touch screens, which use the arrows).
-  function dragHandle(kind) {
-    return h('span', { class: 'ed-handle', 'aria-hidden': 'true', title: 'Drag to move', 'data-handle': kind,
-                       draggable: ST.locked ? null : 'true', text: '⠇⠇⠇' });
+  // The grip: drag with a mouse (touch screens use the arrows).
+  function dragHandle(kind) { return kit.dragHandle(kind, ST.locked); }
+
+  function reorder(kind, sectionId, ids) {
+    return act('reorder/', kind === 'section' ? { kind: 'section', ids: ids } : { kind: 'question', section: sectionId, ids: ids });
   }
 
   function arrows(kind, list, index, sectionId) {
     var ids = list.map(function (x) { return x.id; });
-    function move(delta) {
-      var j = index + delta;
-      var t = ids[index]; ids[index] = ids[j]; ids[j] = t;
-      act('reorder/', kind === 'section' ? { kind: 'section', ids: ids } : { kind: 'question', section: sectionId, ids: ids });
-    }
-    var noun = kind === 'section' ? 'page' : 'question';
-    return [
-      iconButton('↑', 'Move ' + noun + ' up', function () { move(-1); }, ST.locked || index === 0),
-      iconButton('↓', 'Move ' + noun + ' down', function () { move(1); }, ST.locked || index === list.length - 1)
-    ];
+    return kit.arrows(ids, index, kind === 'section' ? 'page' : 'question',
+                      function (next) { reorder(kind, sectionId, next); }, ST.locked);
   }
 
-  // Mouse drag and drop. Only the handle is draggable (it carries its card along),
-  // so text in the fields can still be selected normally.
+  // Pages reorder among themselves; questions can also be dragged onto another page.
   function enableDrag(list, kind) {
-    if (ST.locked) { return; }
-    list.addEventListener('dragstart', function (e) {
-      var handle = e.target.closest && e.target.closest('[data-handle="' + kind + '"]');
-      var card = handle && handle.closest('[data-drag="' + kind + '"]');
-      if (!card || dragging) { return; }
-      dragging = { card: card, kind: kind };
-      card.classList.add('is-dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', card.dataset.id);
-      if (e.dataTransfer.setDragImage) { e.dataTransfer.setDragImage(card, 24, 24); }
-    });
-    list.addEventListener('dragover', function (e) {
-      if (!dragging || dragging.kind !== kind) { return; }
-      e.preventDefault();
-      var cards = Array.prototype.filter.call(list.children, function (c) {
-        return c.dataset.drag === kind && c !== dragging.card;
-      });
-      var after = cards.filter(function (c) {
-        var box = c.getBoundingClientRect();
-        return e.clientY < box.top + box.height / 2;
-      })[0];
-      if (after) { list.insertBefore(dragging.card, after); } else { list.appendChild(dragging.card); }
-    });
-    list.addEventListener('drop', function (e) { if (dragging) { e.preventDefault(); } });
+    kit.enableDrag(list, kind, function (ids, dropList) {
+      reorder(kind, Number(dropList.dataset.section), ids);
+    }, { locked: ST.locked, across: kind === 'question' });
   }
-
-  document.addEventListener('dragend', function () {
-    if (!dragging) { return; }
-    var card = dragging.card;
-    var kind = dragging.kind;
-    dragging = null;
-    card.classList.remove('is-dragging');
-    var list = card.parentElement;
-    var ids = Array.prototype.filter.call(list.children, function (c) { return c.dataset.drag === kind; })
-      .map(function (c) { return Number(c.dataset.id); });
-    act('reorder/', kind === 'section' ? { kind: 'section', ids: ids }
-                                       : { kind: 'question', section: Number(list.dataset.section), ids: ids });
-  });
 
   // ------------------------------------------------------------ Pages tab (Google Forms-style cards)
 
@@ -526,7 +244,7 @@
     var previous = activeQuestion;
     activeQuestion = id;
     // Save the card being closed first, so its preview shows the latest text.
-    (previous ? flush('question:' + previous) : Promise.resolve()).then(function () {
+    (previous ? flush('question', previous) : Promise.resolve()).then(function () {
       if (previous) { redrawQuestion(previous); }
       redrawQuestion(id, true);
     });
@@ -536,7 +254,7 @@
     var previous = activeQuestion;
     if (!previous) { return; }
     activeQuestion = null;
-    flush('question:' + previous).then(function () {
+    flush('question', previous).then(function () {
       redrawQuestion(previous);
       var card = main.querySelector('.ed-qcard[data-id="' + previous + '"]');
       if (card) { card.focus({ preventScroll: true }); }
@@ -752,10 +470,10 @@
   function optionsEditor(q) {
     var lines = (q.options || '').split('\n');
     if (!lines.length) { lines = ['']; }
-    var box = h('div', { class: 'ed-field ed-options', 'data-key': 'question:' + q.id + ':options' });
+    var box = h('div', { class: 'ed-field ed-options', 'data-key': path('question', q.id) + ':options' });
     function save() {
       q.options = lines.join('\n');
-      queueSave('question', q.id, 'options', q.options);
+      kit.queueSave(tgt('question', q), 'options', q.options);
     }
     function mark(i) {
       return h('span', { class: 'ed-option__mark', 'aria-hidden': 'true',
@@ -959,7 +677,7 @@
         checklist()),
       h('section', { class: 'ed-card' },
         h('h2', { class: 'ed-card__title', text: 'Basics' }),
-        input('survey', s, 'title', { label: 'Title', maxlength: 200, onInput: function (v) { document.getElementById('ed-title').textContent = v; } }),
+        input('survey', s, 'title', { label: 'Title', maxlength: 200, onInput: function (v) { document.getElementById('st-title').textContent = v; } }),
         input('survey', s, 'slug', { label: 'Address', maxlength: 60, onChangeOnly: true,
           hint: 'adhenzmiranda.com/' + s.slug + '/ (short is better for QR codes). Saved when you leave the field; old links and QR codes stop working.' }),
         h('div', { class: 'ed-grid3' },
@@ -1009,19 +727,27 @@
     status.dataset.status = ST.survey.status;
   }
 
+  var TABS = [['pages', 'Pages'], ['prompts', 'Prompts'], ['media', 'Media'], ['results', 'Results'], ['settings', 'Settings']];
+
   function switchTab(name) {
-    tab = name;
-    writeTab(name);
-    render();
-    window.scrollTo(0, 0);
+    kit.flushAll().then(function () {
+      tab = name;
+      writeTab(name);
+      render();
+      window.scrollTo(0, 0);
+    });
   }
 
   function render() {
     var scroll = window.scrollY;
-    document.querySelectorAll('.ed-tab').forEach(function (b) {
-      b.setAttribute('aria-current', b.dataset.tab === tab ? 'page' : 'false');
-    });
-    while (main.firstChild) { main.removeChild(main.firstChild); }
+    var preview = document.getElementById('st-preview');
+    preview.href = ST.links.preview;
+    preview.hidden = false;
+    kit.clear(main);
+    main.appendChild(h('nav', { class: 'st-subtabs', 'aria-label': 'Survey editor sections' }, TABS.map(function (x) {
+      return h('button', { type: 'button', class: 'st-subtab', 'aria-current': x[0] === tab ? 'page' : 'false', text: x[1],
+                           onclick: function () { switchTab(x[0]); } });
+    })));
     if (ST.locked) {
       main.appendChild(h('div', { class: 'ed-banner', role: 'note' },
         h('strong', { text: 'Locked: this survey has responses.' }),
@@ -1034,13 +760,5 @@
     window.scrollTo(0, scroll);
   }
 
-  document.querySelectorAll('.ed-tab').forEach(function (b) {
-    b.addEventListener('click', function () { switchTab(b.dataset.tab); });
-  });
-
-  window.addEventListener('beforeunload', function (e) {
-    if (Object.keys(queue).length || inFlight) { e.preventDefault(); e.returnValue = ''; }
-  });
-
-  refresh();
+  refresh();   // leaving with unsaved changes or a running upload is warned about by the kit
 })();

@@ -101,7 +101,7 @@ This needs `heroku login` first. Images still load from Cloudinary. `backups/` i
   - Same front-end rules as the survey: DOM methods only, and state loaded with `fetch`.
   - Tests mock Cloudinary uploads. Don't upload real files from local tests.
 - **Dissertation survey:** the `survey` app at `/msc-survey/` (Draft until ethics approval). **Read `docs/SURVEY.md` first**; `SURVEY_HANDOVER.md` is the original brief.
-  - Content lives in the database, not the code. It's edited in the Google Forms-style editor at `/msc-survey/edit/` (staff with 2FA) or in the Django admin.
+  - Content lives in the database, not the code. It's edited in the Google Forms-style editor at `/msc-survey/edit/` (staff with 2FA) or in the Django admin. The editor is part of Studio: it opens in Studio's frame and runs on `static/studio/kit.js`, so kit changes affect it too.
   - `survey/seed.py` only loads the starting version.
   - The approved prompts, script and rating statements are locked for the dissertation, so don't reword them.
   - The server enforces: locking once responses exist, the "Ready to open?" checklist, balanced assignment and server-side scoring. Keep those rules in `survey/models.py`, `logic.py` and `editor.py`, not only in the browser.

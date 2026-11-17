@@ -41,6 +41,14 @@ class AccessTests(EditorTestCase):
         self.assertEqual(res.status_code, 302)
         self.assertIn('/login/?next=/msc-survey/edit/', res['Location'])
 
+    def test_page_opens_inside_studio(self):
+        res = self.client.get('/msc-survey/edit/')
+        self.assertContains(res, 'studio/kit.js')          # the shared kit loads first
+        self.assertContains(res, 'survey/editor.js')
+        self.assertContains(res, 'id="ed-status"')        # the survey's status chip
+        self.assertContains(res, 'href="/studio/survey/" aria-current="page"')
+        self.assertContains(res, self.survey.title)
+
     def test_api_refuses_when_not_logged_in(self):
         self.allowed.return_value = False
         self.assertEqual(self.api(f'question/{self.question("age").pk}/', {'text': 'x'}).status_code, 403)
