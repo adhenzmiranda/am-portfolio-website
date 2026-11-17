@@ -12,7 +12,7 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 | --- | --- |
 | Dashboard, All projects, project editor (Details, Write, Chapters) | Built (PR 1) |
 | Media tab (photos, videos, embeds) | Built (PR 2) |
-| About page (`/studio/about/`) | PR 3 |
+| About page (`/studio/about/`) | Built (PR 3) |
 
 ---
 
@@ -31,7 +31,7 @@ Progress is tracked in [STUDIO_CHECKLIST.md](STUDIO_CHECKLIST.md). This file des
 ```mermaid
 flowchart TD
     D["/studio/<br/>Dashboard"] --> P["/studio/projects/<br/>All projects: search, filter"]
-    D -.-> A["/studio/about/<br/>Experience and Education<br/>(PR 3)"]
+    D --> A["/studio/about/<br/>Experience and Education"]
     D --> S["/msc-survey/edit/<br/>Survey editor (existing)"]
     D --> X["Django admin<br/>(backup)"]
     P -->|"+ New project"| E
@@ -51,6 +51,7 @@ flowchart TD
 | **Project editor: Write** | The description: a markdown editor with a toolbar, a formatted preview drawn in the page (no frame, so it can't steal typing focus), and Insert image from the project's photos. **Portfolio:** shown beside the cover image. **Blog Post:** the article intro. |
 | **Project editor: Chapters** (Blog Post) | The article's sections, which the live page shows as **Chapters**: title, teaser, body, takeaways, image, placeholder. Reorder, plus import and export as markdown. |
 | **Project editor: Media** | **Portfolio:** Videos, Photos and Embedded work, in the live page's order. Pick or drop several files; each goes straight to Cloudinary with its own progress row (photos up to 10 MB, videos up to 100 MB). Captions, drag or arrow reorder, delete. Embeds are pasted, checked and previewed. **Blog Post:** only the photo library, for images placed in the article (Copy markdown, or the Image button in Write). Videos and embeds are kept but not shown, since the live blog page doesn't show them. |
+| **About page** | **Experience:** cards (click to open) with role, organisation, location, dates (shown as typed) and highlights, one bullet per line. **Education:** title and details, always open. Both have drag or arrow reorder, a Shown switch, and delete. New entries start **hidden** at the top, so placeholder text never reaches the live page. |
 
 How the two modes show on the live page:
 
@@ -58,7 +59,6 @@ How the two modes show on the live page:
 | --- | --- |
 | **Portfolio** | Description beside the cover → Videos → Photos → Embeds; technology list shown |
 | **Blog Post** | Article intro beside the cover → Chapters (the cards); photos used inline in the text; no technology list |
-| **About** | Experience roles and Education entries: edit, reorder, show or hide |
 
 ---
 
@@ -114,6 +114,8 @@ All under `/studio/api/`. Reads are GET, writes are POST with JSON (uploads use 
 | `projects/<id>/media/<kind>/sign/` | A signature for one direct upload (`photos` or `videos`) |
 | `projects/<id>/media/<kind>/new/` | Add a photo or video from a verified upload reference, or an embed from pasted code |
 | `projects/<id>/media/<kind>/<mid>/`, `.../delete/`, `media/<kind>/reorder/` | Caption (and embed code), remove from the project, new order |
+| `about/` | Experience and Education lists |
+| `about/<kind>/new/`, `<kind>/<id>/`, `<kind>/<id>/delete/`, `<kind>/reorder/` | `experience` or `education`: add (hidden, at the top), save fields, delete, new order. A reorder also tells IndexNow about `/about/`, since it doesn't go through a save. |
 
 ---
 
@@ -162,4 +164,5 @@ The survey editor was built first, with its own copy of these pieces. Moving it 
 
 - **`studio/tests.py`** (`.venv\Scripts\python manage.py test studio`): access, dashboard, create, edit and validation, categories, delete, uploads with Cloudinary mocked (so nothing lands in the live library), the sanitised preview, chapters (add, edit, delete, reorder, other projects' chapters refused), import and export, and the IndexNow limit. Media: signatures fix the folder; forged, wrong-type and wrong-folder references are refused; embeds use the model's check; other projects' media are 404. References are signed in the tests with a stand-in secret, so nothing goes over the network.
 - **Media click-through:** the browser's upload to Cloudinary is intercepted and answered with a file already in the library, signed so the server's real check runs. Nothing new is uploaded.
+- **About:** the tests cover new entries starting hidden, show and hide on `/about/`, validation, reorder (and its IndexNow ping) and delete. The click-through saves the local entries' order first and puts it back afterwards, and its test entries are named "Studio QA" so they can be removed.
 - **Browser click-through** in Edge on a laptop and a phone size, against the local database with a throwaway admin user. It covers every tab, autosave, the toolbar, the photo picker, import, drag and arrow reorder, the phone Write/Preview switch, no sideways scrolling, and no JavaScript errors.

@@ -73,7 +73,7 @@ class AccessTests(StudioTestCase):
 
     def test_pages_load_and_are_private(self):
         for url, script in (('/studio/', 'dashboard.js'), ('/studio/projects/', 'projects.js'),
-                            (f'/studio/projects/{self.project.pk}/', 'project.js')):
+                            (f'/studio/projects/{self.project.pk}/', 'project.js'), ('/studio/about/', 'about.js')):
             res = self.client.get(url)
             self.assertEqual(res.status_code, 200, url)
             self.assertEqual(res['X-Robots-Tag'], 'noindex, nofollow')
@@ -372,6 +372,63 @@ class MediaTests(StudioTestCase):
         self.assertEqual(data['photos'][0]['caption'], 'A')
         self.assertEqual(data['embeds'][0]['src'], '')   # an embed that never passed the check gets no preview
         self.assertEqual(data['choices']['maxUploadMb'], {'photos': 10, 'videos': 100})
+
+
+class AboutTests(StudioTestCase):
+    def setUp(self):
+        super().setUp()
+        from projects.models import Education, Experience
+        self.Experience, self.Education = Experience, Education
+        Experience.objects.all().delete()   # a data migration seeds the real entries; start clean
+        Education.objects.all().delete()
+        self.job = Experience.objects.create(role='Designer', organisation='Studio A', location='Dubai',
+                                             dates='2024 - Present', highlights_raw='Made things', order=1)
+
+    def test_state(self):
+        data = self.get('about/').json()
+        self.assertEqual(data['experience'][0]['role'], 'Designer')
+        self.assertEqual(data['education'], [])
+        self.assertEqual(data['links']['public'], '/about/')
+
+    def test_new_entries_start_hidden_at_the_top(self):
+        item = self.post('about/experience/new/').json()['item']
+        self.assertFalse(item['visible'])
+        self.assertEqual([e['id'] for e in self.get('about/').json()['experience']], [item['id'], self.job.pk])
+        self.assertNotContains(self.client.get('/about/'), item['role'])   # placeholder never shown on the site
+        edu = self.post('about/education/new/').json()['item']
+        self.assertFalse(edu['visible'])
+
+    def test_edit_show_and_hide(self):
+        item = self.post('about/experience/new/').json()['item']
+        res = self.post(f'about/experience/{item["id"]}/', {'role': 'Photographer', 'highlights_raw': 'One\nTwo', 'visible': True})
+        self.assertEqual(res.status_code, 200, res.content)
+        page = self.client.get('/about/')
+        self.assertContains(page, 'Photographer')
+        self.assertContains(page, '<li>Two</li>', html=True)
+        self.post(f'about/experience/{item["id"]}/', {'visible': False})
+        self.assertNotContains(self.client.get('/about/'), 'Photographer')
+
+    def test_bad_values_are_refused(self):
+        url = f'about/experience/{self.job.pk}/'
+        self.assertIn('role', self.post(url, {'role': ''}).json()['errors'])
+        self.assertIn('dates', self.post(url, {'dates': 'x' * 101}).json()['errors'])
+        self.assertEqual(self.post(url, {'order': 5}).status_code, 400)   # order only changes through reorder
+        self.assertEqual(self.post('about/skills/new/').status_code, 404)
+        self.assertEqual(self.post('about/education/99999/', {'title': 'x'}).status_code, 404)
+        self.assertEqual(self.Experience.objects.get(pk=self.job.pk).role, 'Designer')
+
+    def test_reorder_and_delete(self):
+        second = self.Experience.objects.create(role='Editor', organisation='B', location='C', dates='2023', order=2)
+        self.assertEqual(self.post('about/experience/reorder/', {'ids': [second.pk, self.job.pk]}).status_code, 200)
+        self.assertEqual(list(self.Experience.objects.values_list('role', flat=True)), ['Editor', 'Designer'])
+        self.assertEqual(self.post('about/experience/reorder/', {'ids': [second.pk]}).status_code, 400)
+        self.post(f'about/experience/{second.pk}/delete/')
+        self.assertFalse(self.Experience.objects.filter(pk=second.pk).exists())
+
+    def test_reorder_tells_indexnow(self):
+        with mock.patch('studio.api._ping_indexnow') as ping:
+            self.post('about/experience/reorder/', {'ids': [self.job.pk]})
+        ping.assert_called_once_with(['/about/'])
 
 
 @override_settings(DEBUG=False, SECURE_SSL_REDIRECT=False)

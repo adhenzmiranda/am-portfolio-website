@@ -38,6 +38,7 @@
       h('h2', { class: 'ed-card__title', text: 'Shortcuts' }),
       h('div', { class: 'st-shortcuts' },
         shortcut('+ New project', 'Start a portfolio piece or a blog post', L.projects + '?new=1'),
+        shortcut('About page', 'Experience and Education', L.about),
         shortcut('Survey editor', 'Think Before You Prompt', L.survey),
         shortcut('View site', 'adhenzmiranda.com', L.site, true),
         shortcut('Django admin', 'Backup, users and 2FA devices', L.admin))));

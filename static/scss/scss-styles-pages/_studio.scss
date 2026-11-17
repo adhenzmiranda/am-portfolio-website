@@ -752,3 +752,29 @@ textarea.st-code {
 .st-upload__status {
     color: $soft;
 }
+
+// ---------------------------------------------------------------- About page
+
+.st-edu {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 16px;
+
+    .ed-field {
+        margin-top: 0;
+    }
+
+    @media screen and (max-width: 700px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// Hidden entries stay editable but look set aside, like a draft.
+.st-is-hidden {
+    border-style: dashed;
+
+    .ed-qcard__q,
+    .ed-kicker {
+        opacity: 0.7;
+    }
+}
